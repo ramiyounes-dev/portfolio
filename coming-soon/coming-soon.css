@@ -1,4 +1,4 @@
-/* loader.css */
+
 #loading-screen {
     position: fixed;
     inset: 0;
@@ -34,7 +34,7 @@
   .loader-dot {
     width: 0.6rem;
     height: 0.6rem;
-    background-color: #ffffff;
+    background-color: #00ff88;
     border-radius: 50%;
     animation: pulse 1.2s infinite ease-in-out;
   }
