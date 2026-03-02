@@ -79,3 +79,17 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+.card {
+  margin-bottom: 10px;
+  padding-left: 10px;
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card i {
+  color: #3498db;
+  margin-top: 3px;
+}

@@ -73,7 +73,7 @@ img {
     height: auto;      /* Keep the aspect ratio intact */
     vertical-align: middle; /* Aligns the image vertically in the middle of the text */
 
-    background: rgba(255, 248, 248, 0.6);
+    background: rgba(255, 248, 248, 1);
     border-radius: 20px;
   }
 
