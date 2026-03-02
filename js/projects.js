@@ -2,7 +2,7 @@ const projects = [
     {
       title: "pickle1",
       subtitle: "apple1",
-      img: "assets/welcome_eyes/welcome_sections/AnA_right.png",
+      img: "../assets/welcome_eyes/welcome_sections/AnA_right.png",
       data:`
             <p>Project pickle1 go here...</p>
             <p>More content...</p>
@@ -38,7 +38,7 @@ const projects = [
     {
       title: "pickle2",
       subtitle: "apple2",
-      img: "assets/welcome_eyes/welcome_sections/aboutMe_off.png",
+      img: "../assets/welcome_eyes/welcome_sections/aboutMe_off.png",
       data:`
             <p>Project pickle2 go here...</p>
             <p>More content...</p>
@@ -82,7 +82,7 @@ const projects = [
     {
       title: "pickle3",
       subtitle: "apple3",
-      img: "assets/welcome_eyes/welcome_sections/aboutMe_on.png",
+      img: "../assets/welcome_eyes/welcome_sections/aboutMe_on.png",
       data:`
             <p>Project pickle3 go here...</p>
             <p>More content...</p>
@@ -118,7 +118,7 @@ const projects = [
     {
       title: "pickle6",
       subtitle: "apple6",
-      img: "assets/welcome_eyes/welcome_sections/AnA_left.png",
+      img: "../assets/welcome_eyes/welcome_sections/AnA_left.png",
       data:`
             <p>Project pickle4 go here...</p>
             <p>More content...</p>

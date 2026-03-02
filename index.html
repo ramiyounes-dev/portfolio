@@ -1,74 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>What's UP</title>
-    <link rel="icon" href="assets/fs.png" type="image/png">
-  <link rel="stylesheet" href="css/index.css">
-  <link rel="stylesheet" href="css/general.css">
-  <link rel="stylesheet" href="css/sections.css">
-  <link rel="stylesheet" href="css/lang-toggle.css">
-    <link rel="stylesheet" href="assets/font-awesome-4.7.0/css/font-awesome.css">
-  </head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="assets/fs.png" type="image/png">
+  <title>Theme?</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #1a1a1a;
+      font-family: monospace;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background-color: #0b2416;
+      box-shadow: 0 0 20px #00ff88;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #00ff88;
+      overflow: hidden;
+      animation: flicker 0.12s infinite alternate, jitter 2s infinite;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 255, 0, 0.2),
+        rgba(0, 255, 0, 0.2) 2px,
+        rgba(0, 255, 0, 0.05) 2px,
+        rgba(0, 255, 0, 0.05) 4px
+      );
+      animation: scanlines 0.5s linear infinite, boldLine 2s infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .screen::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, rgba(0,255,0,0.1) 0%, rgba(0,0,0,0.8) 80%);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .menu {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      animation: fadeInUp 1s ease-out;
+      text-shadow: 0 0 5px #00ff88;
+    }
+
+    .title {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      animation: pulse 1.2s infinite;
+    }
+
+    .screen p {
+      margin: 0.5rem 0;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .screen p:hover {
+      background-color: #00ff88;
+      color: black;
+      border-color: #00ff88;
+      transform: scale(1.05);
+      text-shadow: 0 0 5px #00ff88;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes flicker {
+      0%   { opacity: 1; }
+      20%  { opacity: 0.95; }
+      40%  { opacity: 0.85; }
+      60%  { opacity: 0.92; }
+      80%  { opacity: 0.98; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes scanlines {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+
+    @keyframes boldLine {
+      0%, 100% { background-size: 100% 4px; }
+      50% { background-size: 100% 6px; }
+    }
+
+    @keyframes jitter {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(1px); }
+    }
+  </style>
+</head>
 <body>
-
-  <div class="back-img"></div>
-
-  <div class="welcome-section">
-    <img id="mainImage" src="assets/welcome_eyes/center.png" alt="Interactive Image">
-    <div class="caption">Hi, I'm Rami. I code for work and for fun.</div>
+  <div class="screen">
+    <div class="menu">
+      <div class="title">▶ SELECT YOUR THEME</div>
+      <p onclick="selectTheme('MINIMAL')">RUN MINIMAL</p>
+      <p onclick="selectTheme('EXPRESSIVE')">RUN EXPRESSIVE</p>
+    </div>
   </div>
 
-  <img id="aboutSection" class="orbit-img" src="assets/sections/aboutMe.png" alt="About Me" data-link="aboutMe.html">
-  <img id="anaSection" class="orbit-img" src="assets/sections/ana.png" alt="Technical Expertise" data-link="AnA.html">
-  <img id="experienceSection" class="orbit-img" src="assets/sections/experience.png" alt="Experience" data-link="experience.html">
-  <img id="projectsSection" class="orbit-img" src="assets/sections/projects.png" alt="Projects" data-link="projects.html">
-  
-    <a id="cv-link-fr" href="assets/cv/rami_younes_fr.pdf" target="_blank">
-        <img id="cv-img-fr" class="orbit-img" src="assets/lang/cv-fr.png" alt="CV in French">
-    </a>
-
-  <label id="fr-en-toggle" class="toggle">
-      <div class="toggle__wrapper">
-          <input type="checkbox" id="lang-toggle">
-          <div class="toggle__bg">
-              <div class="toggle__text">FR</div>
-              <div class="toggle__text toggle__text--right">EN</div>
-              <div class="toggle__sphere">
-                  <div class="toggle__sphere-bg"></div>
-                  <div class="toggle__sphere-overlay"></div>
-              </div>
-          </div>
-      </div>
-  </label>
-  <a id="cv-link-en" href="assets/cv/rami_younes_en.pdf" target="_blank">
-      <img id="cv-img-en" class="orbit-img" src="assets/lang/cv-en.png" alt="CV in English">
-  </a>
-
-
-
-  <section class="end">
-    <section class="contact-section">
-      <div class="contact-links">
-        <a href="mailto:rami.r.younes@gmail.com" class="contact-item">
-          <i class="fa fa-envelope" style="color: #FFD43B;"></i>
-        </a>
-        <a href="https://www.linkedin.com/in/ramyounes/" class="contact-item">
-          <i class="fa fa-linkedin" style="color: #FFD43B;"></i>
-        </a>
-      </div>
-    </section>
-
-    <footer>
-      &copy; 2025 ~ Rami Younes
-    </footer>
-  </section>
-
-  <script src="js/index.js"></script>
-  <script src="js/lang-toggle.js"></script>
-
+  <script>
+    function selectTheme(theme) {
+      const paths = {
+        'EXPRESSIVE': './pages/index.html',
+        'MINIMAL': './minimal/index.html'
+      };
+      window.location.href = paths[theme];
+    }
+  </script>
 </body>
 </html>
-
-

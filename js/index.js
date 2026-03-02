@@ -46,7 +46,7 @@ window.addEventListener("scroll", () => {
 // functions
 
 function updateImage(state) {
-    img.src = `assets/welcome_eyes/${state}.png`;
+    img.src = `../assets/welcome_eyes/${state}.png`;
     // console.log(`Position: ${state}`);
 }
 

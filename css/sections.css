@@ -51,6 +51,7 @@
 /* Circular positioning */
 #aboutSection { top: 40%; left: 5%; transform:  rotate(-17deg); }
 #anaSection { top: 10%; left: 20%; transform:  rotate(-17deg); }
+#switchThemes { top: 0%; left: 50%; transform: rotate(0deg) translateX(-50%); }
 #experienceSection { top: 10%; right: 20%; transform:  rotate(17deg); }
 #projectsSection { top: 40%; right: 5%; transform:  rotate(27deg); }
 #cv-img-fr { top: 70%; left: 20%; transform:  rotate(0deg); }
