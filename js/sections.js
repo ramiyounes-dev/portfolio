@@ -44,7 +44,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Click Effect (Optional)
     img.addEventListener("click", function () {
-        updateImage("center_wink");
+        if (window.location.pathname === "/" || window.location.pathname === "/index.html") 
+            updateImage("center_wink");
     });
 
     const images = document.querySelectorAll(".navbar img, .a img");
