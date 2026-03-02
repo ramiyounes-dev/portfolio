@@ -1,6 +1,8 @@
 const sentences = [
     "a Software Developer",
-    "Full Stack is the way to go..",
+    "a Mainframe Developer",
+    "passionate about Teaching..",
+    // "Full Stack is the way to go..",
     "I love clean code and good UI",
     "Always learning | Always coding"
   ];
