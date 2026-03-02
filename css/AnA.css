@@ -1,0 +1,81 @@
+html {
+    scroll-behavior: smooth;
+    height: 100%;
+  }
+  
+body {
+    color: white;
+    overflow: hidden; /* Prevent scrolling on the entire page */
+    margin: 0;
+    background-image: url('../assets/backgrounds/grad.jpeg');
+}
+
+.container {
+    display: flex;
+    width: 90%;
+    height: 60vh;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    
+    /* Centering the container using absolute positioning */
+    position: absolute;
+    top: 51%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Adjusts the element to be centered */
+}
+
+/* Further reducing font size for even smaller screens (like phones) */
+@media (max-width: 480px) {
+    .container {
+        font-size: 60%; /* Further reduced font size for very small screens */
+    }
+}
+
+.timeline {
+    width: 25%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-evenly; /* Distribute items equally with space between them */
+    flex-direction: column;
+    padding: 20px;
+    border-right: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.timeline-item {
+    padding: 15px;
+    margin: 10px 0;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 7px;
+    transition: background 0.3s, transform 0.3s;
+}
+
+.timeline-item:hover, .timeline-item.active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.content {
+    width: 70%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.text {
+    overflow-y: auto;      /* Enables vertical scrolling */
+    font-size: 1.2em;
+    float: left;
+    opacity: 1;
+    transform: translateY(20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.text.visible {
+    opacity: 1;
+    transform: translateY(0);
+}

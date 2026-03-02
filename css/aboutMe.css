@@ -1,0 +1,91 @@
+html {
+    scroll-behavior: smooth;
+    height: 100%;
+  }
+
+body{
+    overflow: hidden; /* Prevent scrolling on the entire page */
+
+}
+
+.timeline {
+    width: 85%;
+    margin: 50px auto;
+    position: relative;
+    border-left: 3px solid #ffffff;
+    border-right: 3px solid #ffffff;
+    overflow-y: scroll; /* Enable vertical scrolling */
+    scroll-snap-type: y mandatory; /* Enable snapping */
+    scroll-behavior: smooth; /* Enable smooth scroll transition */
+  /* Hide scrollbar */
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none; /* For IE and Edge */
+}
+.timeline-item {
+    display: flex;
+    align-items: center; /* Vertically center */
+    justify-content: center; /* Horizontally center */
+    margin: 150px 0;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: all 0.6s ease-in-out;
+    position: relative;
+}
+.timeline-item.visible { opacity: 1; transform: translateY(0); }
+.timeline-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 70%;
+}
+
+.timeline-img {
+    width: 40%; 
+    max-height: 30vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0);
+}
+
+
+.timeline-text {
+    width: 50%;
+    background: rgb(255, 255, 255, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+.timeline-dot {
+    position: absolute;
+    left: -11px;
+    width: 20px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 50%;
+}
+h2 {
+    margin-top: 0;
+}
+
+@media (max-width: 768px) {
+    .timeline-content {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .timeline-content h2 {
+        text-align: center;
+    }
+
+    .timeline-img {
+        margin: 20px;
+        width: 90%;
+        max-height: 40vh;
+    }
+
+    .timeline-text{
+        width: 80%;
+    }
+
+}

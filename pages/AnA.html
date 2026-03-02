@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Arsenal</title>
+    <link rel="icon" href="../assets/fs.png" type="image/png">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="../css/general.css">
+    <link rel="stylesheet" href="../css/AnA.css">
+  <link rel="stylesheet" href="../css/sections.css">
+  <link rel="stylesheet" href="../assets/font-awesome-4.7.0/css/font-awesome.css">
+</head>
+<body>
+  <div class="navbar">
+    <img id="backHome" src="../assets/welcome_eyes/welcome_sections/AnA_right.png" alt="Asleep" data-link="index.html">
+    <img class="navbar-img" src="../assets/sections/aboutMe.png" alt="About Me" data-link="aboutMe.html">
+    <img class="navbar-img" src="../assets/sections/ana.png" alt="Technical Expertise" data-link="AnA.html">
+    <img class="navbar-img" src="../assets/sections/experience.png" alt="Experience" data-link="experience.html">
+    <img class="navbar-img" src="../assets/sections/projects.png" alt="Projects" data-link="projects.html">
+  </div>
+
+ 
+  <div class="container">
+    <div class="timeline">
+        <div class="timeline-item" onclick="changeContent(0)">Bachelor's Degree</div>
+        <div class="timeline-item" onclick="changeContent(1)">Master's Degree</div>
+        <div class="timeline-item" onclick="changeContent(2)">Ph.D.</div>
+        <div class="timeline-item" onclick="changeContent(3)">Other Certificates</div>
+    </div>
+    <div class="content">
+        <div class="text" id="text-content">
+          <h1 style="text-align: center;">Academic Arsenal</h1>
+          <br><br><br>
+          <p style="text-align: center;">While field experience deepens this foundation, <br>the academy serves as the crucial first step with lasting value</p>
+        </div>
+    </div>
+  </div>
+  <section class="end">
+    <section class="contact-section">
+      <div class="contact-links">
+        <a href="mailto:rami.r.younes@gmail.com" class="contact-item">
+          <i class="fa fa-envelope" style="color: #FFD43B;"></i>
+        </a>
+        <a href="https://www.linkedin.com/in/ramyounes/" class="contact-item">
+          <i class="fa fa-linkedin" style="color: #FFD43B;"></i>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      &copy; 2025 ~ Rami Younes
+    </footer>
+  </section>
+  <script defer src="../js/AnA.js"></script>
+  <script defer src="../js/sections.js"></script>
+</body>
+</html>

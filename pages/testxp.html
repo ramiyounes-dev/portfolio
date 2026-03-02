@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Experience</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Professional Experience</h1>
+        
+        <div class="experience-card">
+            <div class="header">
+                <h2 class="position">Software Developer</h2>
+                <h3 class="company">TechCorp Inc.</h3>
+            </div>
+            <p class="details"><i class="fas fa-calendar-alt"></i> Jan 2022 - Present | <i class="fas fa-map-marker-alt"></i> Remote</p>
+            <p class="contact"><strong>Contact:</strong> <a href="mailto:contact@techcorp.com">contact@techcorp.com</a></p>
+            <p class="description">Developed scalable web applications, optimized backend services, and collaborated with cross-functional teams to deliver high-quality software solutions.</p>
+            
+            <div class="tech-stack">
+                <h3>Technical Environment:</h3>
+                <ul>
+                    <li><i class="fab fa-js"></i> JavaScript</li>
+                    <li><i class="fab fa-react"></i> React</li>
+                    <li><i class="fab fa-node"></i> Node.js</li>
+                    <li><i class="fab fa-aws"></i> AWS</li>
+                    <li><i class="fab fa-docker"></i> Docker</li>
+                </ul>
+            </div>
+            
+            <div class="soft-skills">
+                <h3>Gained Soft Skills:</h3>
+                <ul>
+                    <li>Problem-solving</li>
+                    <li>Teamwork</li>
+                    <li>Adaptability</li>
+                    <li>Time management</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="experience-card">
+            <div class="header">
+                <h2 class="position">Research Engineer</h2>
+                <h3 class="company">LIG Laboratory</h3>
+            </div>
+            <p class="details"><i class="fas fa-calendar-alt"></i> 2019 - 2022 | <i class="fas fa-map-marker-alt"></i> Grenoble, France</p>
+            <p class="contact"><strong>Contact:</strong> <a href="mailto:research@lig.fr">research@lig.fr</a></p>
+            <p class="description">Worked on real-time simulations, data visualization, and AI-driven models for robotics research.</p>
+            
+            <div class="tech-stack">
+                <h3>Technical Environment:</h3>
+                <ul>
+                    <li><i class="fab fa-cuttlefish"></i> C++</li>
+                    <li><i class="fab fa-python"></i> Python</li>
+                    <li><i class="fab fa-robot"></i> ROS</li>
+                    <li>MoveIt</li>
+                    <li>RViz</li>
+                </ul>
+            </div>
+            
+            <div class="soft-skills">
+                <h3>Gained Soft Skills:</h3>
+                <ul>
+                    <li>Analytical thinking</li>
+                    <li>Resilience</li>
+                    <li>Collaboration</li>
+                    <li>Communication</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #f4f4f4, #e0e0e0);
+        margin: 0;
+        padding: 20px;
+    }
+    .container {
+        max-width: 900px;
+        margin: auto;
+        text-align: center;
+    }
+    .title {
+        font-size: 2.5em;
+        color: #007bff;
+        margin-bottom: 30px;
+    }
+    .experience-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        margin-bottom: 30px;
+        transition: transform 0.3s ease;
+    }
+    .experience-card:hover {
+        transform: scale(1.02);
+    }
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+    .position {
+        color: #0056b3;
+        font-size: 22px;
+    }
+    .company {
+        font-size: 18px;
+        color: #333;
+    }
+    .details, .contact, .description {
+        color: #555;
+    }
+    .tech-stack ul, .soft-skills ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    .tech-stack li, .soft-skills li {
+        background: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .contact a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .contact a:hover {
+        text-decoration: underline;
+    }
+</style>
