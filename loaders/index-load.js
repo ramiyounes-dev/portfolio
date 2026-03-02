@@ -1,3 +1,8 @@
+window.addEventListener('pageshow', () => {
+  const powerOff = document.getElementById('power-off-overlay');
+  if (powerOff) powerOff.remove();
+});
+
 window.addEventListener('DOMContentLoaded', () => {
   // Same logic as your previous turnon.js
   const overlay = document.createElement('div');
