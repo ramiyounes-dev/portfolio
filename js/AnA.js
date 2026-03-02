@@ -8,7 +8,7 @@ const contentData = [
         <li class="card">
             <i class="fas fa-award"></i>
             2025 Learning Kubernetes </br>
-
+            Kubernetes fundamentals via LinkedIn Learning.
             <a href="https://www.linkedin.com/learning/certificates/86c3c0c76ce673ca1b269254096f1e3afc1a8e871b4e0b224cc6bbef06496c20?trk=share_certificate" target="_blank">
             <img src="../assets/AnA/certificate.png" alt="k8s Certification" class="icon-size" />
         </a>
@@ -21,7 +21,7 @@ const contentData = [
         <li class="card">
             <i class="fas fa-award"></i>
             2025 - Docker Foundations Professional Certificate </br>
-            offered by Docker through LinkedIn Learning
+            offered by Docker. Covered Docker basics, containers, image management, and docker-compose.
             <a href="https://www.linkedin.com/learning/certificates/b62b2258e1c44ca9a8c9a8e85e1069513246d4a20dfb1872298b4ff89600f933?trk=share_certificate" target="_blank">
             <img src="../assets/AnA/certificate.png" alt="Docker Certification" class="icon-size" />
         </a>
