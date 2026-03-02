@@ -1,10 +1,4 @@
 window.addEventListener('DOMContentLoaded', () => {
-  // Clean up any lingering overlay if returning via back/forward
-  const lingeringOverlay = document.getElementById('power-on-overlay');
-  if (lingeringOverlay) {
-    lingeringOverlay.remove();
-  }
-
   // Same logic as your previous turnon.js
   const overlay = document.createElement('div');
   overlay.id = 'power-on-overlay';
