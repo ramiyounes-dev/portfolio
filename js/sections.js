@@ -15,14 +15,13 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Hover Effect
     img.addEventListener("mouseenter", function () {
-        updateImage("center");
-        if (window.location.pathname.includes("aboutMe.html"))
+        if (window.location.pathname.includes("aboutMe"))
             updateImage("welcome_sections/aboutMe_off");
-        else if (window.location.pathname.includes("AnA.html")) 
+        else if (window.location.pathname.includes("AnA")) 
             updateImage("welcome_sections/AnA_left");
-        else if (window.location.pathname.includes("experience.html")) 
+        else if (window.location.pathname.includes("experience")) 
             updateImage("welcome_sections/mat_center");
-        else if (window.location.pathname.includes("projects.html")) 
+        else if (window.location.pathname.includes("projects")) 
             updateImage("welcome_sections/projects_off");
         else
             updateImage("center");
@@ -30,13 +29,13 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     img.addEventListener("mouseleave", function () {
-        if (window.location.pathname.includes("aboutMe.html"))
+        if (window.location.pathname.includes("aboutMe"))
             updateImage("welcome_sections/aboutMe_on");
-        else if (window.location.pathname.includes("AnA.html")) 
+        else if (window.location.pathname.includes("AnA")) 
             updateImage("welcome_sections/AnA_right");
-        else if (window.location.pathname.includes("experience.html")) 
+        else if (window.location.pathname.includes("experience")) 
             updateImage("welcome_sections/mat_asleep");
-        else if (window.location.pathname.includes("projects.html")) 
+        else if (window.location.pathname.includes("projects")) 
             updateImage("welcome_sections/projects_on");
         else
             updateImage("asleep");
