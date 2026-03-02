@@ -154,3 +154,47 @@ function adjustWelcomeSection() {
 // Run on page load and on resize to keep it responsive
 window.addEventListener('load', adjustWelcomeSection);
 window.addEventListener('resize', adjustWelcomeSection);
+
+
+window.addEventListener("load", () => {
+    const preloadStates = [
+        "center", "center_left", "center_right", "center_up", "center_down",
+        "up_left", "up_right", "down_left", "down_right",
+        "asleep", "asleep_wink", "center_wink"
+    ];
+
+    const preloadImages = preloadStates.map(state => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = `../assets/welcome_eyes/${state}.png`;
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // Still resolve to not block
+        });
+    });
+
+    const existingImages = Array.from(document.images).map(img => {
+        return new Promise((resolve) => {
+            if (img.complete) {
+                resolve();
+            } else {
+                img.addEventListener("load", resolve);
+                img.addEventListener("error", resolve);
+            }
+        });
+    });
+
+    Promise.all([...preloadImages, ...existingImages]).then(() => {
+        showContent();
+    });
+
+    function showContent() {
+        const loader = document.getElementById("loading-screen");
+        if (loader) {
+            loader.style.opacity = "0";
+            setTimeout(() => {
+                loader.style.display = "none";
+            }, 500); // Optional fade out
+        }
+        document.body.style.overflow = "auto";
+    }
+});
