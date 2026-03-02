@@ -329,8 +329,8 @@ i {
       height: 220px;
       border-radius: 50%;
       padding: 10px; /* Padding = glow spacing */
-      background-color: #00f7ff72;
-      box-shadow: 0 0 30px 15px #00f7ff8b;
+      background-color: #00f7ff7d;
+      box-shadow: 0 0 30px 15px #00f7ff99;
       display: flex;
       justify-content: center;
       align-items: center;
