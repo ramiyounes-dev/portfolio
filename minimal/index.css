@@ -56,6 +56,7 @@
   }
   
   header {
+    flex-direction: column;
     height: 100vh;
     display: flex;
     justify-content: center;
@@ -69,7 +70,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh; /* full screen */
+    height: 45vh; /* full screen */
     padding: 0 20px;
     text-align: center;
     position: relative;
@@ -320,3 +321,27 @@ i {
 }
 
 /* end cv */
+
+/* start glowing image */
+
+.glow-circle {
+      width: 220px; /* Adjust this size */
+      height: 220px;
+      border-radius: 50%;
+      padding: 10px; /* Padding = glow spacing */
+      background-color: #00f7ff72;
+      box-shadow: 0 0 30px 15px #00f7ff8b;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .glow-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+/* end glowing image */
