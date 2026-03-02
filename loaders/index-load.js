@@ -1,6 +1,6 @@
 window.addEventListener('DOMContentLoaded', () => {
   // Clean up any lingering overlay if returning via back/forward
-  const lingeringOverlay = document.getElementById('power-off-overlay');
+  const lingeringOverlay = document.getElementById('power-on-overlay');
   if (lingeringOverlay) {
     lingeringOverlay.remove();
   }
