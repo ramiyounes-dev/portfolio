@@ -1,34 +1,31 @@
 const projects = [
     {
-      title: "pickle1",
-      subtitle: "apple1",
+      title: "project1",
+      subtitle: "Details",
       img: "../assets/welcome_eyes/welcome_sections/AnA_right.png",
       data:`
-            <p>Project pickle1 go here...</p>
-            <p>More content...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrollingscrollingscrollings croll ingscrolli ngscrollingsc rollin gscrolli ngscro llingsc rolling...</p>
-            <p>Keep scrolling...</p> 
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p> 
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
       `,
       stack:`
             <p><i class="your-icon-class"></i> Technology A1</p>
@@ -36,35 +33,32 @@ const projects = [
       `
     },
     {
-      title: "pickle2",
-      subtitle: "apple2",
+      title: "project2",
+      subtitle: "Details",
       img: "../assets/welcome_eyes/welcome_sections/aboutMe_off.png",
       data:`
-            <p>Project pickle2 go here...</p>
-            <p>More content...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrollingscrollingscrollings croll ingscrolli ngscrollingsc rollin gscrolli ngscro llingsc rolling...</p>
-            <p>Keep scrolling...</p> 
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p> 
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
       `,
       stack:`
             <p><i class="your-icon-class"></i> Technology A2</p>
@@ -80,35 +74,32 @@ const projects = [
       `
     },
     {
-      title: "pickle3",
-      subtitle: "apple3",
+      title: "project3",
+      subtitle: "Details",
       img: "../assets/welcome_eyes/welcome_sections/aboutMe_on.png",
       data:`
-            <p>Project pickle3 go here...</p>
-            <p>More content...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrollingscrollingscrollings croll ingscrolli ngscrollingsc rollin gscrolli ngscro llingsc rolling...</p>
-            <p>Keep scrolling...</p> 
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p> 
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
       `,
       stack:`
             <p><i class="your-icon-class"></i> Technology A3</p>
@@ -116,35 +107,32 @@ const projects = [
       `
     },
     {
-      title: "pickle6",
-      subtitle: "apple6",
+      title: "project4",
+      subtitle: "Details",
       img: "../assets/welcome_eyes/welcome_sections/AnA_left.png",
       data:`
-            <p>Project pickle4 go here...</p>
-            <p>More content...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrollingscrollingscrollings croll ingscrolli ngscrollingsc rollin gscrolli ngscro llingsc rolling...</p>
-            <p>Keep scrolling...</p> 
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
-            <p>Keep scrolling...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p> 
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
+            <p>Keep coming soon...</p>
       `,
       stack:`
             <p><i class="your-icon-class"></i> Technology A4</p>
