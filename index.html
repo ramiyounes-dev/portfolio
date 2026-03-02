@@ -1,11 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
+
 <head>
   <meta charset="UTF-8" />
-  <title>Redirecting...</title>
-  <script>
-    location.href = "./minimal/index.html";
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Rami Younes — Software Developer and Mainframe Developer. PhD in Human-Robot Interaction." />
+  <title>Rami Younes | Developer</title>
+  <link rel="icon" href="./assets/fs.png" type="image/png">
+  <link rel="stylesheet" href="index.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-<body></body>
+
+<body>
+  <div id="progress-bar"></div>
+  <div id="cursor-glow"></div>
+  <div class="floating-sidebar">
+    <a href="mailto:rami.r.younes@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+    <a href="https://www.linkedin.com/in/ramiyounes-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+    <a href="https://github.com/ramiyounes-dev" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
+    <a href="https://leetcode.com/u/ramiyounes-dev/" target="_blank" aria-label="LeetCode"><i class="fas fa-code"></i></a>
+    <div class="sidebar-line"></div>
+  </div>
+  <nav id="navbar">
+    <a href="#home" class="logo">RY</a>
+    <ul class="nav-links">
+      <li><a href="#home" data-i18n="nav.home">Home</a></li>
+      <li><a href="#about" data-i18n="nav.about">About</a></li>
+      <li><a href="#experience" data-i18n="nav.experience">Experience</a></li>
+      <li><a href="#projects" data-i18n="nav.projects">Projects</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle" id="lang-toggle">
+        <button class="lang-btn active" data-lang="en">EN</button>
+        <button class="lang-btn" data-lang="fr">FR</button>
+        <!-- <button class="lang-btn" data-lang="ar">AR</button> -->
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <header id="home">
+    <div class="hero">
+      <h1>
+        <span data-i18n="hero.greeting">Hello, I'm</span>
+        <span class="highlight" data-i18n="hero.name">Rami</span>
+      </h1>
+      <div class="typewriter-container">
+        <span id="typewriter-text"></span><span class="cursor">|</span>
+      </div>
+    </div>
+    <div class="glow-circle">
+      <img src="./assets/minimal-profile.png" alt="Rami Younes" class="glow-image" />
+    </div>
+  </header>
+
+  <main>
+    <section id="about">
+      <h2 data-i18n="about.heading">About Me</h2>
+      <p class="section-intro" data-i18n="about.intro"></p>
+      <div id="education-container"></div>
+      <div id="skills-container"></div>
+      <div id="cv-container"></div>
+    </section>
+
+    <section id="experience">
+      <h2 data-i18n="experience.heading">Experience</h2>
+      <div id="experience-container" class="timeline"></div>
+    </section>
+
+    <section id="projects">
+      <h2 data-i18n="projects.heading">Projects</h2>
+      <div id="projects-container"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="contact-links">
+      <a href="mailto:rami.r.younes@gmail.com" class="contact-item" aria-label="Email">
+        <i class="fas fa-envelope"></i>
+      </a>
+      <a href="https://www.linkedin.com/in/ramiyounes-dev" class="contact-item" target="_blank" rel="noopener"
+        aria-label="LinkedIn">
+        <i class="fab fa-linkedin"></i>
+      </a>
+      <a href="https://github.com/ramiyounes-dev" class="contact-item" target="_blank" rel="noopener"
+        aria-label="GitHub">
+        <i class="fab fa-github"></i>
+      </a>
+      <a href="https://leetcode.com/u/ramiyounes-dev/" class="contact-item" target="_blank" rel="noopener"
+        aria-label="LeetCode">
+        <i class="fas fa-code"></i>
+      </a>
+    </div>
+    <p class="footer-copy" data-i18n="footer.copy">© 2026 Rami Younes</p>
+  </footer>
+
+  <button id="scroll-top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <script src="data.js"></script>
+  <script src="index.js"></script>
+</body>
+
 </html>
