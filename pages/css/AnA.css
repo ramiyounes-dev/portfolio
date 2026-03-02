@@ -7,7 +7,7 @@ body {
     color: white;
     overflow: hidden; /* Prevent scrolling on the entire page */
     margin: 0;
-    background-image: url('../assets/backgrounds/grad.jpeg');
+    background-image: url('../../assets/backgrounds/grad.jpeg');
 }
 
 .container {

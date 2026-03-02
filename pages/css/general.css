@@ -4,7 +4,7 @@ body {
   padding: 0;
   -webkit-tap-highlight-color: transparent;
 
-  background-image: url('../assets/backgrounds/general.jpg');
+  background-image: url('../../assets/backgrounds/general.jpg');
   background-size: cover; /* Ensures the image covers the whole page */
   background-position: center; /* Centers the image */
   background-attachment: fixed; /* Keeps the image fixed while scrolling */
