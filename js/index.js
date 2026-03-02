@@ -156,12 +156,7 @@ window.addEventListener('load', adjustWelcomeSection);
 window.addEventListener('resize', adjustWelcomeSection);
 
 
-window.addEventListener("load", () => {
-    const toggleWrapper = document.getElementById("lang-toggle-wrapper");
-    if (toggleWrapper) {
-        toggleWrapper.style.display = "block";
-    }
-    
+window.addEventListener("load", () => {    
     const preloadStates = [
         "center", "center_left", "center_right", "center_up", "center_down",
         "up_left", "up_right", "down_left", "down_right",
@@ -204,3 +199,9 @@ window.addEventListener("load", () => {
     }
 });
 
+window.addEventListener("load", () => {
+    const toggleWrapper = document.getElementById("lang-toggle-wrapper");
+    if (toggleWrapper) {
+        toggleWrapper.style.display = "block";
+    }
+});
