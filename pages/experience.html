@@ -10,8 +10,17 @@
   <link rel="stylesheet" href="../css/sections.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="../assets/font-awesome-4.7.0/css/font-awesome.css">
+  <link rel="stylesheet" href="../loaders/loader.css" />
 </head>
 <body>
+  <div id="loading-screen">
+    <div class="loader-text">Initializing system</div>
+    <div class="loader-dots">
+      <div class="loader-dot"></div>
+      <div class="loader-dot"></div>
+      <div class="loader-dot"></div>
+    </div>
+  </div>
   <div class="navbar">
       <img id="backHome" src="../assets/welcome_eyes/welcome_sections/mat_asleep.png" alt="Asleep" data-link="index.html">
       <img class="navbar-img" src="../assets/sections/neon_about_me.png" alt="About Me" data-link="aboutMe.html">
@@ -292,5 +301,6 @@
   </section>
   <script defer src="../js/experience.js"></script>
   <script defer src="../js/sections.js"></script>
+  <script src="../loaders/loader.js"></script>
 </body>
 </html>

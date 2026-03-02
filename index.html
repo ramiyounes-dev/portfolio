@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" href="assets/fs.png" type="image/png">
+  <link rel="stylesheet" href="loaders/index-load.css">
+
   <title>Theme?</title>
   <style>
     body {
@@ -144,22 +146,17 @@
   </style>
 </head>
 <body>
+  
   <div class="screen">
     <div class="menu">
       <div class="title">▶ SELECT YOUR THEME</div>
-      <p onclick="selectTheme('MINIMAL')">RUN MINIMAL</p>
-      <p onclick="selectTheme('EXPRESSIVE')">RUN EXPRESSIVE</p>
+      <p data-theme="MINIMAL">RUN MINIMAL</p>
+      <p data-theme="EXPRESSIVE">RUN EXPRESSIVE</p>
+
     </div>
   </div>
 
-  <script>
-    function selectTheme(theme) {
-      const paths = {
-        'EXPRESSIVE': './pages/index.html',
-        'MINIMAL': './minimal/index.html'
-      };
-      window.location.href = paths[theme];
-    }
-  </script>
+  <script src="./loaders/index-load.js"></script>
+
 </body>
 </html>

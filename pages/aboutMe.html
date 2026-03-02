@@ -9,9 +9,18 @@
     <link rel="stylesheet" href="../css/aboutMe.css">
     <link rel="stylesheet" href="../css/sections.css">
     <link rel="stylesheet" href="../assets/font-awesome-4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="../loaders/loader.css" />
 
 </head>
 <body>
+  <div id="loading-screen">
+    <div class="loader-text">Initializing system</div>
+    <div class="loader-dots">
+      <div class="loader-dot"></div>
+      <div class="loader-dot"></div>
+      <div class="loader-dot"></div>
+    </div>
+  </div>
     <div class="navbar">
         <img id="backHome" src="../assets/welcome_eyes/welcome_sections/aboutMe_on.png" alt="Asleep" data-link="index.html">
         <img class="navbar-img" src="../assets/sections/aboutMe.png" alt="About Me" data-link="aboutMe.html">
@@ -103,5 +112,6 @@
       </section>
     <script defer src="../js/aboutMe.js"></script>
     <script defer src="../js/sections.js"></script>
+  <script src="../loaders/loader.js"></script>
 </body>
 </html>
