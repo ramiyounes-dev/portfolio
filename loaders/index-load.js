@@ -1,7 +1,24 @@
-window.addEventListener('pageshow', () => {
-  const powerOff = document.getElementById('power-off-overlay');
-  if (powerOff) powerOff.remove();
-});
+  function removeOverlays() {
+    const overlays = ['power-off-overlay']; //, 'power-on-overlay'];
+    overlays.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    });
+  }
+
+  // Handles bfcache return (back/forward)
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      // Page was loaded from bfcache (back navigation)
+      removeOverlays();
+    }
+  });
+
+  // Also handle normal load, just in case
+  window.addEventListener('load', () => {
+    removeOverlays();
+  });
+
 
 window.addEventListener('DOMContentLoaded', () => {
   // Same logic as your previous turnon.js
