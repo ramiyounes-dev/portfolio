@@ -86,7 +86,7 @@ function renderCV(data) {
 function renderExperience(data) {
   const container = get('experience-container');
   if (!container) return;
-  const { jobs, techLabel, softLabel, coursesLabel } = data.experience;
+  const { jobs, techLabel, softLabel, coursesLabel, publicationsLabel } = data.experience;
 
   container.innerHTML = jobs.map(job => {
     const techBlock = job.tech ? `
@@ -111,6 +111,20 @@ function renderExperience(data) {
         <ul>${job.soft.map(s => `<li>${s}</li>`).join('')}</ul>
       </div>` : '';
 
+    const publicationsBlock = job.publications ? `
+      <div class="publications">
+        <p class="section-label">${publicationsLabel}</p>
+        <ul>${job.publications.map(p => `
+          <li>
+            <a href="${p.url}" target="_blank" rel="noopener">
+              <i class="fas fa-file-alt"></i>
+              <span><span class="pub-source">${p.source}</span> — ${p.title}</span>
+              <i class="fas fa-external-link-alt pub-ext"></i>
+            </a>
+          </li>
+        `).join('')}</ul>
+      </div>` : '';
+
     const descBlock = job.description ? `
       <p class="description">
         <span class="role-label">${job.roleLabel}</span><br>${job.description}
@@ -124,7 +138,7 @@ function renderExperience(data) {
           <span><i class="fas fa-calendar-alt"></i>${job.date}</span>
           <span><i class="fas fa-map-marker-alt"></i>${job.location}</span>
         </p>
-        ${descBlock}${techBlock}${coursesBlock}${softBlock}
+        ${descBlock}${techBlock}${coursesBlock}${softBlock}${publicationsBlock}
       </div>
     `;
   }).join('');

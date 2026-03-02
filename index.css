@@ -556,6 +556,53 @@ i {
 }
 
 /* ============================
+   PUBLICATIONS
+   ============================ */
+.publications ul {
+  list-style: none;
+  padding: 0;
+}
+
+.publications li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.92rem;
+}
+
+.publications li:last-child { border-bottom: none; }
+
+.publications a {
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.55;
+  transition: color 0.2s;
+}
+
+.publications a:hover { color: #00f7ff; }
+
+.publications a > i:first-child {
+  color: #00f7ffaa;
+  margin: 3px 0 0;
+  flex-shrink: 0;
+}
+
+.pub-source {
+  color: #00f7ffaa;
+  font-weight: 600;
+}
+
+.pub-ext {
+  font-size: 0.7rem;
+  opacity: 0.45;
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* ============================
    CV DOWNLOAD
    ============================ */
 .cv-preview {
