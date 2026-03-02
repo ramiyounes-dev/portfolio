@@ -1,6 +1,6 @@
 
 function updateImage(state) {
-    img.src = `../assets/welcome_eyes/${state}.png`;
+    img.src = `assets/welcome_eyes/${state}.png`;
     // console.log(`Position: ${state}`);
 }
 const img = document.getElementById("backHome");

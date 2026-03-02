@@ -12,7 +12,7 @@ html {
   }
   
   body {
-    background-image: url('../../assets/backgrounds/green-bin.avif');
+    background-image: url('../assets/backgrounds/green-bin.avif');
     margin: 0;
     color: white;
     overflow: hidden; /* Prevent scrolling on the entire page */
