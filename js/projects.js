@@ -1,3 +1,6 @@
+// here rami chouf
+window.location.href = "../coming-soon/coming-soon.html"; 
+
 const projects = [
     {
       title: "project1",
