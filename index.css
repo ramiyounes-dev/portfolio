@@ -673,6 +673,40 @@ i {
 .coming-soon-card p { color: #555; }
 
 /* ============================
+   PROJECTS
+   ============================ */
+.project-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.project-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e8e8e8;
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 1px solid rgba(0, 247, 255, 0.25);
+  border-radius: 20px;
+  background: rgba(0, 247, 255, 0.05);
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+}
+
+.project-link:hover {
+  background: rgba(0, 247, 255, 0.12);
+  border-color: rgba(0, 247, 255, 0.55);
+  color: #00f7ff;
+  transform: translateY(-2px);
+}
+
+.project-link i { color: inherit; margin: 0; }
+
+/* ============================
    FOOTER
    ============================ */
 .site-footer {
@@ -808,23 +842,6 @@ i {
 }
 
 /* ============================
-   RTL SUPPORT (Arabic)
-   ============================ */
-[dir="rtl"] header#home         { flex-direction: row; }
-[dir="rtl"] .hero               { align-items: flex-end; text-align: right; }
-[dir="rtl"] .card               { border-left: none; border-right: 3px solid #00f7ff; }
-[dir="rtl"] .skills-card        { border-right: 3px solid rgba(0,247,255,0.35); }
-[dir="rtl"] .coming-soon-card   { border-right: none; border: 2px dashed rgba(0,247,255,0.2); }
-[dir="rtl"] .details            { flex-direction: row-reverse; }
-
-[dir="rtl"] .timeline           { padding-left: 0; padding-right: 28px; }
-[dir="rtl"] .timeline::before   { left: auto; right: 6px; }
-[dir="rtl"] .timeline .card::before { left: auto; right: -26px; }
-
-[dir="rtl"] .nav-links          { flex-direction: row-reverse; }
-[dir="rtl"] .logo               { letter-spacing: 1px; }
-
-/* ============================
    RESPONSIVE
    ============================ */
 @media (max-width: 768px) {
@@ -835,14 +852,10 @@ i {
     text-align: center;
   }
 
-  [dir="rtl"] header#home { flex-direction: column-reverse; }
-
   .hero {
     align-items: center;
     text-align: center;
   }
-
-  [dir="rtl"] .hero { align-items: center; text-align: center; }
 
   .glow-circle { width: 200px; height: 200px; }
 
@@ -874,10 +887,6 @@ i {
   .timeline { padding-left: 20px; }
   .timeline::before { left: 4px; }
   .timeline .card::before { left: -18px; width: 9px; height: 9px; }
-
-  [dir="rtl"] .timeline { padding-left: 0; padding-right: 20px; }
-  [dir="rtl"] .timeline::before { right: 4px; }
-  [dir="rtl"] .timeline .card::before { right: -18px; }
 }
 
 @media (max-width: 480px) {

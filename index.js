@@ -150,12 +150,23 @@ function renderExperience(data) {
 function renderProjects(data) {
   const container = get('projects-container');
   if (!container) return;
-  container.innerHTML = `
-    <div class="card coming-soon-card reveal">
-      <h3>${data.projects.comingSoon}</h3>
-      <p>${data.projects.stayTuned}</p>
+
+  const { items, githubLabel } = data.projects;
+
+  container.innerHTML = items.map(proj => `
+    <div class="card reveal">
+      <h3 class="position">${proj.title}</h3>
+      <p class="description">${proj.description}</p>
+      <div class="tech-stack" style="margin-bottom:14px">
+        <ul>${proj.tech.map(t => `<li><i class="${t.icon}"></i>${t.text}</li>`).join('')}</ul>
+      </div>
+      <div class="project-links">
+        <a href="${proj.github}" target="_blank" rel="noopener" class="project-link">
+          <i class="fab fa-github"></i> ${githubLabel}
+        </a>
+      </div>
     </div>
-  `;
+  `).join('');
 }
 
 /* ============================

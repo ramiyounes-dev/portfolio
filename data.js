@@ -43,7 +43,24 @@ const SITE_DATA = {
         { title: 'Teaching & Research Associate', company: 'ENSIMAG', date: 'Sep 2023 – Sep 2024', location: 'Grenoble, France', courses: ['Introduction to Networking','Fundamental Logic for Computer Science','Analysis and Design of Software Objects','Relational Database','Unix: Introduction and Shell Programming','C Software Project','Language Theory 1 – 2'], soft: ['Communication','Technical Explanation','Continuous Learning','Public Speaking'] }
       ]
     },
-    projects: { heading: 'Projects', comingSoon: 'Coming Soon', stayTuned: 'Stay tuned...' },
+    projects: {
+      heading: 'Projects',
+      githubLabel: 'View on GitHub',
+      items: [
+        {
+          title: 'OnePhone',
+          description: 'A local multiplayer party game app for Android featuring 8 games — Charades, Truth Bombs, Hot Potato, Undercover, 20 Questions, Spin the Bottle, Simon, and Word Blitz. Runs entirely offline: no internet, no accounts, no ads. Supports English, French, and Arabic.',
+          tech: [
+            { icon: 'fas fa-mobile-alt', text: 'Flutter' },
+            { icon: 'fas fa-code', text: 'Dart' },
+            { icon: 'fab fa-android', text: 'Android' },
+            { icon: 'fas fa-music', text: 'Audio' },
+            { icon: 'fas fa-globe', text: 'Multilingual' }
+          ],
+          github: 'https://github.com/ramiyounes-dev/onephone'
+        }
+      ]
+    },
     footer: { copy: '© 2026 Rami Younes' }
   },
 
@@ -91,55 +108,24 @@ const SITE_DATA = {
         { title: "Attaché Temporaire d'Enseignement et de Recherche", company: 'ENSIMAG', date: 'Sep. 2023 – Sep. 2024', location: 'Grenoble, France', courses: ['Introduction aux Réseaux','Logique Fondamentale pour Informatique','Analyse et Conception Objets Logiciels','Base de Données Relationnelle','Unix : Introduction et Shell','Projet Logiciel en C','Théorie des Langages 1 – 2'], soft: ['Communication','Explication technique','Apprentissage continu','Prise de parole'] }
       ]
     },
-    projects: { heading: 'Projets', comingSoon: 'Bientôt disponible', stayTuned: 'Restez connectés...' },
+    projects: {
+      heading: 'Projets',
+      githubLabel: 'Voir sur GitHub',
+      items: [
+        {
+          title: 'OnePhone',
+          description: 'Application de jeux de société multijoueur pour Android avec 8 jeux — Charades, Truth Bombs, Hot Potato, Undercover, 20 Questions, Spin the Bottle, Simon et Word Blitz. Fonctionne entièrement hors ligne : sans internet, sans compte, sans pub. Disponible en anglais, français et arabe.',
+          tech: [
+            { icon: 'fas fa-mobile-alt', text: 'Flutter' },
+            { icon: 'fas fa-code', text: 'Dart' },
+            { icon: 'fab fa-android', text: 'Android' },
+            { icon: 'fas fa-music', text: 'Audio' },
+            { icon: 'fas fa-globe', text: 'Multilingue' }
+          ],
+          github: 'https://github.com/ramiyounes-dev/onephone'
+        }
+      ]
+    },
     footer: { copy: '© 2026 Rami Younes' }
   },
-
-  ar: {
-    dir: 'rtl', lang: 'ar',
-    nav: { home: 'الرئيسية', about: 'عن', experience: 'الخبرة', projects: 'المشاريع' },
-    hero: {
-      greeting: 'مرحبًا، أنا', name: 'رامي',
-      sentences: [
-        'مطوّر برمجيات..',
-        'مطوّر Mainframe..',
-        'شغوف بالتعليم..',
-        'أتعلم باستمرار | وأبرمج باستمرار..'
-      ]
-    },
-    about: {
-      heading: 'عن',
-      intro: 'أنا مطوّر فرنسي-لبناني أتحدث الإنجليزية والفرنسية والعربية بطلاقة، تحرّكني الفضول والشغف بحل المشكلات المعقدة. بالنسبة لي، البرمجة أكثر من مهنة — إنها أسلوب تفكير أطبّقه في الحياة. خارج العمل، أمارس الرياضة والأنشطة الخارجية، وأستمتع بالألغاز والألعاب الذهنية.',
-      educationHeading: 'التعليم والشهادات',
-      education: [
-        { icon: 'fas fa-graduation-cap', title: 'دكتوراه في التفاعل بين الإنسان والروبوت', org: 'جامعة غرونوبل ألب', desc: 'دراسة التواصل متعدد الوسائط في المهام التعاونية المشتركة باستخدام روبوت صناعي وأنظمة تخطيط.' },
-        { icon: 'fas fa-graduation-cap', title: 'ماجستير في علوم الحوسبة النظرية', org: 'جامعة مونبلييه', desc: 'نظرية الحوسبة، خوارزميات الرسم البياني، والبحث في LIRMM وINRIA وCNRS.' },
-        { icon: 'fas fa-graduation-cap', title: 'بكالوريوس في الرياضيات التطبيقية والمعلوماتية', org: 'الجامعة اللبنانية', desc: 'أسس قوية في البرمجة والخوارزميات والنمذجة الرياضية.' },
-        { icon: 'fas fa-award', title: 'شهادة Kubernetes — الأساسيات (2025)', desc: 'أساسيات Kubernetes عبر LinkedIn Learning.', certLink: 'https://www.linkedin.com/learning/certificates/86c3c0c76ce673ca1b269254096f1e3afc1a8e871b4e0b224cc6bbef06496c20?trk=share_certificate', certAlt: 'شهادة Kubernetes' },
-        { icon: 'fas fa-award', title: 'شهادة Docker Foundations المهنية (2025)', desc: 'مقدّمة من Docker عبر LinkedIn Learning. أساسيات Docker، الحاويات، إدارة الصور، و docker-compose.', certLink: 'https://www.linkedin.com/learning/certificates/b62b2258e1c44ca9a8c9a8e85e1069513246d4a20dfb1872298b4ff89600f933?trk=share_certificate', certAlt: 'شهادة Docker' },
-        { icon: 'fas fa-award', title: 'شهادة CISCO CCNA (2017–2018)', desc: 'المسار الكامل لـ CCNA: تصميم الشبكات، البروتوكولات، التوجيه، التبديل، والأمان.' }
-      ],
-      skills: {
-        heading: 'المهارات',
-        categories: [
-          { label: 'Mainframe', items: [{ icon: 'fas fa-code', text: 'COBOL' }, { icon: 'fas fa-terminal', text: 'JCL' }, { icon: 'fas fa-desktop', text: 'TSO/ISPF' }, { icon: 'fas fa-folder-open', text: 'VSAM' }, { icon: 'fas fa-network-wired', text: 'CICS' }, { icon: 'fas fa-database', text: 'DB2' }, { icon: 'fas fa-project-diagram', text: 'معالجة Batch' }, { icon: 'fas fa-exchange-alt', text: 'الأنظمة التعاملية' }, { icon: 'fas fa-code', text: 'Eclipse RDZ' }, { icon: 'fas fa-cogs', text: 'Pacbase' }, { icon: 'fas fa-server', text: 'z/OS' }] },
-          { label: 'لغات البرمجة', items: [{ icon: 'fas fa-project-diagram', text: 'الخوارزميات' }, { icon: 'fab fa-python', text: 'Python' }, { icon: 'fab fa-js', text: 'JavaScript' }, { icon: 'fab fa-html5', text: 'HTML' }, { icon: 'fab fa-css3', text: 'CSS' }, { icon: 'fab fa-java', text: 'Java' }, { icon: 'fas fa-code', text: 'C#' }, { icon: 'fab fa-php', text: 'PHP' }, { icon: 'fas fa-code', text: 'Prolog' }, { icon: 'fas fa-code', text: 'C++' }, { icon: 'fas fa-chart-line', text: 'R' }, { icon: 'fas fa-code', text: 'LaTeX' }] },
-          { label: 'البيانات والأدوات', items: [{ icon: 'fas fa-database', text: 'SQL' }, { icon: 'fas fa-database', text: 'NoSQL' }, { icon: 'fab fa-docker', text: 'Docker' }, { icon: 'fab fa-git-alt', text: 'Git' }, { icon: 'fas fa-cogs', text: 'CI/CD' }, { icon: 'fas fa-cogs', text: 'Kubernetes' }, { icon: 'fas fa-robot', text: 'ROS' }, { icon: 'fas fa-cogs', text: 'MoveIt' }, { icon: 'fas fa-cloud', text: 'REST API' }] },
-          { label: 'المهارات الشخصية', items: [{ text: 'الاستقلالية' }, { text: 'العمل الجماعي' }, { text: 'التكيّف' }, { text: 'إدارة الوقت' }, { text: 'البحث العلمي' }, { text: 'التواصل' }, { text: 'الخطابة العامة' }, { text: 'التعلم المستمر' }] }
-        ]
-      },
-      cv: { items: [{ label: 'CV — English', href: './assets/cv/rami_younes_en.pdf' }, { label: 'CV — Français', href: './assets/cv/rami_younes_fr.pdf' }] }
-    },
-    experience: {
-      heading: 'الخبرة المهنية', techLabel: 'البيئة التقنية', softLabel: 'المهارات الشخصية', coursesLabel: 'المواد المُدرَّسة', publicationsLabel: 'المنشورات',
-      jobs: [
-        { title: 'متدرب Mainframe والأنظمة الكبيرة', company: 'برنامج تدريب متخصص', date: 'يونيو 2025 – أكتوبر 2025', location: 'غرونوبل، فرنسا', roleLabel: 'تدريب — Mainframe والأنظمة الكبيرة', description: 'إتمام بوتكامب مكثف في بيئات IBM z/OS. اكتساب خبرة عملية في مكونات النظام وأدوات التطوير ومعالجة Batch والمعاملات المستخدمة في القطاعات المصرفية والصناعية.', tech: ['COBOL','JCL','TSO/ISPF','VSAM','CICS','DB2','معالجة Batch','الأنظمة التعاملية','Eclipse RDZ','Pacbase','z/OS','الخوارزميات'], techIcons: ['fas fa-code','fas fa-terminal','fas fa-desktop','fas fa-folder-open','fas fa-network-wired','fas fa-database','fas fa-project-diagram','fas fa-exchange-alt','fas fa-code','fas fa-cogs','fas fa-server','fas fa-project-diagram'], soft: ['التكيّف','حل المشكلات','الاستقلالية','التفكير المنهجي','التعلم التقني','الانتباه للتفاصيل'] },
-        { title: 'مهندس بحث', company: 'Gipsa-lab | LIG', date: 'أكتوبر 2020 – أكتوبر 2024', location: 'غرونوبل، فرنسا', roleLabel: 'التعاون متعدد الوسائط بين الإنسان والروبوت في المهام المشتركة', description: 'مشروع مدته 4 سنوات لدراسة ديناميكيات التفاعل بين الإنسان والروبوت، مع التركيز على تأثير التواصل اللفظي وغير اللفظي على تنفيذ المهام التعاونية. تجهيز روبوت ABB الصناعي بقدرات تخطيط هرمي.', tech: ['Python','JavaScript','HTML','CSS','SQL','REST API','Docker','C++','ROS','MoveIt','RViz','R','Prolog'], techIcons: ['fab fa-python','fab fa-js','fab fa-html5','fab fa-css3','fas fa-database','fas fa-cloud','fab fa-docker','fas fa-laptop-code','fas fa-robot','fas fa-cogs','fas fa-cogs','fas fa-chart-line','fas fa-code'], soft: ['الاستقلالية','العمل الجماعي','التكيّف','إدارة الوقت','مشروع طويل الأمد','التجريب','الإحصاء','الخطابة العامة'] },
-        { title: 'متدرب', company: 'LIRMM', date: 'فبراير 2020 – يوليو 2020', location: 'مونبلييه، فرنسا', roleLabel: 'التعلم العميق لمسائل الإشباع القيدي', description: 'استخدام شبكات عصبية لمساعدة المستخدمين غير المتخصصين في نمذجة المهام وتصنيف حلول المسائل التوافقية المعقدة. تصميم تصنيف لفئات المسائل وتدريب نماذج تعلم عميق.', tech: ['Python','Keras','TensorFlow'], techIcons: ['fab fa-python','fas fa-cogs','fas fa-brain'], soft: ['الاستقلالية','التكيّف','إدارة الوقت','البحث العلمي','الكتابة التقنية'] },
-        { title: 'مساعد تدريس وبحث', company: 'ENSIMAG', date: 'سبتمبر 2023 – سبتمبر 2024', location: 'غرونوبل، فرنسا', courses: ['مقدمة في الشبكات','المنطق الأساسي لعلوم الحاسوب','تحليل وتصميم الكائنات البرمجية','قواعد البيانات العلائقية','Unix: المقدمة وبرمجة Shell','مشروع برمجي بلغة C','نظرية اللغات 1 – 2'], soft: ['التواصل','الشرح التقني','التعلم المستمر','الخطابة العامة'] }
-      ]
-    },
-    projects: { heading: 'المشاريع', comingSoon: 'قريبًا', stayTuned: 'ترقّبوا...' },
-    footer: { copy: '© 2026 رامي يونس' }
-  }
 };
