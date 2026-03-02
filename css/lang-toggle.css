@@ -16,6 +16,12 @@ body{
 * {
     box-sizing: border-box;
   }
+
+  #lang-toggle-wrapper {
+  opacity: 0;
+  transition: opacity 3s ease;
+  display: none; /* initially hidden */
+}
   
   .toggle {
     position: absolute;

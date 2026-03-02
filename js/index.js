@@ -5,36 +5,32 @@ const sideLinks = document.querySelectorAll(".side-link");
 
 let isImageAsleep = false;
 
+// Initialize event listeners
 restoreImageEventListeners();
 
 window.addEventListener("scroll", () => {
-    let scrolled = window.scrollY;
+    const scrolled = window.scrollY;
     const imageRect = img.getBoundingClientRect();
-    const imageHeight = imageRect.height;
     const imageTop = imageRect.top;
-    
-    if (scrolled > window.innerHeight / 2) {
-        sideMenu.style.display = "block";
-    } else {
-        updateImage("center");
-        sideMenu.style.display = "none";
-    }
 
-    // Check if the image has surpassed 60% of the viewport height
+    // Toggle side menu visibility based on scroll position
+    sideMenu.style.display = scrolled > window.innerHeight / 2 ? "block" : "none";
+    if (scrolled <= window.innerHeight / 2) updateImage("center");
+
+    // Sleep/wake image based on scroll position
     if (imageTop < window.innerHeight * 0.1) {
-        removeImageEventListeners();
         if (!isImageAsleep) {
+            removeImageEventListeners();
             isImageAsleep = true;
         }
-    } else {
+    } else if (isImageAsleep) {
         restoreImageEventListeners();
-        if (isImageAsleep) {
-            isImageAsleep = false;
-        }
+        isImageAsleep = false;
     }
 
+    // Highlight active section in side menu
     sections.forEach((section, index) => {
-        let rect = section.getBoundingClientRect();
+        const rect = section.getBoundingClientRect();
         if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
             sideLinks.forEach(link => link.classList.remove("active-section"));
             sideLinks[index].classList.add("active-section");
@@ -42,40 +38,63 @@ window.addEventListener("scroll", () => {
     });
 });
 
-
-// functions
-
+// Update image source
 function updateImage(state) {
     img.src = `../assets/welcome_eyes/${state}.png`;
-    // console.log(`Position: ${state}`);
 }
 
+// Remove event listeners and set image to asleep
 function removeImageEventListeners() {
     updateImage("asleep");
-    img.removeEventListener("mouseover", () => updateImage("asleep"));
-    img.removeEventListener("mouseleave", () => updateImage("center"));
-    
-    addEventListener("mouseup", () => updateImage("asleep"));
-    addEventListener("mousedown", () => updateImage("asleep_wink"));
-    removeEventListener("mousedown", () => updateImage("center_wink"));
-    removeEventListener("mouseup", () => updateImage("center"));
 
+    img.replaceWith(img.cloneNode(true)); // Remove all listeners from img by replacing it
     document.removeEventListener("mousemove", mouseMoveHandler);
-    updateImage("asleep");
+
+    // Remove global listeners
+    window.removeEventListener("mousedown", onMouseDownCenterWink);
+    window.removeEventListener("mouseup", onMouseUpCenter);
+    window.removeEventListener("mousedown", onMouseDownAsleepWink);
+    window.removeEventListener("mouseup", onMouseUpAsleep);
 }
 
+// Restore event listeners and image to interactive state
 function restoreImageEventListeners() {
-    img.addEventListener("mouseover", () => updateImage("asleep"));
+    // Re-select img after replacement in removeImageEventListeners
+    const newImg = document.getElementById("mainImage");
 
-    addEventListener("mousedown", () => updateImage("center_wink"));
-    addEventListener("mouseup", () => updateImage("center"));
-    removeEventListener("mouseup", () => updateImage("asleep"));
-    removeEventListener("mousedown", () => updateImage("asleep_wink"));
+    // Mouseover/mouseleave for image
+    newImg.addEventListener("mouseover", () => updateImage("asleep"));
+    newImg.addEventListener("mouseleave", () => updateImage("center"));
 
-    img.addEventListener("mouseleave", () => updateImage("center"));
+    // Global mouse events
+    window.addEventListener("mousedown", onMouseDownCenterWink);
+    window.addEventListener("mouseup", onMouseUpCenter);
+
+    // Remove old handlers for asleep_wink and asleep states if any
+    window.removeEventListener("mousedown", onMouseDownAsleepWink);
+    window.removeEventListener("mouseup", onMouseUpAsleep);
+
+    // Mouse move
     document.addEventListener("mousemove", mouseMoveHandler);
 }
 
+function onMouseDownCenterWink() {
+    updateImage("center_wink");
+}
+
+function onMouseUpCenter() {
+    updateImage("center");
+}
+
+function onMouseDownAsleepWink() {
+    updateImage("asleep_wink");
+}
+
+function onMouseUpAsleep() {
+    updateImage("asleep");
+}
+
+// Handle mouse movements to update image position
 function mouseMoveHandler({ clientX, clientY }) {
     if (isImageAsleep) return;
 
@@ -95,113 +114,89 @@ function mouseMoveHandler({ clientX, clientY }) {
     updateImage(position);
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    // Store the initial rotation values from CSS
+document.addEventListener("DOMContentLoaded", () => {
     const images = document.querySelectorAll('.orbit-img');
 
     images.forEach((img, index) => {
         setTimeout(() => {
-            img.style.transition = "opacity 3s"; // Add a smooth transition
-            img.style.opacity = "1"; // Transition to opacity 1
-        }, index * 7); // Staggered timing effect
-   
+            img.style.transition = "opacity 3s";
+            img.style.opacity = "1";
+        }, index * 7);
+
+        const originalTransform = window.getComputedStyle(img).transform;
+
         img.addEventListener('click', () => {
             const link = img.getAttribute('data-link');
-            if (link) {
-                window.location.href = link;
-            }
+            if (link) window.location.href = link;
         });
 
-        const originalTransform = window.getComputedStyle(img).transform;  // Get current transform (including rotation)
-
-        // Hover Effect
-        img.addEventListener("mouseenter", function () {
-            const scaleTransform = 'scale(1.2)';
-            img.style.transform = `${originalTransform} ${scaleTransform}`;  // Combine original rotation with scaling
+        img.addEventListener("mouseenter", () => {
+            img.style.transform = `${originalTransform} scale(1.2)`;
         });
 
-        img.addEventListener("mouseleave", function () {
-            img.style.transform = originalTransform;  // Reset to original rotation and any transformations
+        img.addEventListener("mouseleave", () => {
+            img.style.transform = originalTransform;
         });
 
-        // Click Effect (Optional)
-        img.addEventListener("click", function () {
-            const link = img.getAttribute("data-link");
-            img.style.transform = `${originalTransform} scale(0.9)`;  // Shrink slightly on click
-            if (link) {
-                window.location.href = link;  // Navigate after click
-            }
+        img.addEventListener("click", () => {
+            img.style.transform = `${originalTransform} scale(0.9)`;
         });
     });
 });
 
-// fun for touch screen
-document.addEventListener("touchstart", handleInteraction, { passive: true });
-function handleInteraction() {
-    updateImage("center_wink");
-}
+// Touch support for interaction
+document.addEventListener("touchstart", () => updateImage("center_wink"), { passive: true });
 
 function adjustWelcomeSection() {
     const welcomeSection = document.querySelector('.welcome-section');
-    const footer = document.querySelector('.end'); // Ensure your footer has a tag or class
+    const footer = document.querySelector('.end');
 
     if (welcomeSection && footer) {
-        const footerHeight = footer.offsetHeight;
-        welcomeSection.style.height = `calc(100vh - ${footerHeight}px)`;
+        welcomeSection.style.height = `calc(100vh - ${footer.offsetHeight}px)`;
     }
 }
 
-// Run on page load and on resize to keep it responsive
 window.addEventListener('load', adjustWelcomeSection);
 window.addEventListener('resize', adjustWelcomeSection);
 
-
-window.addEventListener("load", () => {    
+// Preload images and show content after
+window.addEventListener("load", () => {
     const preloadStates = [
         "center", "center_left", "center_right", "center_up", "center_down",
         "up_left", "up_right", "down_left", "down_right",
         "asleep", "asleep_wink", "center_wink"
     ];
 
-    const preloadImages = preloadStates.map(state => {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.src = `../assets/welcome_eyes/${state}.png`;
-            img.onload = () => resolve();
-            img.onerror = () => resolve(); // Still resolve to not block
-        });
-    });
+    const preloadImages = preloadStates.map(state => new Promise(resolve => {
+        const i = new Image();
+        i.src = `../assets/welcome_eyes/${state}.png`;
+        i.onload = i.onerror = resolve;
+    }));
 
-    const existingImages = Array.from(document.images).map(img => {
-        return new Promise((resolve) => {
-            if (img.complete) {
-                resolve();
-            } else {
-                img.addEventListener("load", resolve);
-                img.addEventListener("error", resolve);
-            }
-        });
-    });
+    const existingImages = Array.from(document.images).map(img => new Promise(resolve => {
+        if (img.complete) resolve();
+        else img.addEventListener("load", resolve);
+        img.addEventListener("error", resolve);
+    }));
 
     Promise.all([...preloadImages, ...existingImages]).then(() => {
-        showContent();
-    });
-
-    function showContent() {
         const loader = document.getElementById("loading-screen");
         if (loader) {
             loader.style.opacity = "0";
             setTimeout(() => {
                 loader.style.display = "none";
-            }, 500); // Optional fade out
+
+                // Show toggle after loader is hidden
+                const toggleWrapper = document.getElementById("lang-toggle-wrapper");
+                if (toggleWrapper) {
+                    toggleWrapper.style.display = "block";
+                    // Trigger reflow to restart the transition
+                    void toggleWrapper.offsetWidth;
+                    toggleWrapper.style.opacity = "1";
+                }
+
+            }, 500);
         }
         document.body.style.overflow = "auto";
-    }
-});
-
-window.addEventListener("load", () => {
-    const toggleWrapper = document.getElementById("lang-toggle-wrapper");
-    if (toggleWrapper) {
-        toggleWrapper.style.display = "block";
-    }
+    });
 });
