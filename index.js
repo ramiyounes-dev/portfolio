@@ -195,7 +195,7 @@ function fitTypewriterFont(sentences) {
   if (!container) return;
 
   const MAX_PX = 24.8; // ~1.55rem cap
-  const MIN_PX = 15;   // floor so it stays readable
+  const MIN_PX = 17;   // floor so it stays readable
 
   // Find the longest sentence (by character count as a proxy)
   const longest = sentences.reduce((a, b) => a.length > b.length ? a : b, '');
