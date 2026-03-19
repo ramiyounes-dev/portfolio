@@ -32,9 +32,15 @@ function renderEducation(data) {
       <strong>${item.title}</strong> — ${item.org || ''}<br>
       <span style="color:#aaa;font-size:0.92rem">${item.desc}</span>
       ${item.certLink ? `
-        <a href="${item.certLink}" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px">
-          <img src="./assets/AnA/certificate.png" alt="${item.certAlt}" class="icon-size" />
-        </a>` : ''}
+        <div class="publications" style="margin-top:8px">
+          <ul><li>
+            <a href="${item.certLink}" target="_blank" rel="noopener">
+              <i class="fas fa-certificate"></i>
+              <span>${item.certAlt}</span>
+              <i class="fas fa-external-link-alt pub-ext"></i>
+            </a>
+          </li></ul>
+        </div>` : ''}
     </div>
   `).join('');
 }
@@ -316,9 +322,23 @@ function initReveal() {
 }
 
 /* ============================
-   ACTIVE NAV ON SCROLL
+   ACTIVE NAV ON SCROLL + SECTION COLOURS
    ============================ */
 const navLinks = document.querySelectorAll('.nav-links li a');
+
+const SECTION_COLOURS = {
+  home:       { accent: '#00f7ff', rgb: '0, 247, 255' },
+  about:      { accent: '#a78bfa', rgb: '167, 139, 250' },
+  experience: { accent: '#34d399', rgb: '52, 211, 153' },
+  projects:   { accent: '#fbbf24', rgb: '251, 191, 36' },
+};
+
+function applySectionColour(id) {
+  const c = SECTION_COLOURS[id];
+  if (!c) return;
+  document.body.style.setProperty('--accent', c.accent);
+  document.body.style.setProperty('--accent-rgb', c.rgb);
+}
 
 const sectionObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
@@ -327,6 +347,7 @@ const sectionObserver = new IntersectionObserver(entries => {
       navLinks.forEach(link => {
         link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
       });
+      applySectionColour(id);
     }
   });
 }, { threshold: 0.3 });
