@@ -1,155 +1,236 @@
 const GOAL = { A: 8, B: 0 };
+const DIRS = [{ x: 0, y: -1 }, { x: 0, y: 1 }, { x: 1, y: 0 }, { x: -1, y: 0 }];
 
-function randItem(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function easyMove(board, player) {
-    const moves = board.getValidMoves(board.pawns[player]);
-    if (board.wallCounts[player] > 0 && Math.random() < 0.25) {
-        const orient = Math.random() < 0.5 ? 'H' : 'V';
-        const walls = board.getValidWallPlacements(orient);
-        if (walls.length) {
-            const w = randItem(walls);
-            return { type: 'wall', wx: w.wx, wy: w.wy, orientation: orient };
+function bfsPath(board, player) {
+    const goalRow = GOAL[player];
+    const start = board.pawns[player];
+    const visited = new Map();
+    visited.set(`${start.x},${start.y}`, null);
+    const queue = [start];
+    while (queue.length) {
+        const cur = queue.shift();
+        if (cur.y === goalRow) {
+            const path = [];
+            let node = cur;
+            while (node) {
+                path.unshift(node);
+                node = visited.get(`${node.x},${node.y}`);
+            }
+            return path;
         }
-    }
-    if (moves.length) {
-        const m = randItem(moves);
-        return { type: 'move', x: m.x, y: m.y };
+        for (const d of DIRS) {
+            const next = { x: cur.x + d.x, y: cur.y + d.y };
+            if (next.x < 0 || next.x > 8 || next.y < 0 || next.y > 8) continue;
+            const key = `${next.x},${next.y}`;
+            if (visited.has(key)) continue;
+            if (board.isBlockedByWall(cur, next)) continue;
+            visited.set(key, cur);
+            queue.push(next);
+        }
     }
     return null;
 }
 
-function mediumMove(board, player) {
-    const opponent = player === 'A' ? 'B' : 'A';
-    const goal = GOAL[player];
-    const oppGoal = GOAL[opponent];
-
-    const moves = board.getValidMoves(board.pawns[player]);
-    let bestMove = null;
-    let bestDist = Infinity;
-    for (const m of moves) {
-        const clone = board.clone();
-        clone.grid[clone.pawns[player].y][clone.pawns[player].x].occupiedBy = null;
-        clone.pawns[player] = { x: m.x, y: m.y };
-        clone.grid[m.y][m.x].occupiedBy = player;
-        const d = clone.bfsDistance(player, goal);
-        if (d < bestDist) { bestDist = d; bestMove = m; }
-    }
-
-    const myDist = board.bfsDistance(player, goal);
-    const oppDist = board.bfsDistance(opponent, oppGoal);
-    const shouldWall = board.wallCounts[player] > 0 && (myDist > oppDist || Math.random() < 0.3);
-
-    if (shouldWall) {
-        const bestWall = findBestWall(board, player, opponent, oppGoal);
-        if (bestWall && bestWall.gain >= 2) {
-            return { type: 'wall', wx: bestWall.wx, wy: bestWall.wy, orientation: bestWall.orientation };
+function getPathBlockingWalls(board, opponent) {
+    const path = bfsPath(board, opponent);
+    if (!path || path.length < 2) return [];
+    const seen = new Set();
+    const walls = [];
+    for (let i = 0; i < path.length - 1; i++) {
+        const a = path[i], b = path[i + 1];
+        const dy = b.y - a.y, dx = b.x - a.x;
+        const candidates = [];
+        if (dy === 1) {
+            candidates.push({ wx: a.x, wy: a.y, orientation: 'H' });
+            candidates.push({ wx: a.x - 1, wy: a.y, orientation: 'H' });
+        } else if (dy === -1) {
+            candidates.push({ wx: b.x, wy: b.y, orientation: 'H' });
+            candidates.push({ wx: b.x - 1, wy: b.y, orientation: 'H' });
+        } else if (dx === 1) {
+            candidates.push({ wx: a.x, wy: a.y, orientation: 'V' });
+            candidates.push({ wx: a.x, wy: a.y - 1, orientation: 'V' });
+        } else if (dx === -1) {
+            candidates.push({ wx: b.x, wy: b.y, orientation: 'V' });
+            candidates.push({ wx: b.x, wy: b.y - 1, orientation: 'V' });
+        }
+        for (const w of candidates) {
+            if (w.wx < 0 || w.wx > 7 || w.wy < 0 || w.wy > 7) continue;
+            const key = `${w.orientation},${w.wx},${w.wy}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            if (board.isValidWallPlacement(w.wx, w.wy, w.orientation)) {
+                walls.push(w);
+            }
         }
     }
-
-    if (bestMove) return { type: 'move', x: bestMove.x, y: bestMove.y };
-    return null;
+    return walls;
 }
 
-function hardMove(board, player) {
-    const opponent = player === 'A' ? 'B' : 'A';
-
-    function evaluate(b) {
-        const myDist  = b.bfsDistance(player, GOAL[player]);
-        const oppDist = b.bfsDistance(opponent, GOAL[opponent]);
-        return myDist - oppDist;
-    }
-
-    function allMoves(b, p) {
-        const result = [];
-        for (const m of b.getValidMoves(b.pawns[p])) {
-            result.push({ type: 'move', x: m.x, y: m.y });
-        }
-        if (b.wallCounts[p] > 0) {
-            for (const orient of ['H', 'V']) {
-                const walls = b.getValidWallPlacements(orient);
-                const scored = walls.map(w => {
-                    const dx = w.wx - b.pawns[opponent].x;
-                    const dy = w.wy - b.pawns[opponent].y;
-                    return { ...w, dist: dx * dx + dy * dy };
-                }).sort((a, c) => a.dist - c.dist);
-                for (const w of scored.slice(0, 8)) {
-                    result.push({ type: 'wall', wx: w.wx, wy: w.wy, orientation: orient });
+function getNearbyWalls(board, target, radius) {
+    const px = board.pawns[target].x, py = board.pawns[target].y;
+    const walls = [];
+    for (const orient of ['H', 'V']) {
+        for (let wy = Math.max(0, py - radius); wy <= Math.min(7, py + radius); wy++) {
+            for (let wx = Math.max(0, px - radius); wx <= Math.min(7, px + radius); wx++) {
+                if (board.isValidWallPlacement(wx, wy, orient)) {
+                    walls.push({ wx, wy, orientation: orient });
                 }
             }
         }
-        return result;
+    }
+    return walls;
+}
+
+function evaluate(board, aiPlayer) {
+    const opp = aiPlayer === 'A' ? 'B' : 'A';
+    const myDist = board.bfsDistance(aiPlayer, GOAL[aiPlayer]);
+    const oppDist = board.bfsDistance(opp, GOAL[opp]);
+    if (myDist === Infinity) return -9999;
+    if (oppDist === Infinity) return 9999;
+    let score = (oppDist - myDist) * 10;
+    score += (board.wallCounts[aiPlayer] - board.wallCounts[opp]) * 1.5;
+    const myGoalDir = GOAL[aiPlayer] === 8 ? 1 : -1;
+    score += board.pawns[aiPlayer].y * myGoalDir * 0.5;
+    return score;
+}
+
+function applyMove(board, player, move) {
+    const c = board.clone();
+    if (move.type === 'move') {
+        c.movePawn(player, { x: move.x, y: move.y });
+    } else {
+        c.placeWall(move.wx, move.wy, move.orientation, player);
+    }
+    return c;
+}
+
+function generateMoves(board, player, aiPlayer) {
+    const opp = player === 'A' ? 'B' : 'A';
+    const moves = [];
+
+    const pawnMoves = board.getValidMoves(board.pawns[player]);
+    const goalRow = GOAL[player];
+    for (const m of pawnMoves) {
+        const priority = m.y === goalRow ? 1000 : -Math.abs(m.y - goalRow);
+        moves.push({ type: 'move', x: m.x, y: m.y, priority });
     }
 
-    function applyMove(b, p, move) {
-        const c = b.clone();
-        if (move.type === 'move') {
-            c.movePawn(p, { x: move.x, y: move.y });
-        } else {
-            c.placeWall(move.wx, move.wy, move.orientation, p);
+    if (board.wallCounts[player] > 0) {
+        const pathWalls = getPathBlockingWalls(board, opp);
+        const nearWalls = getNearbyWalls(board, opp, 2);
+
+        const seen = new Set();
+        const wallCandidates = [];
+        for (const w of pathWalls) {
+            const key = `${w.orientation},${w.wx},${w.wy}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                wallCandidates.push({ ...w, priority: 10 });
+            }
         }
-        return c;
+        for (const w of nearWalls) {
+            const key = `${w.orientation},${w.wx},${w.wy}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                wallCandidates.push({ ...w, priority: 2 });
+            }
+        }
+
+        for (const w of wallCandidates) {
+            const clone = board.clone();
+            clone.placeWall(w.wx, w.wy, w.orientation, player);
+            const newOppDist = clone.bfsDistance(opp, GOAL[opp]);
+            const oldOppDist = board.bfsDistance(opp, GOAL[opp]);
+            const gain = newOppDist - oldOppDist;
+            if (gain > 0) {
+                moves.push({
+                    type: 'wall', wx: w.wx, wy: w.wy, orientation: w.orientation,
+                    priority: gain * 5 + w.priority
+                });
+            }
+        }
     }
 
-    let bestScore = Infinity;
+    moves.sort((a, b) => b.priority - a.priority);
+    return moves;
+}
+
+function minimax(board, depth, alpha, beta, isMaximizing, aiPlayer, maxMoves) {
+    const opp = aiPlayer === 'A' ? 'B' : 'A';
+    if (board.pawns[aiPlayer].y === GOAL[aiPlayer]) return 10000 + depth;
+    if (board.pawns[opp].y === GOAL[opp]) return -10000 - depth;
+    if (depth === 0) return evaluate(board, aiPlayer);
+
+    const currentPlayer = isMaximizing ? aiPlayer : opp;
+    const moves = generateMoves(board, currentPlayer, aiPlayer);
+    const limit = Math.min(moves.length, maxMoves);
+
+    if (isMaximizing) {
+        let best = -Infinity;
+        for (let i = 0; i < limit; i++) {
+            const child = applyMove(board, currentPlayer, moves[i]);
+            const ev = minimax(child, depth - 1, alpha, beta, false, aiPlayer, maxMoves);
+            best = Math.max(best, ev);
+            alpha = Math.max(alpha, ev);
+            if (beta <= alpha) break;
+        }
+        return best;
+    } else {
+        let best = Infinity;
+        for (let i = 0; i < limit; i++) {
+            const child = applyMove(board, currentPlayer, moves[i]);
+            const ev = minimax(child, depth - 1, alpha, beta, true, aiPlayer, maxMoves);
+            best = Math.min(best, ev);
+            beta = Math.min(beta, ev);
+            if (beta <= alpha) break;
+        }
+        return best;
+    }
+}
+
+export function computeAIMove(board, player) {
+    const opp = player === 'A' ? 'B' : 'A';
+
+    const pawnMoves = board.getValidMoves(board.pawns[player]);
+    for (const m of pawnMoves) {
+        if (m.y === GOAL[player]) return { type: 'move', x: m.x, y: m.y };
+    }
+
+    const totalWalls = (10 - board.wallCounts['A']) + (10 - board.wallCounts['B']);
+    const depth = totalWalls > 12 ? 4 : 3;
+    const maxMoves = totalWalls > 12 ? 20 : 15;
+
+    const moves = generateMoves(board, player, player);
+    let bestScore = -Infinity;
     let bestAction = null;
-    const myMoves = allMoves(board, player);
 
-    for (const move of myMoves) {
-        const after = applyMove(board, player, move);
-        if (after.pawns[player].y === GOAL[player]) {
-            return move;
-        }
-
-        let worstCase = -Infinity;
-        const oppMoves = allMoves(after, opponent);
-        for (const opp of oppMoves.slice(0, 12)) {
-            const after2 = applyMove(after, opponent, opp);
-            const ev = evaluate(after2);
-            if (ev > worstCase) worstCase = ev;
-        }
-        if (oppMoves.length === 0) worstCase = evaluate(after);
-
-        if (worstCase < bestScore) {
-            bestScore = worstCase;
+    const limit = Math.min(moves.length, maxMoves);
+    for (let i = 0; i < limit; i++) {
+        const move = moves[i];
+        const child = applyMove(board, player, move);
+        const score = minimax(child, depth - 1, -Infinity, Infinity, false, player, maxMoves);
+        if (score > bestScore) {
+            bestScore = score;
             bestAction = move;
         }
     }
 
-    return bestAction;
-}
-
-function findBestWall(board, player, opponent, oppGoal) {
-    const baseDist = board.bfsDistance(opponent, oppGoal);
-    let best = null;
-    let bestGain = 0;
-
-    for (const orient of ['H', 'V']) {
-        const walls = board.getValidWallPlacements(orient);
-        const sample = walls.length > 16
-            ? walls.sort(() => Math.random() - 0.5).slice(0, 16)
-            : walls;
-        for (const w of sample) {
-            const clone = board.clone();
-            clone.placeWall(w.wx, w.wy, orient, player);
-            const newDist = clone.bfsDistance(opponent, oppGoal);
-            const gain = newDist - baseDist;
-            if (gain > bestGain) {
-                bestGain = gain;
-                best = { wx: w.wx, wy: w.wy, orientation: orient, gain };
-            }
+    if (bestAction) {
+        const clean = { type: bestAction.type };
+        if (bestAction.type === 'move') {
+            clean.x = bestAction.x;
+            clean.y = bestAction.y;
+        } else {
+            clean.wx = bestAction.wx;
+            clean.wy = bestAction.wy;
+            clean.orientation = bestAction.orientation;
         }
+        return clean;
     }
-    return best;
-}
 
-export function computeAIMove(board, player, difficulty) {
-    switch (difficulty) {
-        case 'easy':   return easyMove(board, player);
-        case 'medium': return mediumMove(board, player);
-        case 'hard':   return hardMove(board, player);
-        default:       return easyMove(board, player);
+    if (pawnMoves.length) {
+        const m = pawnMoves[0];
+        return { type: 'move', x: m.x, y: m.y };
     }
+    return null;
 }

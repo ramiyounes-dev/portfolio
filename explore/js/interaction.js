@@ -6,7 +6,7 @@ import {
     highlightPawn, showGhostWall, hideGhostWall,
     setActiveTurnRing, setCameraForRole
 } from './main.js';
-import { board, state, on, emit, setMode, setGameMode, tryMovePawn, tryPlaceWall, applyRemoteMove, resetGame } from './game.js';
+import { board, state, on, emit, setMode, setGameMode, tryMovePawn, tryPlaceWall, applyRemoteMove, resetGame, replayMoves } from './game.js';
 import { computeAIMove } from './ai.js';
 import { net, onNet, netSend, connectToRoom } from './network.js';
 
@@ -100,7 +100,7 @@ function isLocked() {
     if (state.gameMode === 'online') {
         return !net.opponentConnected || state.currentPlayer !== net.myRole;
     }
-    if (state.gameMode.startsWith('ai-')) {
+    if (state.gameMode === 'ai') {
         return state.currentPlayer === state.aiPlayer;
     }
     return false;
@@ -266,10 +266,10 @@ on('turnChange', () => {
 });
 on('modeChange', () => { updateButtons(); updateHint(); });
 
-on('aiTurn', ({ player, difficulty }) => {
+on('aiTurn', ({ player }) => {
     setTimeout(() => {
         if (state.winner) return;
-        const action = computeAIMove(board, player, difficulty);
+        const action = computeAIMove(board, player);
         if (!action) return;
         if (action.type === 'move') {
             tryMovePawn(action.x, action.y);
@@ -299,6 +299,12 @@ onNet('reset', () => {
 onNet('score', ({ scores }) => {
     state.scores = scores;
     updateScores();
+});
+
+onNet('state_sync', ({ moves }) => {
+    replayMoves(moves);
+    updateHUD();
+    setActiveTurnRing(state.currentPlayer);
 });
 
 onNet('opponent_joined', () => {

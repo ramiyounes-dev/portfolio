@@ -31,7 +31,7 @@ function setMode(mode) {
 
 function setGameMode(gm) {
     state.gameMode = gm;
-    if (gm.startsWith('ai-')) {
+    if (gm === 'ai') {
         state.aiPlayer = 'B';
         state.myRole = 'A';
     } else if (gm === 'local') {
@@ -95,8 +95,8 @@ function _nextTurn() {
     state.mode = 'move';
     emit('turnChange', { player: state.currentPlayer });
 
-    if (state.gameMode.startsWith('ai-') && state.currentPlayer === state.aiPlayer) {
-        emit('aiTurn', { player: state.aiPlayer, difficulty: state.gameMode.replace('ai-', '') });
+    if (state.gameMode === 'ai' && state.currentPlayer === state.aiPlayer) {
+        emit('aiTurn', { player: state.aiPlayer });
     }
 }
 
@@ -116,4 +116,38 @@ function resetGame() {
     emit('turnChange', { player: 'A' });
 }
 
-export { state, board, on, emit, setMode, setGameMode, tryMovePawn, tryPlaceWall, applyRemoteMove, resetGame };
+function replayMoves(moves) {
+    const fresh = new Board();
+    board.grid = fresh.grid;
+    board.walls = fresh.walls;
+    board.wallOwners = fresh.wallOwners;
+    board.pawns = fresh.pawns;
+    board.wallCounts = fresh.wallCounts;
+    state.currentPlayer = 'A';
+    state.mode = 'move';
+    state.winner = null;
+    state.moveCount = 0;
+
+    for (const msg of moves) {
+        if (state.winner) break;
+        if (msg.type === 'move') {
+            board.movePawn(state.currentPlayer, { x: msg.x, y: msg.y });
+        } else if (msg.type === 'wall') {
+            board.placeWall(msg.wx, msg.wy, msg.orientation, state.currentPlayer);
+        }
+        state.moveCount++;
+        const winner = board.checkWin();
+        if (winner) {
+            state.winner = winner;
+        } else {
+            state.currentPlayer = state.currentPlayer === 'A' ? 'B' : 'A';
+        }
+    }
+    state.mode = 'move';
+    emit('reset', null);
+    emit('boardChange', null);
+    emit('turnChange', { player: state.currentPlayer });
+    if (state.winner) emit('win', { winner: state.winner });
+}
+
+export { state, board, on, emit, setMode, setGameMode, tryMovePawn, tryPlaceWall, applyRemoteMove, resetGame, replayMoves };
