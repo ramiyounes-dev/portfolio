@@ -58,6 +58,18 @@ const SITE_DATA = {
             { icon: 'fas fa-globe', text: 'Multilingual' }
           ],
           github: 'https://github.com/ramiyounes-dev/onephone'
+        },
+        {
+          title: 'Explore',
+          description: 'Interactive experiments and projects — starting with Quoridor 3D, a strategy board game playable locally, against AI, or online with friends.',
+          tech: [
+            { icon: 'fab fa-js', text: 'JavaScript' },
+            { icon: 'fas fa-cube', text: 'Three.js' },
+            { icon: 'fas fa-wifi', text: 'WebSocket' },
+            { icon: 'fas fa-chess-board', text: 'Board Game' }
+          ],
+          link: './explore/',
+          linkLabel: 'Try it'
         }
       ]
     },
@@ -123,6 +135,18 @@ const SITE_DATA = {
             { icon: 'fas fa-globe', text: 'Multilingue' }
           ],
           github: 'https://github.com/ramiyounes-dev/onephone'
+        },
+        {
+          title: 'Explore',
+          description: 'Projets et exp\u00e9riences interactives — en commen\u00e7ant par Quoridor 3D, un jeu de strat\u00e9gie jouable en local, contre l\'IA, ou en ligne avec des amis.',
+          tech: [
+            { icon: 'fab fa-js', text: 'JavaScript' },
+            { icon: 'fas fa-cube', text: 'Three.js' },
+            { icon: 'fas fa-wifi', text: 'WebSocket' },
+            { icon: 'fas fa-chess-board', text: 'Jeu de plateau' }
+          ],
+          link: './explore/',
+          linkLabel: 'Essayer'
         }
       ]
     },

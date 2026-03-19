@@ -1,20 +1,19 @@
-# macOS system files
 .DS_Store
+._*
 .AppleDouble
 .LSOverride
-
-# Icon files
-Icon?
-
-# Thumbnails
-._*
-
-# macOS folder attributes
 .Spotlight-V100
 .Trashes
-
-# Disk images
+Icon?
 *.dmg
 
-# macOS metadata files
-*.DS_Store
+node_modules/
+package-lock.json
+*.log
+.wrangler/
+.dev.vars
+
+server.js
+explore/server.js
+explore/package.json
+explore/wrangler.toml

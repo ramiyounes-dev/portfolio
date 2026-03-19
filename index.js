@@ -161,9 +161,12 @@ function renderProjects(data) {
         <ul>${proj.tech.map(t => `<li><i class="${t.icon}"></i>${t.text}</li>`).join('')}</ul>
       </div>
       <div class="project-links">
-        <a href="${proj.github}" target="_blank" rel="noopener" class="project-link">
+        ${proj.github ? `<a href="${proj.github}" target="_blank" rel="noopener" class="project-link">
           <i class="fab fa-github"></i> ${githubLabel}
-        </a>
+        </a>` : ''}
+        ${proj.link ? `<a href="${proj.link}" class="project-link">
+          <i class="fas fa-external-link-alt"></i> ${proj.linkLabel}
+        </a>` : ''}
       </div>
     </div>
   `).join('');
