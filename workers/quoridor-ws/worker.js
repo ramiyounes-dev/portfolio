@@ -65,6 +65,7 @@ export class QuoridorRoom {
         }
 
         const scores = (await this.state.storage.get('scores')) || { A: 0, B: 0 };
+        const moves = (await this.state.storage.get('moves')) || [];
         const opponentConnected = existing.length > 0;
 
         server.send(JSON.stringify({
@@ -73,6 +74,10 @@ export class QuoridorRoom {
             opponentConnected,
             scores,
         }));
+
+        if (moves.length > 0) {
+            server.send(JSON.stringify({ type: 'state_sync', moves }));
+        }
 
         if (opponentConnected) {
             for (const ws of existing) {
@@ -97,6 +102,14 @@ export class QuoridorRoom {
 
         await this.state.storage.setAlarm(Date.now() + 3 * 60 * 60 * 1000);
 
+        if (msg.type === 'move' || msg.type === 'wall') {
+            const moves = (await this.state.storage.get('moves')) || [];
+            moves.push(msg);
+            await this.state.storage.put('moves', moves);
+        } else if (msg.type === 'reset' || msg.type === 'reset_accept') {
+            await this.state.storage.put('moves', []);
+        }
+
         const relay = ['move', 'wall', 'reset', 'reset_request', 'reset_accept', 'reset_decline'];
         if (relay.includes(msg.type)) {
             const sanitized = JSON.stringify(msg);
@@ -104,6 +117,7 @@ export class QuoridorRoom {
                 opp.send(sanitized);
             }
         } else if (msg.type === 'win') {
+            await this.state.storage.put('moves', []);
             const scores = (await this.state.storage.get('scores')) || { A: 0, B: 0 };
             scores[msg.winner] = (scores[msg.winner] || 0) + 1;
             await this.state.storage.put('scores', scores);
