@@ -17,3 +17,4 @@ server.js
 explore/server.js
 explore/package.json
 explore/wrangler.toml
+explore/_worker.js

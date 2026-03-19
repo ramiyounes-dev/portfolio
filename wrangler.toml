@@ -1,0 +1,11 @@
+name = "portfolio"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "."
+
+[[durable_objects.bindings]]
+name = "QUORIDOR_ROOM"
+class_name = "QuoridorRoom"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["QuoridorRoom"]
