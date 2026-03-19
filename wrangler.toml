@@ -1,8 +1,0 @@
-name = "portfolio"
-compatibility_date = "2024-09-23"
-pages_build_output_dir = "."
-
-[[durable_objects.bindings]]
-name = "QUORIDOR_ROOM"
-class_name = "QuoridorRoom"
-script_name = "quoridor-ws"
