@@ -23,23 +23,47 @@ const W = window.innerWidth;
 const H = window.innerHeight;
 const camera = new THREE.PerspectiveCamera(55, W / H, 0.5, 2000);
 
-const BASE_Y = 225.68;
-const BASE_Z = 110.04;
+const CAM_Y = 225;
+const CAM_Z = 110;
+const BOARD_HALF = 9 * UNIT / 2 + 10;
 let cameraRole = 'A';
 
 function fitCamera() {
-    const aspect = window.innerWidth / window.innerHeight;
-    if (aspect < 1) {
-        const scale = Math.min(1 / aspect, 1.7);
-        camera.fov = 55 + (1 - aspect) * 35;
-        camera.position.y = BASE_Y * scale;
-        camera.position.z = (cameraRole === 'B' ? -BASE_Z : BASE_Z) * scale * 0.85;
-    } else {
-        camera.fov = 55;
-        camera.position.y = BASE_Y;
-        camera.position.z = cameraRole === 'B' ? -BASE_Z : BASE_Z;
-    }
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const hud = document.getElementById('hud');
+    const bar = document.getElementById('action-bar');
+    const hudH = hud ? hud.offsetHeight : 60;
+    const barH = bar ? bar.offsetHeight : 50;
+
+    const usableH = vh - hudH - barH;
+    const usableW = vw;
+    const usableAspect = usableW / Math.max(usableH, 1);
+
+    const zSign = cameraRole === 'B' ? -1 : 1;
+    camera.position.set(0, CAM_Y, CAM_Z * zSign);
     camera.lookAt(0, 0, 0);
+
+    const dist = Math.sqrt(CAM_Y * CAM_Y + CAM_Z * CAM_Z);
+
+    const vFovNeeded = 2 * Math.atan(BOARD_HALF / dist) * (180 / Math.PI);
+    const hFovNeeded = 2 * Math.atan(BOARD_HALF / dist) * (180 / Math.PI);
+    const vFovFromH = 2 * Math.atan(Math.tan(hFovNeeded * Math.PI / 360) / usableAspect) * (180 / Math.PI);
+
+    const fov = Math.max(vFovNeeded, vFovFromH) + 12;
+
+    const centreOffset = (hudH - barH) / 2;
+    const shiftFrac = centreOffset / vh;
+    const shiftAngle = shiftFrac * fov;
+    const tiltRad = shiftAngle * Math.PI / 180;
+    const right = new THREE.Vector3().crossVectors(camera.getWorldDirection(new THREE.Vector3()), camera.up).normalize();
+    const up = new THREE.Vector3().crossVectors(right, camera.getWorldDirection(new THREE.Vector3())).normalize();
+    camera.position.addScaledVector(up, -tiltRad * dist * 0.5);
+    camera.lookAt(0, 0, 0);
+
+    camera.fov = fov;
+    camera.aspect = vw / vh;
     camera.updateProjectionMatrix();
 }
 
@@ -311,5 +335,7 @@ buildTurnRing('B');
 syncPawnPositions();
 setActiveTurnRing('A');
 animate(0);
+
+requestAnimationFrame(() => fitCamera());
 
 export { scene, camera, renderer, pawnMeshes, highlightMeshes };
