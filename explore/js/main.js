@@ -22,8 +22,28 @@ scene.background = new THREE.Color(0x0e0e1c);
 const W = window.innerWidth;
 const H = window.innerHeight;
 const camera = new THREE.PerspectiveCamera(55, W / H, 0.5, 2000);
-camera.position.set(0, 225.68, 110.04);
-camera.rotation.set(-1.2028, 0.0017, 0.0044);
+
+const BASE_Y = 225.68;
+const BASE_Z = 110.04;
+let cameraRole = 'A';
+
+function fitCamera() {
+    const aspect = window.innerWidth / window.innerHeight;
+    if (aspect < 1) {
+        const scale = Math.min(1 / aspect, 1.7);
+        camera.fov = 55 + (1 - aspect) * 35;
+        camera.position.y = BASE_Y * scale;
+        camera.position.z = (cameraRole === 'B' ? -BASE_Z : BASE_Z) * scale * 0.85;
+    } else {
+        camera.fov = 55;
+        camera.position.y = BASE_Y;
+        camera.position.z = cameraRole === 'B' ? -BASE_Z : BASE_Z;
+    }
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
+}
+
+fitCamera();
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -235,13 +255,8 @@ function updateTurnRings(dt) {
 }
 
 export function setCameraForRole(role) {
-    if (role === 'B') {
-        camera.position.set(0, 225.68, -110.04);
-        camera.lookAt(0, 0, 0);
-    } else {
-        camera.position.set(0, 225.68, 110.04);
-        camera.rotation.set(-1.2028, 0.0017, 0.0044);
-    }
+    cameraRole = role;
+    fitCamera();
 }
 
 function syncPawnPositions() {
@@ -253,11 +268,13 @@ function syncPawnPositions() {
     }
 }
 
-window.addEventListener('resize', () => {
+function onResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-});
+    fitCamera();
+}
+window.addEventListener('resize', onResize);
+window.addEventListener('orientationchange', () => setTimeout(onResize, 100));
 
 on('boardChange', () => {
     syncPawnPositions();

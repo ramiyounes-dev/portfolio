@@ -46,13 +46,19 @@ const resetConfirm    = document.getElementById('reset-confirm');
 const btnConfirmYes   = document.getElementById('btn-confirm-yes');
 const btnConfirmNo    = document.getElementById('btn-confirm-no');
 
+const btnWallConfirm = document.getElementById('btn-wall-confirm');
+
 const PLAYER_NAME = { A: 'Red', B: 'White' };
 
+const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
 const HINTS = {
-    'move':   'Click your pawn, then click a green square',
-    'wall-H': 'Hover to preview, click to place horizontal wall',
-    'wall-V': 'Hover to preview, click to place vertical wall',
+    'move':   isTouch ? 'Tap your pawn, then tap a green square' : 'Click your pawn, then click a green square',
+    'wall-H': isTouch ? 'Tap a green slot to preview, then Place Wall' : 'Hover to preview, click to place horizontal wall',
+    'wall-V': isTouch ? 'Tap a green slot to preview, then Place Wall' : 'Hover to preview, click to place vertical wall',
 };
+
+let pendingWall = null;
 
 function updateHUD() {
     const p = state.currentPlayer;
@@ -116,6 +122,7 @@ function deselect() {
 function clearHighlightsAndHover() {
     hideGhostWall();
     clearHighlights();
+    cancelPendingWall();
 }
 
 function enterMoveMode() {
@@ -151,6 +158,12 @@ function onClick(event) {
     const hits = raycaster.intersectObjects(clickable, true);
 
     if (!hits.length) {
+        if (isTouch && pendingWall) {
+            hideGhostWall();
+            cancelPendingWall();
+            updateHint();
+            return;
+        }
         deselect();
         clearHighlightsAndHover();
         if (state.mode !== 'move') {
@@ -200,14 +213,40 @@ function handleMoveTarget(x, y) {
 }
 
 function handleWallTarget(wx, wy, orientation) {
+    if (isTouch) {
+        if (pendingWall && pendingWall.wx === wx && pendingWall.wy === wy && pendingWall.orientation === orientation) {
+            confirmWallPlacement();
+            return;
+        }
+        pendingWall = { wx, wy, orientation };
+        showGhostWall(wx, wy, orientation, true);
+        btnWallConfirm.classList.remove('hidden');
+        hudHint.textContent = 'Tap Place Wall to confirm';
+        return;
+    }
+    placeWallFinal(wx, wy, orientation);
+}
+
+function placeWallFinal(wx, wy, orientation) {
     deselect();
     clearHighlightsAndHover();
+    cancelPendingWall();
     const ok = tryPlaceWall(wx, wy, orientation);
     if (ok && state.gameMode === 'online') {
         netSend({ type: 'wall', wx, wy, orientation });
         if (state.winner) netSend({ type: 'win', winner: state.winner });
     }
     updateHUD();
+}
+
+function confirmWallPlacement() {
+    if (!pendingWall) return;
+    placeWallFinal(pendingWall.wx, pendingWall.wy, pendingWall.orientation);
+}
+
+function cancelPendingWall() {
+    pendingWall = null;
+    btnWallConfirm.classList.add('hidden');
 }
 
 let hoverRafPending = false;
@@ -467,11 +506,21 @@ roomInput.addEventListener('keydown', (e) => {
 btnMove.addEventListener('click', enterMoveMode);
 btnWallH.addEventListener('click', () => enterWallMode('H'));
 btnWallV.addEventListener('click', () => enterWallMode('V'));
+btnWallConfirm.addEventListener('click', confirmWallPlacement);
 btnReset.addEventListener('click', onResetClick);
 btnWinReset.addEventListener('click', onResetClick);
 
 renderer.domElement.addEventListener('click', onClick);
 renderer.domElement.addEventListener('mousemove', onMouseMove);
+
+if (isTouch) {
+    renderer.domElement.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        onClick({ clientX: touch.clientX, clientY: touch.clientY });
+        e.preventDefault();
+    }, { passive: false });
+}
 
 updateHUD();
 updateScores();

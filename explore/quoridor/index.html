@@ -27,8 +27,11 @@
     </div>
   </div>
 
+  <div id="top-bar">
+    <a id="back-link" href="../">&larr; Explore</a>
+  </div>
+
   <div id="hud">
-    <div id="hud-row-top">
       <div class="player-card player-a-card" id="card-a">
         <span class="player-label">RED <span id="you-a" class="you-badge hidden">YOU</span></span>
         <span class="wall-count"><span id="hud-walls-a">10</span> <small>walls</small></span>
@@ -53,6 +56,7 @@
     <button id="btn-wall-h" class="ctrl-btn"        title="Place a horizontal wall">Horizontal Wall</button>
     <button id="btn-wall-v" class="ctrl-btn"        title="Place a vertical wall">Vertical Wall</button>
     <div class="btn-sep"></div>
+    <button id="btn-wall-confirm" class="ctrl-btn wall-confirm-btn hidden" title="Confirm wall placement">Place Wall</button>
     <button id="btn-reset"  class="ctrl-btn reset-btn" title="Restart game">Reset</button>
     <div class="btn-sep"></div>
     <button id="btn-change-mode" class="ctrl-btn mode-switch-btn" title="Back to game selection">Menu</button>
@@ -77,8 +81,6 @@
       <a href="../" class="win-back">&larr; Back to Explore</a>
     </div>
   </div>
-
-  <a id="back-link" href="../">&larr; Explore</a>
 
   <script type="module" src="../js/main.js"></script>
   <script type="module" src="../js/interaction.js"></script>
