@@ -27,16 +27,16 @@ body.game-body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 16px 8px;
+  padding: clamp(6px, 1.5vh, 10px) clamp(8px, 2vw, 16px) clamp(4px, 1vh, 8px);
   background: linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
   pointer-events: none;
-  gap: 8px;
+  gap: clamp(4px, 1vh, 8px);
 }
 
 #hud-row-top {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: clamp(6px, 2vw, 16px);
   width: 100%;
   max-width: 640px;
 }
@@ -48,9 +48,9 @@ body.game-body {
   gap: 2px;
   background: rgba(255,255,255,0.05);
   border: 2px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
-  padding: 6px 14px;
-  min-width: 80px;
+  border-radius: clamp(6px, 1vw, 8px);
+  padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 14px);
+  min-width: clamp(56px, 12vw, 80px);
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .player-a-card { border-color: rgba(220, 50, 50, 0.4); }
@@ -66,7 +66,7 @@ body.game-body {
 }
 
 .player-label {
-  font-size: 10px;
+  font-size: clamp(8px, 1.8vw, 10px);
   font-weight: 800;
   letter-spacing: 1.5px;
   display: flex;
@@ -77,7 +77,7 @@ body.game-body {
 .player-b-card .player-label { color: #e0e0e0; }
 
 .you-badge {
-  font-size: 8px;
+  font-size: clamp(6px, 1.4vw, 8px);
   background: rgba(255,255,255,0.15);
   border-radius: 3px;
   padding: 1px 4px;
@@ -86,36 +86,37 @@ body.game-body {
 .you-badge.hidden { display: none; }
 
 .wall-count {
-  font-size: 22px;
+  font-size: clamp(16px, 4vw, 22px);
   font-weight: 700;
   line-height: 1;
 }
 .player-a-card .wall-count { color: #ff6666; }
 .player-b-card .wall-count { color: #dddddd; }
-.wall-count small { font-size: 11px; font-weight: 400; opacity: 0.6; }
+.wall-count small { font-size: clamp(9px, 2vw, 11px); font-weight: 400; opacity: 0.6; }
 
 .score-line {
-  font-size: 12px;
+  font-size: clamp(10px, 2vw, 12px);
   font-weight: 600;
   opacity: 0.5;
   line-height: 1;
 }
-.score-line small { font-size: 10px; font-weight: 400; }
+.score-line small { font-size: clamp(8px, 1.6vw, 10px); font-weight: 400; }
 
 #hud-center {
   flex: 1;
   text-align: center;
+  min-width: 0;
 }
 
 #hud-turn {
-  font-size: 22px;
+  font-size: clamp(14px, 4vw, 22px);
   font-weight: 800;
   letter-spacing: 0.5px;
   text-shadow: 0 2px 10px rgba(0,0,0,0.9);
 }
 
 #hud-hint {
-  font-size: 11px;
+  font-size: clamp(9px, 2vw, 11px);
   color: rgba(200,200,220,0.5);
   margin-top: 2px;
   letter-spacing: 0.3px;
@@ -130,30 +131,32 @@ body.game-body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
-  padding: 12px 16px 16px;
+  gap: clamp(3px, 1vw, 6px);
+  padding: clamp(8px, 2vh, 12px) clamp(8px, 2vw, 16px) clamp(10px, 2.5vh, 16px);
   background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+  flex-wrap: wrap;
 }
 
 .btn-sep {
   width: 1px;
-  height: 22px;
+  height: clamp(16px, 3vw, 22px);
   background: rgba(255,255,255,0.1);
   margin: 0 2px;
 }
 
 .ctrl-btn {
-  padding: 8px 16px;
+  padding: clamp(5px, 1.2vw, 8px) clamp(8px, 2.5vw, 16px);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: 6px;
   background: rgba(15, 15, 35, 0.85);
   color: #aaa;
-  font-size: 13px;
+  font-size: clamp(10px, 2.2vw, 13px);
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.3px;
   transition: background 0.14s, color 0.14s, border-color 0.14s, transform 0.1s;
   backdrop-filter: blur(8px);
+  white-space: nowrap;
 }
 
 .ctrl-btn:hover:not(:disabled) {
@@ -205,25 +208,26 @@ body.game-body {
   align-items: center;
   justify-content: center;
   z-index: 200;
+  padding: 16px;
 }
 #mode-overlay.hidden { display: none; }
 
 #mode-box {
   background: linear-gradient(145deg, #191930, #0e0e20);
   border: 1px solid rgba(100,140,255,0.3);
-  border-radius: 20px;
-  padding: 40px 48px;
+  border-radius: clamp(14px, 3vw, 20px);
+  padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 48px);
   text-align: center;
   box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 60px rgba(60,100,255,0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  min-width: 300px;
+  width: min(360px, 90vw);
 }
 
 #mode-title {
-  font-size: 36px;
+  font-size: clamp(24px, 6vw, 36px);
   font-weight: 900;
   letter-spacing: 1px;
   background: linear-gradient(135deg, #ffaaaa, #aabbff);
@@ -233,7 +237,7 @@ body.game-body {
 }
 
 #mode-sub {
-  font-size: 14px;
+  font-size: clamp(12px, 2.5vw, 14px);
   color: rgba(200,200,220,0.5);
   margin-bottom: 8px;
 }
@@ -247,12 +251,12 @@ body.game-body {
 #mode-buttons.hidden { display: none; }
 
 .mode-btn {
-  padding: 12px 24px;
+  padding: clamp(8px, 2vw, 12px) clamp(14px, 3vw, 24px);
   background: rgba(30, 40, 80, 0.8);
   color: #ccc;
   border: 1px solid rgba(100,140,255,0.2);
   border-radius: 10px;
-  font-size: 15px;
+  font-size: clamp(13px, 2.5vw, 15px);
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
@@ -274,7 +278,7 @@ body.game-body {
 #lobby-panel.hidden { display: none; }
 
 #room-input {
-  padding: 10px 14px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(10px, 2vw, 14px);
   border: 1px solid rgba(100,140,255,0.3);
   border-radius: 8px;
   background: rgba(10, 10, 25, 0.9);
@@ -298,12 +302,12 @@ body.game-body {
 }
 
 #btn-join-room {
-  padding: 10px 24px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(16px, 3vw, 24px);
   background: linear-gradient(135deg, #3366cc, #2255aa);
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: clamp(13px, 2.5vw, 15px);
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.12s, box-shadow 0.12s;
@@ -319,7 +323,7 @@ body.game-body {
 }
 
 #lobby-status {
-  font-size: 13px;
+  font-size: clamp(11px, 2vw, 13px);
   color: rgba(200,200,220,0.6);
   min-height: 20px;
 }
@@ -333,19 +337,21 @@ body.game-body {
   align-items: center;
   justify-content: center;
   z-index: 150;
+  padding: 16px;
 }
 #reset-confirm.hidden { display: none; }
 
 #reset-confirm-box {
   background: linear-gradient(145deg, #191930, #0e0e20);
   border: 1px solid rgba(220, 80, 80, 0.35);
-  border-radius: 16px;
-  padding: 32px 40px;
+  border-radius: clamp(12px, 2vw, 16px);
+  padding: clamp(20px, 4vw, 32px) clamp(20px, 5vw, 40px);
   text-align: center;
   box-shadow: 0 16px 50px rgba(0,0,0,0.7);
+  max-width: 90vw;
 }
 #reset-confirm-box p {
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   margin-bottom: 18px;
   color: #ddd;
 }
@@ -355,8 +361,8 @@ body.game-body {
   justify-content: center;
 }
 .confirm-btns .ctrl-btn {
-  min-width: 80px;
-  font-size: 14px;
+  min-width: clamp(60px, 12vw, 80px);
+  font-size: clamp(12px, 2.2vw, 14px);
 }
 
 #win-overlay {
@@ -368,29 +374,31 @@ body.game-body {
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 16px;
 }
 #win-overlay.hidden { display: none; }
 
 #win-box {
   background: linear-gradient(145deg, #191930, #0e0e20);
   border: 1px solid rgba(100,140,255,0.35);
-  border-radius: 20px;
-  padding: 48px 56px;
+  border-radius: clamp(14px, 3vw, 20px);
+  padding: clamp(28px, 6vw, 48px) clamp(24px, 6vw, 56px);
   text-align: center;
   box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 60px rgba(60,100,255,0.15);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  max-width: 90vw;
 }
 
 #win-icon {
-  font-size: 52px;
+  font-size: clamp(36px, 8vw, 52px);
   line-height: 1;
 }
 
 #win-message {
-  font-size: 44px;
+  font-size: clamp(28px, 7vw, 44px);
   font-weight: 900;
   letter-spacing: 1px;
   background: linear-gradient(135deg, #ffaaaa, #ffcc88);
@@ -400,19 +408,19 @@ body.game-body {
 }
 
 #win-sub {
-  font-size: 14px;
+  font-size: clamp(12px, 2.2vw, 14px);
   color: rgba(200,200,220,0.5);
   letter-spacing: 0.5px;
 }
 
 #btn-win-reset {
   margin-top: 8px;
-  padding: 13px 36px;
+  padding: clamp(10px, 2vw, 13px) clamp(24px, 5vw, 36px);
   background: linear-gradient(135deg, #3366cc, #2255aa);
   color: #fff;
   border: none;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.12s, box-shadow 0.12s;
@@ -424,7 +432,7 @@ body.game-body {
 }
 
 .win-back {
-  font-size: 13px;
+  font-size: clamp(11px, 2vw, 13px);
   color: rgba(180,180,220,0.4);
   text-decoration: none;
   transition: color 0.15s;
@@ -433,11 +441,11 @@ body.game-body {
 
 #back-link {
   position: fixed;
-  bottom: 60px;
-  left: 16px;
+  bottom: clamp(48px, 10vh, 60px);
+  left: clamp(10px, 2vw, 16px);
   color: rgba(180,180,220,0.4);
   text-decoration: none;
-  font-size: 13px;
+  font-size: clamp(11px, 2vw, 13px);
   font-weight: 500;
   z-index: 20;
   transition: color 0.15s;
@@ -445,13 +453,9 @@ body.game-body {
 }
 #back-link:hover { color: rgba(150,170,255,0.9); }
 
-@media (max-width: 500px) {
-  #hud-row-top { gap: 8px; }
-  .player-card { min-width: 60px; padding: 5px 8px; }
-  .wall-count { font-size: 18px; }
-  #hud-turn { font-size: 18px; }
-  .ctrl-btn { font-size: 11px; padding: 6px 10px; }
-  #mode-box { padding: 28px 24px; min-width: auto; width: 90vw; }
-  #mode-title { font-size: 28px; }
-  .mode-btn { font-size: 13px; padding: 10px 16px; }
+/* Landscape phones — compact HUD and action bar */
+@media (max-height: 500px) and (orientation: landscape) {
+  #hud { padding-top: 4px; padding-bottom: 2px; }
+  #action-bar { padding-top: 4px; padding-bottom: 8px; }
+  #back-link { bottom: 40px; }
 }
