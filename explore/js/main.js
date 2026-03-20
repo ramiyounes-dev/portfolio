@@ -19,8 +19,9 @@ function wallZ(wy) { return -(wy - 3.5) * UNIT; }
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0e0e1c);
 
-const W = window.innerWidth;
-const H = window.innerHeight;
+const _vp = window.visualViewport;
+const W = _vp ? _vp.width  : window.innerWidth;
+const H = _vp ? _vp.height : window.innerHeight;
 const camera = new THREE.PerspectiveCamera(55, W / H, 0.5, 2000);
 
 const CAM_Y = 225;
@@ -29,8 +30,9 @@ const BOARD_HALF = 9 * UNIT / 2 + 10;
 let cameraRole = 'A';
 
 function fitCamera() {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const vp = window.visualViewport;
+    const vw = vp ? vp.width  : window.innerWidth;
+    const vh = vp ? vp.height : window.innerHeight;
 
     const hud = document.getElementById('hud');
     const bar = document.getElementById('action-bar');
@@ -104,7 +106,7 @@ scene.add(new THREE.HemisphereLight(0x9999dd, 0x332211, 0.5));
     const boardW = 9 * UNIT + 10;
     const slab = new THREE.Mesh(
         new THREE.BoxGeometry(boardW, B_H * 2, boardW),
-        new THREE.MeshStandardMaterial({ color: 0x160a05, roughness: 0.95 })
+        new THREE.MeshStandardMaterial({ color: 0x2e1a0e, roughness: 0.95 })
     );
     slab.receiveShadow = true;
     scene.add(slab);
@@ -112,9 +114,9 @@ scene.add(new THREE.HemisphereLight(0x9999dd, 0x332211, 0.5));
     for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
             let color;
-            if (row === 0)      color = 0x0b1e3a;
-            else if (row === 8) color = 0x380b0b;
-            else                color = (col + row) % 2 === 0 ? 0x281808 : 0x201306;
+            if (row === 0)      color = 0xe8cfcf;
+            else if (row === 8) color = 0x981a1a;
+            else                color = (col + row) % 2 === 0 ? 0x7A5130 : 0x66411A;
 
             const tile = new THREE.Mesh(
                 new THREE.BoxGeometry(TILE_SZ, 1, TILE_SZ),
@@ -293,12 +295,18 @@ function syncPawnPositions() {
 }
 
 function onResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    const vp = window.visualViewport;
+    const w = vp ? vp.width  : window.innerWidth;
+    const h = vp ? vp.height : window.innerHeight;
+    camera.aspect = w / h;
+    renderer.setSize(w, h);
     fitCamera();
 }
 window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', () => setTimeout(onResize, 100));
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onResize);
+}
 
 on('boardChange', () => {
     syncPawnPositions();
