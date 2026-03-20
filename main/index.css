@@ -342,10 +342,6 @@ section {
   z-index: 1;
 }
 
-#experience {
-  padding-left: 20px;
-}
-
 /* Subtle gradient divider between sections */
 section::before {
   content: '';
@@ -405,29 +401,6 @@ section h2::after {
   transform: translateY(-4px);
   background: rgba(255, 255, 255, 0.07);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
-}
-
-/* ============================
-   EXPERIENCE TIMELINE
-   ============================ */
-.timeline {
-  position: relative;
-  padding-left: 28px;
-}
-
-/* .timeline::before {
-  content: '';
-  position: absolute;
-  left: 6px;
-  top: 20px;
-  bottom: 20px;
-  width: 2px;
-  background: linear-gradient(to bottom, var(--accent) 0%, rgba(var(--accent-rgb), 0.1) 100%);
-  border-radius: 2px;
-} */
-
-.timeline .card {
-  position: relative;
 }
 
 /* Experience card text elements */
@@ -908,8 +881,6 @@ i {
 
   section { padding-left: 16px; padding-right: 16px; }
   #experience { padding-left: 16px; }
-  .timeline { padding-left: 16px; }
-  .timeline::before { left: 4px; }
   .timeline .card::before { left: -18px; width: 9px; height: 9px; }
 }
 
