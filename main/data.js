@@ -8,7 +8,7 @@ const SITE_DATA = {
         'a Software Developer..',
         'a Mainframe Developer..',
         'passionate about Teaching..',
-        'always learning | always coding..'
+        // 'always learning | always coding..'
       ]
     },
     about: {
@@ -85,7 +85,7 @@ const SITE_DATA = {
         'un Développeur Logiciel..',
         'un Développeur Mainframe..',
         "passionné par l'Enseignement..",
-        'toujours en apprentissage | toujours en train de coder..'
+        // 'toujours en apprentissage | toujours en train de coder..'
       ]
     },
     about: {
