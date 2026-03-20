@@ -429,12 +429,14 @@ requestAnimationFrame(() => {
   restartTypewriter(currentLang);
 });
 
-// Re-fit on resize (debounced)
+// Re-fit on resize and orientation change (debounced)
 let resizeTimer;
-window.addEventListener('resize', () => {
+function onViewportChange() {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     const sentences = SITE_DATA[currentLang].hero.sentences;
     fitTypewriterFont(sentences);
   }, 120);
-}, { passive: true });
+}
+window.addEventListener('resize', onViewportChange, { passive: true });
+window.addEventListener('orientationchange', onViewportChange, { passive: true });
