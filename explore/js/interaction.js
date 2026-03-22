@@ -436,6 +436,9 @@ function changeMode() {
     youB.classList.add('hidden');
     document.getElementById('mode-buttons').classList.remove('hidden');
     document.getElementById('mode-sub').textContent = 'Choose a game mode';
+    document.getElementById('mode-sub').classList.remove('hidden');
+    btnHowToPlay.classList.remove('hidden');
+    tutorialPanel.classList.add('hidden');
     lobbyPanel.classList.add('hidden');
     lobbyStatus.textContent = '';
     roomInput.value = '';
@@ -444,6 +447,83 @@ function changeMode() {
 }
 
 btnChangeMode.addEventListener('click', changeMode);
+
+/* ── Tutorial ── */
+const btnHowToPlay   = document.getElementById('btn-how-to-play');
+const tutorialPanel  = document.getElementById('tutorial-panel');
+const tutSlides      = document.querySelectorAll('.tut-slide');
+const tutPrev        = document.getElementById('tut-prev');
+const tutNext        = document.getElementById('tut-next');
+const tutBack        = document.getElementById('tut-back');
+const tutDotsEl      = document.getElementById('tut-dots');
+const tutControlsEl  = document.getElementById('tut-controls-content');
+
+const TOTAL_SLIDES = tutSlides.length;
+let currentSlide = 0;
+
+// Build dots
+for (let i = 0; i < TOTAL_SLIDES; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'tut-dot' + (i === 0 ? ' active' : '');
+    tutDotsEl.appendChild(dot);
+}
+const tutDots = tutDotsEl.querySelectorAll('.tut-dot');
+
+// Build controls slide content (device-specific)
+function buildControls() {
+    const rows = isTouch ? [
+        ['&#9758;', '<strong>Tap your pawn</strong> to select it, then tap a green square to move'],
+        ['&#9638;', 'Use the <strong>bottom buttons</strong> to switch between Move and Wall modes'],
+        ['&#9644;', 'In wall mode, <strong>tap a green slot</strong> to preview, then tap <strong>Place Wall</strong> to confirm'],
+    ] : [
+        ['&#9758;', '<strong>Click your pawn</strong> to select it, then click a green square to move'],
+        ['&#9638;', 'Use the <strong>bottom buttons</strong> to switch between Move and Wall modes'],
+        ['&#9644;', 'In wall mode, <strong>hover</strong> to preview a wall, then <strong>click</strong> to place it'],
+    ];
+    tutControlsEl.innerHTML = rows.map(([icon, label]) =>
+        `<div class="tut-ctrl-row"><div class="tut-ctrl-icon">${icon}</div><div class="tut-ctrl-label">${label}</div></div>`
+    ).join('');
+}
+buildControls();
+
+function showSlide(idx) {
+    currentSlide = idx;
+    tutSlides.forEach((s, i) => s.classList.toggle('hidden', i !== idx));
+    tutDots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    tutPrev.disabled = idx === 0;
+    tutNext.disabled = idx === TOTAL_SLIDES - 1;
+}
+
+function openTutorial() {
+    document.getElementById('mode-buttons').classList.add('hidden');
+    document.getElementById('mode-sub').classList.add('hidden');
+    btnHowToPlay.classList.add('hidden');
+    tutorialPanel.classList.remove('hidden');
+    showSlide(0);
+}
+
+function closeTutorial() {
+    tutorialPanel.classList.add('hidden');
+    document.getElementById('mode-buttons').classList.remove('hidden');
+    document.getElementById('mode-sub').classList.remove('hidden');
+    btnHowToPlay.classList.remove('hidden');
+}
+
+btnHowToPlay.addEventListener('click', openTutorial);
+tutBack.addEventListener('click', closeTutorial);
+tutPrev.addEventListener('click', () => { if (currentSlide > 0) showSlide(currentSlide - 1); });
+tutNext.addEventListener('click', () => { if (currentSlide < TOTAL_SLIDES - 1) showSlide(currentSlide + 1); });
+
+// Swipe support for tutorial
+let tutTouchStartX = 0;
+tutorialPanel.addEventListener('touchstart', (e) => { tutTouchStartX = e.touches[0].clientX; }, { passive: true });
+tutorialPanel.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - tutTouchStartX;
+    if (Math.abs(dx) > 40) {
+        if (dx < 0 && currentSlide < TOTAL_SLIDES - 1) showSlide(currentSlide + 1);
+        if (dx > 0 && currentSlide > 0) showSlide(currentSlide - 1);
+    }
+}, { passive: true });
 
 modeButtons.forEach(btn => {
     btn.addEventListener('click', () => {

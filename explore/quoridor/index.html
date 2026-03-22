@@ -24,6 +24,118 @@
         <button id="btn-join-room">Join Room</button>
         <div id="lobby-status"></div>
       </div>
+
+      <button id="btn-how-to-play" class="how-to-play-link">How to Play</button>
+
+      <div id="tutorial-panel" class="hidden">
+        <div id="tutorial-slides">
+
+          <!-- Slide 1: Goal -->
+          <div class="tut-slide" data-slide="0">
+            <div class="tut-heading">Goal</div>
+            <div class="tut-board tut-board-goal">
+              <div class="tut-row tut-goal-row-b">
+                <span></span><span></span><span></span><span></span>
+                <span class="tut-pawn tut-pawn-a">&#9679;</span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="tut-row">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-arrow-down">&#8595;</div>
+              <div class="tut-row">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="tut-row tut-goal-row-a">
+                <span></span><span></span><span></span><span></span>
+                <span class="tut-pawn tut-pawn-b">&#9679;</span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-arrow-up">&#8593;</div>
+            </div>
+            <div class="tut-text">Race your pawn to the <strong>opposite side</strong> of the board. Red goes down, White goes up.</div>
+          </div>
+
+          <!-- Slide 2: Movement -->
+          <div class="tut-slide hidden" data-slide="1">
+            <div class="tut-heading">Movement</div>
+            <div class="tut-board tut-board-move">
+              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-cell-valid">&#8593;</span>
+                <span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span>
+                <span class="tut-cell-valid">&#8592;</span>
+                <span class="tut-pawn tut-pawn-a">&#9679;</span>
+                <span class="tut-cell-valid">&#8594;</span>
+                <span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-cell-valid">&#8595;</span>
+                <span></span><span></span>
+              </div>
+              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="tut-text">Move <strong>one square</strong> per turn &mdash; up, down, left, or right. No diagonal moves.</div>
+          </div>
+
+          <!-- Slide 3: Jumping -->
+          <div class="tut-slide hidden" data-slide="2">
+            <div class="tut-heading">Jumping</div>
+            <div class="tut-board tut-board-jump">
+              <div class="tut-row"><span></span><span></span><span class="tut-cell-valid">&#9651;</span><span></span><span></span></div>
+              <div class="tut-row"><span></span><span></span><span class="tut-pawn tut-pawn-b">&#9679;</span><span></span><span></span></div>
+              <div class="tut-row"><span></span><span></span><span class="tut-pawn tut-pawn-a">&#9679;</span><span></span><span></span></div>
+              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="tut-text">Jump <strong>over</strong> your opponent if they're right next to you. If a wall blocks the jump, you can move <strong>diagonally</strong> instead.</div>
+          </div>
+
+          <!-- Slide 4: Walls -->
+          <div class="tut-slide hidden" data-slide="3">
+            <div class="tut-heading">Walls</div>
+            <div class="tut-board tut-board-walls">
+              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span></div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-pawn tut-pawn-b">&#9679;</span>
+                <span></span><span></span>
+              </div>
+              <div class="tut-wall-h"></div>
+              <div class="tut-row">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-pawn tut-pawn-a">&#9679;</span>
+                <span></span><span></span>
+              </div>
+              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="tut-text">Place walls to block your opponent's path. Each player has <strong>10 walls</strong>. Walls span 2 squares and can be horizontal or vertical. You can never fully block a player's path.</div>
+          </div>
+
+          <!-- Slide 5: Controls -->
+          <div class="tut-slide hidden" data-slide="4">
+            <div class="tut-heading">Controls</div>
+            <div class="tut-controls" id="tut-controls-content"></div>
+          </div>
+
+        </div>
+
+        <div id="tut-dots"></div>
+        <div id="tut-nav">
+          <button id="tut-prev" class="tut-nav-btn" disabled>&larr;</button>
+          <button id="tut-next" class="tut-nav-btn">&rarr;</button>
+        </div>
+        <button id="tut-back" class="how-to-play-link">Back</button>
+      </div>
     </div>
   </div>
 
