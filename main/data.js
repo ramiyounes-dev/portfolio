@@ -5,15 +5,15 @@ const SITE_DATA = {
     hero: {
       greeting: "Hello, I'm", name: 'Rami',
       sentences: [
-        'a Software Developer..',
-        'a Mainframe Developer..',
+        'a Software Developer Analyst..',
+        'a Mainframe Developer Analyst..',
         'passionate about Teaching..',
         // 'always learning | always coding..'
       ]
     },
     about: {
       heading: 'About Me',
-      intro: "I'm a French-Lebanese developer fluent in English, French, and Arabic, driven by curiosity and a passion for solving complex problems. For me, coding is more than a profession — it's a mindset I apply to both technology and life. Outside of work, I stay active through fitness and outdoor adventures, volunteer when I can, and enjoy puzzles, board games, and brain teasers to stay sharp and grounded.",
+      intro: "I'm a French-Lebanese developer analyst fluent in English, French, and Arabic, driven by curiosity and a passion for solving complex problems. For me, coding is more than a profession — it's a mindset I apply to both technology and life. Outside of work, I stay active through fitness and outdoor adventures, volunteer when I can, and enjoy puzzles, board games, and brain teasers to stay sharp and grounded.",
       educationHeading: 'Education & Certifications',
       education: [
         { icon: 'fas fa-graduation-cap', title: 'PhD in Human-Robot Interaction', org: 'Université Grenoble Alpes', desc: 'Explored multimodal communication in collaborative shared tasks using an industrial robot and planning systems.' },
@@ -82,15 +82,15 @@ const SITE_DATA = {
     hero: {
       greeting: 'Bonjour, je suis', name: 'Rami',
       sentences: [
-        'un Développeur Logiciel..',
-        'un Développeur Mainframe..',
+        'un Analyste Développeur Logiciel..',
+        'un Analyste Développeur Mainframe..',
         "passionné par l'Enseignement..",
         // 'toujours en apprentissage | toujours en train de coder..'
       ]
     },
     about: {
       heading: 'À propos',
-      intro: "Développeur franco-libanais, je m'exprime couramment en anglais, français et arabe. Animé par la curiosité et la résolution de problèmes complexes, pour moi le code est bien plus qu'un métier — c'est une façon de penser que j'applique dans tous les aspects de ma vie. En dehors du travail, je pratique le sport et les activités en plein air, et j'aime les puzzles et les casse-têtes pour rester vif et ancré.",
+      intro: "Analyste Développeur franco-libanais, je m'exprime couramment en anglais, français et arabe. Animé par la curiosité et la résolution de problèmes complexes, pour moi le code est bien plus qu'un métier — c'est une façon de penser que j'applique dans tous les aspects de ma vie. En dehors du travail, je pratique le sport et les activités en plein air, et j'aime les puzzles et les casse-têtes pour rester vif et ancré.",
       educationHeading: 'Formation & Certifications',
       education: [
         { icon: 'fas fa-graduation-cap', title: "Doctorat en Interaction Homme-Robot", org: 'Université Grenoble Alpes', desc: 'Exploration de la communication multimodale dans des tâches collaboratives partagées avec un robot industriel et des systèmes de planification.' },
