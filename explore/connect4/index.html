@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect 4</title>
+  <link rel="stylesheet" href="../styles/connect4.css" />
+</head>
+<body class="game-body">
+
+  <div id="canvas-container"></div>
+
+  <div id="mode-overlay">
+    <div id="mode-box">
+      <div id="mode-title">Connect 4</div>
+      <div id="mode-sub">Choose a game mode</div>
+      <div id="mode-buttons">
+        <button class="mode-btn" data-mode="local">2 Players (Local)</button>
+        <button class="mode-btn" data-mode="ai">vs AI</button>
+        <button class="mode-btn" data-mode="online">2 Players (Online)</button>
+      </div>
+      <div id="lobby-panel" class="hidden">
+        <input id="room-input" type="text" maxlength="12" placeholder="Room code (e.g. ABCD)" autocomplete="off" spellcheck="false" />
+        <button id="btn-join-room">Join Room</button>
+        <div id="lobby-status"></div>
+      </div>
+
+      <button id="btn-how-to-play" class="how-to-play-link">How to Play</button>
+
+      <div id="tutorial-panel" class="hidden">
+        <div id="tutorial-slides">
+
+          <!-- Slide 1: Goal -->
+          <div class="tut-slide" data-slide="0">
+            <div class="tut-heading">Goal</div>
+            <div class="tut-board tut-board-goal">
+              <div class="tut-row">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-disc tut-disc-a">&#9679;</span>
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span class="tut-disc tut-disc-a">&#9679;</span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span class="tut-disc tut-disc-a">&#9679;</span>
+                <span class="tut-disc tut-disc-a">&#9679;</span>
+                <span class="tut-disc tut-disc-a">&#9679;</span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span></span><span></span>
+              </div>
+            </div>
+            <div class="tut-text">Drop discs into a 7-column, 6-row grid. First to connect <strong>four in a row</strong> &mdash; horizontally, vertically, or diagonally &mdash; wins!</div>
+          </div>
+
+          <!-- Slide 2: Dropping -->
+          <div class="tut-slide hidden" data-slide="1">
+            <div class="tut-heading">Dropping Discs</div>
+            <div class="tut-board tut-board-drop">
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-cell-valid">&#11015;</span>
+                <span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-disc tut-disc-a" style="opacity:0.4">&#9679;</span>
+                <span></span><span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span></span><span></span>
+              </div>
+            </div>
+            <div class="tut-text">Choose a column and your disc <strong>falls to the lowest</strong> available space. Players alternate turns &mdash; Red goes first.</div>
+          </div>
+
+          <!-- Slide 3: Winning -->
+          <div class="tut-slide hidden" data-slide="2">
+            <div class="tut-heading">Winning</div>
+            <div class="tut-board tut-board-win">
+              <div class="tut-row">
+                <span></span><span></span><span></span>
+                <span class="tut-disc tut-disc-a tut-highlight">&#9679;</span>
+                <span></span>
+              </div>
+              <div class="tut-row">
+                <span></span><span></span>
+                <span class="tut-disc tut-disc-a tut-highlight">&#9679;</span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span></span>
+              </div>
+              <div class="tut-row">
+                <span></span>
+                <span class="tut-disc tut-disc-a tut-highlight">&#9679;</span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span></span>
+              </div>
+              <div class="tut-row">
+                <span class="tut-disc tut-disc-a tut-highlight">&#9679;</span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+                <span class="tut-disc tut-disc-a">&#9679;</span>
+                <span class="tut-disc tut-disc-a">&#9679;</span>
+                <span class="tut-disc tut-disc-b">&#9679;</span>
+              </div>
+            </div>
+            <div class="tut-text">Connect four discs in a line to win. Check <strong>horizontal</strong>, <strong>vertical</strong>, and <strong>diagonal</strong> directions. If the board fills up with no winner, it's a <strong>draw</strong>.</div>
+          </div>
+
+          <!-- Slide 4: Controls -->
+          <div class="tut-slide hidden" data-slide="3">
+            <div class="tut-heading">Controls</div>
+            <div class="tut-controls" id="tut-controls-content"></div>
+          </div>
+
+        </div>
+
+        <div id="tut-dots"></div>
+        <div id="tut-nav">
+          <button id="tut-prev" class="tut-nav-btn" disabled>&larr;</button>
+          <button id="tut-next" class="tut-nav-btn">&rarr;</button>
+        </div>
+        <button id="tut-back" class="how-to-play-link">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="top-bar">
+    <a id="back-link" href="../">&larr; Explore</a>
+  </div>
+
+  <div id="hud">
+    <div id="hud-row-top">
+      <div class="player-card player-a-card" id="card-a">
+        <span class="player-label">RED <span id="you-a" class="you-badge hidden">YOU</span></span>
+        <span class="disc-count"><span id="hud-discs-a">0</span> <small>discs</small></span>
+        <span class="score-line" id="score-a">0 <small>wins</small></span>
+      </div>
+
+      <div id="hud-center">
+        <div id="hud-turn">Red's Turn</div>
+        <div id="hud-hint">Click a column to drop a disc</div>
+      </div>
+
+      <div class="player-card player-b-card" id="card-b">
+        <span class="player-label">WHITE <span id="you-b" class="you-badge hidden">YOU</span></span>
+        <span class="disc-count"><span id="hud-discs-b">0</span> <small>discs</small></span>
+        <span class="score-line" id="score-b">0 <small>wins</small></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="action-bar">
+    <button id="btn-reset" class="ctrl-btn reset-btn" title="Restart game">Reset</button>
+    <div class="btn-sep"></div>
+    <button id="btn-change-mode" class="ctrl-btn mode-switch-btn" title="Back to game selection">Menu</button>
+  </div>
+
+  <div id="reset-confirm" class="hidden">
+    <div id="reset-confirm-box">
+      <p>Are you sure you want to reset the board?</p>
+      <div class="confirm-btns">
+        <button id="btn-confirm-yes" class="ctrl-btn">Yes</button>
+        <button id="btn-confirm-no" class="ctrl-btn">No</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="win-overlay" class="hidden">
+    <div id="win-box">
+      <div id="win-icon">&#9679;</div>
+      <div id="win-message">Red wins!</div>
+      <div id="win-sub">Four in a row!</div>
+      <button id="btn-win-reset">Play Again</button>
+      <a href="../" class="win-back">&larr; Back to Explore</a>
+    </div>
+  </div>
+
+  <script type="module" src="../js/connect4/main.js"></script>
+  <script type="module" src="../js/connect4/interaction.js"></script>
+
+</body>
+</html>
