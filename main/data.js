@@ -61,7 +61,7 @@ const SITE_DATA = {
         },
         {
           title: 'Explore',
-          description: 'Interactive experiments and projects — featuring Quoridor 3D, Turkish Checkers (Dama), and Connect 4, strategy board games playable locally, against AI, or online.',
+          description: 'Interactive games and projects — featuring Quoridor, Turkish Checkers (Dama), and Connect 4, strategy board games playable locally, against AI, or online.',
           tech: [
             { icon: 'fab fa-js', text: 'JavaScript' },
             { icon: 'fas fa-cube', text: 'Three.js' },
@@ -138,7 +138,7 @@ const SITE_DATA = {
         },
         {
           title: 'Explore',
-          description: 'Projets et expériences interactives — avec Quoridor 3D, les Dames Turques (Dama) et Puissance 4, des jeux de stratégie jouables en local, contre l\'IA, ou en ligne.',
+          description: 'Projets et jeux interactives — avec Quoridor, les Dames Turques (Dama) et Puissance 4, des jeux de stratégie jouables en local, contre l\'IA, ou en ligne.',
           tech: [
             { icon: 'fab fa-js', text: 'JavaScript' },
             { icon: 'fas fa-cube', text: 'Three.js' },
