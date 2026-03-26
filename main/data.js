@@ -61,7 +61,7 @@ const SITE_DATA = {
         },
         {
           title: 'Explore',
-          description: 'Interactive experiments and projects — starting with Quoridor 3D, a strategy board game playable locally, against AI, or online with friends.',
+          description: 'Interactive experiments and projects — featuring Quoridor 3D, Turkish Checkers (Dama), and Connect 4, strategy board games playable locally, against AI, or online.',
           tech: [
             { icon: 'fab fa-js', text: 'JavaScript' },
             { icon: 'fas fa-cube', text: 'Three.js' },
@@ -138,7 +138,7 @@ const SITE_DATA = {
         },
         {
           title: 'Explore',
-          description: 'Projets et exp\u00e9riences interactives — en commen\u00e7ant par Quoridor 3D, un jeu de strat\u00e9gie jouable en local, contre l\'IA, ou en ligne avec des amis.',
+          description: 'Projets et expériences interactives — avec Quoridor 3D, les Dames Turques (Dama) et Puissance 4, des jeux de stratégie jouables en local, contre l\'IA, ou en ligne.',
           tech: [
             { icon: 'fab fa-js', text: 'JavaScript' },
             { icon: 'fas fa-cube', text: 'Three.js' },
