@@ -414,9 +414,6 @@ roomInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') joinRoom()
 btnDropConfirm.addEventListener('click', confirmDrop);
 btnReset.addEventListener('click', onResetClick);
 btnWinReset.addEventListener('click', onResetClick);
-renderer.domElement.addEventListener('click', onClick);
-renderer.domElement.addEventListener('mousemove', onMouseMove);
-renderer.domElement.addEventListener('mouseleave', () => { if (!isTouch) hideGhost(); });
 
 if (isTouch) {
     renderer.domElement.addEventListener('touchstart', (e) => {
@@ -425,6 +422,10 @@ if (isTouch) {
         onClick({ clientX: t.clientX, clientY: t.clientY });
         e.preventDefault();
     }, { passive: false });
+} else {
+    renderer.domElement.addEventListener('click', onClick);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('mouseleave', () => hideGhost());
 }
 
 updateHUD();
