@@ -33,13 +33,16 @@ const lobbyPanel   = document.getElementById('lobby-panel');
 const roomInput    = document.getElementById('room-input');
 const btnJoinRoom  = document.getElementById('btn-join-room');
 const lobbyStatus  = document.getElementById('lobby-status');
-const btnChangeMode = document.getElementById('btn-change-mode');
-const resetConfirm  = document.getElementById('reset-confirm');
-const btnConfirmYes = document.getElementById('btn-confirm-yes');
-const btnConfirmNo  = document.getElementById('btn-confirm-no');
+const btnChangeMode   = document.getElementById('btn-change-mode');
+const resetConfirm    = document.getElementById('reset-confirm');
+const btnConfirmYes   = document.getElementById('btn-confirm-yes');
+const btnConfirmNo    = document.getElementById('btn-confirm-no');
+const btnDropConfirm  = document.getElementById('btn-drop-confirm');
 
 const PLAYER_NAME = { A: 'Red', B: 'White' };
 const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+let pendingCol = null;
 
 /* ── HUD ── */
 
@@ -89,11 +92,20 @@ function getHoveredCol(event) {
     return -1;
 }
 
-function onClick(event) {
-    if (state.winner || state.draw || isLocked()) return;
-    const col = getHoveredCol(event);
-    if (col < 0) return;
+function cancelPendingDrop() {
+    pendingCol = null;
+    hideGhost();
+    btnDropConfirm.classList.add('hidden');
+}
 
+function confirmDrop() {
+    if (pendingCol === null) return;
+    const col = pendingCol;
+    cancelPendingDrop();
+    dropDisc(col);
+}
+
+function dropDisc(col) {
     const result = tryDrop(col);
     if (result.ok) {
         showLastMove(result.row, result.col);
@@ -105,6 +117,30 @@ function onClick(event) {
         }
     }
     updateHUD();
+}
+
+function onClick(event) {
+    if (state.winner || state.draw || isLocked()) return;
+    const col = getHoveredCol(event);
+    if (col < 0) {
+        if (isTouch && pendingCol !== null) cancelPendingDrop();
+        return;
+    }
+    if (!board.getValidColumns().includes(col)) return;
+
+    if (isTouch) {
+        if (pendingCol === col) {
+            confirmDrop();
+            return;
+        }
+        pendingCol = col;
+        showGhost(col, state.currentPlayer);
+        btnDropConfirm.classList.remove('hidden');
+        hudHint.textContent = 'Tap again or press Drop Disc to confirm';
+        return;
+    }
+
+    dropDisc(col);
 }
 
 function onMouseMove(event) {
@@ -146,7 +182,7 @@ on('reset', () => {
     winOverlay.classList.add('hidden');
     clearLastMove();
     clearWinHighlight();
-    hideGhost();
+    cancelPendingDrop();
     updateHUD();
 });
 
@@ -375,11 +411,12 @@ roomInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') joinRoom()
 
 /* ── Controls ── */
 
+btnDropConfirm.addEventListener('click', confirmDrop);
 btnReset.addEventListener('click', onResetClick);
 btnWinReset.addEventListener('click', onResetClick);
 renderer.domElement.addEventListener('click', onClick);
 renderer.domElement.addEventListener('mousemove', onMouseMove);
-renderer.domElement.addEventListener('mouseleave', () => hideGhost());
+renderer.domElement.addEventListener('mouseleave', () => { if (!isTouch) hideGhost(); });
 
 if (isTouch) {
     renderer.domElement.addEventListener('touchstart', (e) => {

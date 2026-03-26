@@ -104,6 +104,21 @@ body.game-body {
 }
 .ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
+.drop-confirm-btn {
+  background: rgba(40, 120, 40, 0.9); color: #fff;
+  border-color: rgba(80, 200, 80, 0.5);
+  animation: pulse-confirm 1.2s ease-in-out infinite;
+}
+.drop-confirm-btn:hover {
+  background: rgba(50, 150, 50, 0.95) !important;
+  border-color: rgba(100, 220, 100, 0.7) !important;
+}
+.drop-confirm-btn.hidden { display: none; }
+@keyframes pulse-confirm {
+  0%, 100% { box-shadow: 0 0 8px rgba(80,200,80,0.3); }
+  50% { box-shadow: 0 0 16px rgba(80,200,80,0.6); }
+}
+
 .reset-btn { color: #ff9999; border-color: rgba(220, 60, 60, 0.3); }
 .reset-btn:hover {
   background: rgba(140, 30, 30, 0.9) !important;
