@@ -336,8 +336,9 @@ onNet('reset', () => {
     setActiveTurnRing('A');
 });
 
-onNet('score', ({ scores }) => {
+onNet('score', ({ scores, nextStarter }) => {
     state.scores = scores;
+    if (nextStarter) state.startingPlayer = nextStarter;
     updateScores();
 });
 
@@ -560,6 +561,7 @@ async function joinRoom() {
         setGameMode('online');
         state.myRole = init.role;
         state.scores = init.scores;
+        state.startingPlayer = init.startingPlayer || 'A';
 
         setCameraForRole(init.role);
 

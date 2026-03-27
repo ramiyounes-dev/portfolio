@@ -342,7 +342,7 @@ onNet('move', (msg) => {
     if (!state.winner) autoHighlightCaptures();
 });
 onNet('reset', () => { resetGame(); updateHUD(); });
-onNet('score', ({ scores }) => { state.scores = scores; updateScores(); });
+onNet('score', ({ scores, nextStarter }) => { state.scores = scores; if (nextStarter) state.startingPlayer = nextStarter; updateScores(); });
 onNet('state_sync', ({ moves }) => { replayMoves(moves); updateHUD(); });
 onNet('opponent_joined', () => {
     lobbyStatus.textContent = 'Opponent joined!';
@@ -517,6 +517,7 @@ async function joinRoom() {
         setGameMode('online');
         state.myRole = init.role;
         state.scores = init.scores;
+        state.startingPlayer = init.startingPlayer || 'A';
         setCameraForRole(init.role);
         if (init.role === 'A') youA.classList.remove('hidden'); else youB.classList.remove('hidden');
         updateScores();
