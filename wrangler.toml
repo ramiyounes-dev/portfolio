@@ -1,6 +1,9 @@
 name = "portfolio"
+main = "_worker.js"
 compatibility_date = "2024-09-23"
-pages_build_output_dir = "."
+
+[assets]
+directory = "."
 
 [[durable_objects.bindings]]
 name = "GAME_ROOM"
