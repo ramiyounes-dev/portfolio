@@ -95,9 +95,9 @@ function replayMoves(moves) {
     state.draw = false;
     state.moveCount = 0;
 
-    for (const col of moves) {
+    for (const m of moves) {
         if (state.winner || state.draw) break;
-        board.dropDisc(col, state.currentPlayer);
+        board.dropDisc(m.col, state.currentPlayer);
         state.moveCount++;
         const winner = board.checkWin();
         if (winner) { state.winner = winner; }
