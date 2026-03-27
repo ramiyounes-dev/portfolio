@@ -556,7 +556,7 @@ async function joinRoom() {
     lobbyStatus.textContent = 'Connecting...';
 
     try {
-        const init = await connectToRoom(code);
+        const init = await connectToRoom('QR-' + code);
         setGameMode('online');
         state.myRole = init.role;
         state.scores = init.scores;
