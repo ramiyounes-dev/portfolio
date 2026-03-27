@@ -204,14 +204,6 @@ on('aiTurn', ({ player }) => {
 
 onNet('drop', (msg) => {
     applyRemoteDrop(msg.col);
-    const row = -1;
-    // Find where the disc landed
-    for (let r = 0; r < 6; r++) {
-        if (board.grid[r][msg.col]) {
-            // The last placed disc in this column
-        }
-    }
-    // Use board state to find the row
     for (let r = 5; r >= 0; r--) {
         if (board.grid[r][msg.col]) { showLastMove(r, msg.col); break; }
     }
@@ -388,7 +380,7 @@ async function joinRoom() {
     btnJoinRoom.disabled = true;
     lobbyStatus.textContent = 'Connecting...';
     try {
-        const init = await connectToRoom(code);
+        const init = await connectToRoom('C4-' + code);
         setGameMode('online');
         state.myRole = init.role;
         state.scores = init.scores;
