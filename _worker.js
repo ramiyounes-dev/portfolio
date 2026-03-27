@@ -80,6 +80,7 @@ export class GameRoom {
 
         const scores = (await this.state.storage.get('scores')) || { A: 0, B: 0 };
         const moves = (await this.state.storage.get('moves')) || [];
+        const startingPlayer = (await this.state.storage.get('startingPlayer')) || 'A';
         const opponentConnected = existing.length > 0;
 
         server.send(JSON.stringify({
@@ -87,6 +88,7 @@ export class GameRoom {
             role,
             opponentConnected,
             scores,
+            startingPlayer,
         }));
 
         if (moves.length > 0) {
@@ -136,8 +138,11 @@ export class GameRoom {
             const scores = (await this.state.storage.get('scores')) || { A: 0, B: 0 };
             scores[msg.winner] = (scores[msg.winner] || 0) + 1;
             await this.state.storage.put('scores', scores);
+            // Loser starts next game
+            const nextStarter = msg.winner === 'A' ? 'B' : 'A';
+            await this.state.storage.put('startingPlayer', nextStarter);
 
-            const scoreMsg = JSON.stringify({ type: 'score', scores });
+            const scoreMsg = JSON.stringify({ type: 'score', scores, nextStarter });
             ws.send(scoreMsg);
             for (const opp of opponents) {
                 opp.send(scoreMsg);
