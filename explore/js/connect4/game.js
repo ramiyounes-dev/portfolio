@@ -90,7 +90,7 @@ function resetGame() {
 function replayMoves(moves) {
     const fresh = new Connect4Board();
     board.grid = fresh.grid;
-    state.currentPlayer = 'A';
+    state.currentPlayer = state.startingPlayer;
     state.winner = null;
     state.draw = false;
     state.moveCount = 0;

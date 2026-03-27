@@ -124,7 +124,7 @@ function replayMoves(moves) {
     board.wallOwners = fresh.wallOwners;
     board.pawns = fresh.pawns;
     board.wallCounts = fresh.wallCounts;
-    state.currentPlayer = 'A';
+    state.currentPlayer = state.startingPlayer;
     state.mode = 'move';
     state.winner = null;
     state.moveCount = 0;
