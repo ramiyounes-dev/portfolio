@@ -22,3 +22,7 @@ assets/font-awesome-4.7.0/
 assets/webfonts/
 
 README.md
+
+projects/mainframe-banking/.vscode/
+projects/mainframe-banking/bin/
+projects/mainframe-banking/web/__pycache__/
