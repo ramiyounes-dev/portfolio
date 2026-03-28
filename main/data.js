@@ -57,7 +57,7 @@ const SITE_DATA = {
             { icon: 'fas fa-project-diagram', text: 'Batch Processing' },
             { icon: 'fas fa-terminal', text: 'Terminal UI' }
           ],
-          github: 'https://github.com/ramiyounes-dev/portfolio',
+          github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/mainframe-banking',
           link: './projects/mainframe-banking/showcase/',
           linkLabel: 'View Demo'
         },
@@ -148,7 +148,7 @@ const SITE_DATA = {
             { icon: 'fas fa-project-diagram', text: 'Traitement Batch' },
             { icon: 'fas fa-terminal', text: 'Interface Terminal' }
           ],
-          github: 'https://github.com/ramiyounes-dev/portfolio',
+          github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/mainframe-banking',
           link: './projects/mainframe-banking/showcase/',
           linkLabel: 'Voir la démo'
         },
