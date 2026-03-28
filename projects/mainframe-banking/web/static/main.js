@@ -75,7 +75,8 @@ function renderTransactionLedger() {
             currentBatch = batchNum;
         }
 
-        tbody.appendChild(createTxnRow(txn, 'committed'));
+        const rowState = txn.status === 'ALERT' ? 'alert' : 'committed';
+        tbody.appendChild(createTxnRow(txn, rowState));
     }
 
     // Final committed batch divider
@@ -111,7 +112,8 @@ function createTxnRow(txn, state) {
     const amountClass = amount >= 0 ? 'amount-positive' : 'amount-negative';
     const amountStr = formatAmount(amount, txn.currency);
 
-    const statusLabel = state === 'committed' ? 'COMMIT' :
+    const statusLabel = state === 'alert' ? 'ALERT' :
+                        state === 'committed' ? 'COMMIT' :
                         state === 'sorted' ? 'SORTED' : 'PENDING';
 
     tr.innerHTML = `
@@ -275,27 +277,6 @@ function selectAccount(acctNum) {
     }
 }
 
-// ─── Helper: ensure account exists in local ledger ──────────────────
-
-function ensureAccountExists(acctNumber, currency, source) {
-    if (!acctNumber) return;
-    const existing = accounts.find(a => a.acct_number === acctNumber);
-    if (!existing) {
-        accounts.push({
-            acct_number: acctNumber,
-            owner_name: 'UNKNOWN',
-            acct_type: 'CHECKING',
-            currency: currency || 'USD',
-            balance: 0,
-            status: 'ACTIVE',
-            open_date: '',
-            _auto_created: true,
-            _created_by: source || 'transaction',
-        });
-        renderAccountsLedger();
-    }
-}
-
 // ─── Actions ────────────────────────────────────────────────────────
 
 async function addRandom(count) {
@@ -315,11 +296,10 @@ async function addRandom(count) {
             return;
         }
 
-        // Add to pending and ensure accounts exist
+        // Add to pending
         for (const txn of (data.transactions || [])) {
             txn.status = 'PENDING';
             pendingTransactions.push(txn);
-            ensureAccountExists(txn.acct_number, txn.currency, 'random transaction');
         }
 
         renderTransactionLedger();
@@ -415,6 +395,13 @@ async function updateBalances() {
             allTransactions.push(txn);
         }
 
+        // Add alert-flagged transactions (account not found)
+        const alertTxns = data.alerts || [];
+        for (const txn of alertTxns) {
+            txn.status = 'ALERT';
+            allTransactions.push(txn);
+        }
+
         // Add batch boundary
         const now = new Date();
         const ts = now.getFullYear().toString() +
@@ -459,7 +446,11 @@ async function updateBalances() {
         }
 
         // Results summary with green highlights on changed balances
-        let resultHtml = `Batch #${newBatchNum} committed: ${committed.length} transactions posted.\n\n`;
+        let resultHtml = `Batch #${newBatchNum} committed: ${committed.length} transactions posted.\n`;
+        if (alertTxns.length > 0) {
+            resultHtml += `<span class="log-error">ALERT: ${alertTxns.length} transaction(s) skipped — account not found: ${alertTxns.map(t => t.acct_number).join(', ')}</span>\n`;
+        }
+        resultHtml += '\n';
         resultHtml += 'Updated Account Balances:\n';
         resultHtml += '─'.repeat(68) + '\n';
         resultHtml += `${'ACCOUNT #'.padEnd(10)}  ${'BEFORE'.padStart(14)}     ${'AFTER'.padStart(14)}  ${'CUR'}  CHANGE\n`;
@@ -521,13 +512,7 @@ async function submitCreateAccount() {
         }
 
         if (data.account) {
-            // Replace auto-created stub if it exists, otherwise add
-            const idx = accounts.findIndex(a => a.acct_number === data.account.acct_number);
-            if (idx >= 0) {
-                accounts[idx] = data.account;
-            } else {
-                accounts.push(data.account);
-            }
+            accounts.push(data.account);
             renderAccountsLedger();
         }
 

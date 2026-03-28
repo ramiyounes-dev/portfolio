@@ -23,6 +23,9 @@
     --orange-sorted: #ff9900;
     --orange-bg: rgba(255, 153, 0, 0.08);
 
+    --yellow-alert: #ffcc00;
+    --yellow-bg: rgba(255, 204, 0, 0.10);
+
     --text-primary: #c9d1d9;
     --text-muted: #6e7681;
     --text-header: #58a6ff;
@@ -237,6 +240,11 @@ tr.row-pending td {
 tr.row-sorted td {
     color: var(--orange-sorted);
     background: var(--orange-bg);
+}
+
+tr.row-alert td {
+    color: var(--yellow-alert);
+    background: var(--yellow-bg);
 }
 
 tr.row-flash td {
