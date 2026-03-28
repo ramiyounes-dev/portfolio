@@ -215,10 +215,10 @@ def parse_cobol_output(lines):
             metadata['message'] = '|'.join(parts[1:]).strip()
         elif tag == 'CLOSURE-TXN':
             metadata['closure_txn'] = [p.strip() for p in parts[1:]]
-        elif tag == 'NEW-ACCT':
-            if 'new_accounts' not in metadata:
-                metadata['new_accounts'] = []
-            metadata['new_accounts'].append(
+        elif tag == 'ALERT':
+            if 'alerts' not in metadata:
+                metadata['alerts'] = []
+            metadata['alerts'].append(
                 [p.strip() for p in parts[1:]])
     return records, metadata
 
@@ -426,6 +426,7 @@ def api_update_balances():
         return jsonify({'error': meta['error']}), 400
 
     committed = []
+    alerts = []
     for rec in records:
         committed.append({
             'txn_id': rec[0] if len(rec) > 0 else '',
@@ -440,24 +441,20 @@ def api_update_balances():
             'running_bal': float(rec[9]) if len(rec) > 9 else 0.0,
         })
 
-    # Add any auto-created accounts to the sidecar before refresh
-    if 'new_accounts' in meta:
-        existing = read_all_accounts()
-        existing_nums = {a['acct_number'] for a in existing}
-        for na in meta['new_accounts']:
-            acct_num = na[0] if len(na) > 0 else ''
-            if acct_num and acct_num not in existing_nums:
-                existing.append({
-                    'acct_number': acct_num,
-                    'owner_name': na[1] if len(na) > 1 else 'Auto-created',
-                    'acct_type': na[2] if len(na) > 2 else 'CHECKING',
-                    'currency': na[3] if len(na) > 3 else 'USD',
-                    'balance': 0.0,
-                    'status': 'ACTIVE',
-                    'open_date': '',
-                })
-                existing_nums.add(acct_num)
-        save_accounts_sidecar(existing)
+    # Collect alert-flagged transactions (account not found)
+    if 'alerts' in meta:
+        for al in meta['alerts']:
+            alerts.append({
+                'txn_id': al[0] if len(al) > 0 else '',
+                'timestamp': al[1] if len(al) > 1 else '',
+                'acct_number': al[2] if len(al) > 2 else '',
+                'txn_type': al[3] if len(al) > 3 else '',
+                'amount': float(al[4]) if len(al) > 4 else 0.0,
+                'currency': al[5] if len(al) > 5 else '',
+                'description': al[6] if len(al) > 6 else '',
+                'status': 'ALERT',
+                'batch_num': al[8] if len(al) > 8 else '',
+            })
 
     # Refresh accounts from COBOL
     accounts = refresh_accounts_from_cobol()
@@ -469,18 +466,18 @@ def api_update_balances():
 
     batch_state = read_batch_state()
 
-    # Build action log noting any auto-created accounts
-    auto_create_lines = []
-    if 'new_accounts' in meta:
-        for na in meta['new_accounts']:
-            auto_create_lines.append(
-                f"    * AUTO-CREATED account {na[0] if na else '?'}"
-                f" (not found during update)")
+    # Build action log noting any alert-flagged transactions
+    alert_lines = []
+    if alerts:
+        for al in alerts:
+            alert_lines.append(
+                f"    * ALERT: account {al['acct_number']}"
+                f" not found — txn {al['txn_id']} skipped")
 
     action_log = [
         "PROCEDURE DIVISION.",
         "APPLY-TRANSACTIONS.",
-        "    * Appareillage: lockstep walk of sorted files",
+        "    * Appareillage: sorted transactions vs indexed accounts",
         "    OPEN INPUT SORTED-FILE",
         "    OPEN I-O ACCOUNT-FILE",
         "    OPEN EXTEND TRANS-FILE",
@@ -488,13 +485,13 @@ def api_update_balances():
         "PROCESS-ONE-TRANSACTION.",
         "    READ ACCOUNT-FILE  (by key: ACCT-NUMBER)",
         "    IF INVALID KEY",
-        "        PERFORM AUTO-CREATE-ACCT",
+        "        PERFORM LOG-MISSING-ACCOUNT",
         "    END-IF",
         "    ADD SR-TXN-AMOUNT TO ACCT-BALANCE",
         "    REWRITE ACCOUNT-RECORD",
         "    WRITE COMMITTED-RECORD",
         "",
-    ] + auto_create_lines + [
+    ] + alert_lines + [
         "",
         f"    * {meta.get('message', 'Update complete')}",
         "    * Batch pointer advanced",
@@ -503,6 +500,7 @@ def api_update_balances():
 
     return jsonify({
         'transactions': committed,
+        'alerts': alerts,
         'accounts': accounts,
         'batch_state': batch_state,
         'action_log': action_log,
