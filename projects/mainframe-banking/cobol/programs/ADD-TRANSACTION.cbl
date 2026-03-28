@@ -63,8 +63,6 @@
            05  WS-DATE-HUNDREDTHS     PIC 9(2).
        01  WS-TIMESTAMP               PIC 9(14).
        01  WS-ARG-COUNT               PIC 9(2).
-       01  WS-ACCT-CREATED            PIC 9      VALUE 0.
-       01  WS-DISPLAY-BAL             PIC -(13)9.99.
 
        PROCEDURE DIVISION.
        MAIN-PARA.
@@ -117,7 +115,10 @@
            MOVE WS-INPUT-ACCT TO ACCT-NUMBER
            READ ACCOUNT-FILE
                INVALID KEY
-                   PERFORM AUTO-CREATE-ACCOUNT
+                   DISPLAY "ERROR|Account not found: "
+                       WS-INPUT-ACCT
+                   CLOSE ACCOUNT-FILE
+                   STOP RUN
            END-READ
            IF ACCT-STATUS-CLOSED
                DISPLAY "ERROR|Account is closed: "
@@ -126,35 +127,6 @@
                STOP RUN
            END-IF
            CLOSE ACCOUNT-FILE.
-
-       AUTO-CREATE-ACCOUNT.
-      *    Account not found — create it automatically
-           INITIALIZE ACCOUNT-RECORD
-           MOVE WS-INPUT-ACCT     TO ACCT-NUMBER
-           MOVE "Auto-created"     TO ACCT-OWNER-NAME
-           MOVE "CHECKING"         TO ACCT-TYPE
-           MOVE WS-INPUT-CURRENCY TO ACCT-CURRENCY
-           MOVE ZERO              TO ACCT-BALANCE
-           MOVE "ACTIVE  "         TO ACCT-STATUS
-           ACCEPT WS-CURRENT-DATE FROM DATE YYYYMMDD
-           MOVE WS-DATE-YYYYMMDD  TO ACCT-OPEN-DATE
-           WRITE ACCOUNT-RECORD
-           IF WS-ACCT-STATUS NOT = "00"
-               DISPLAY "ERROR|Auto-create failed: "
-                   WS-ACCT-STATUS
-               CLOSE ACCOUNT-FILE
-               STOP RUN
-           END-IF
-           MOVE 1 TO WS-ACCT-CREATED
-           MOVE ACCT-BALANCE TO WS-DISPLAY-BAL
-           DISPLAY "NEW-ACCT|"
-               ACCT-NUMBER "|"
-               ACCT-OWNER-NAME "|"
-               ACCT-TYPE "|"
-               ACCT-CURRENCY "|"
-               WS-DISPLAY-BAL "|"
-               ACCT-STATUS "|"
-               ACCT-OPEN-DATE.
 
        READ-BATCH-STATE.
            OPEN INPUT BATCH-FILE

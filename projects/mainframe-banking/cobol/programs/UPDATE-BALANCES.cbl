@@ -195,9 +195,12 @@
            MOVE SR-TXN-ACCOUNT-NUM TO ACCT-NUMBER
            READ ACCOUNT-FILE
                INVALID KEY
-                   PERFORM AUTO-CREATE-ACCT
+                   PERFORM LOG-MISSING-ACCOUNT
            END-READ
-           IF WS-ACCT-STATUS = "00"
+           IF WS-ACCT-STATUS = "00" AND ACCT-STATUS-CLOSED
+               PERFORM LOG-CLOSED-ACCOUNT
+           END-IF
+           IF WS-ACCT-STATUS = "00" AND NOT ACCT-STATUS-CLOSED
       *        Apply the transaction amount to balance
                ADD SR-TXN-AMOUNT TO ACCT-BALANCE
                MOVE ACCT-BALANCE TO WS-NEW-BALANCE
@@ -236,29 +239,39 @@
                    WS-DISPLAY-BAL
            END-IF.
 
-       AUTO-CREATE-ACCT.
-      *    Account not found during update — create it
-           INITIALIZE ACCOUNT-RECORD
-           MOVE SR-TXN-ACCOUNT-NUM TO ACCT-NUMBER
-           MOVE "Auto-created"      TO ACCT-OWNER-NAME
-           MOVE "CHECKING"          TO ACCT-TYPE
-           MOVE SR-TXN-CURRENCY    TO ACCT-CURRENCY
-           MOVE ZERO               TO ACCT-BALANCE
-           MOVE "ACTIVE  "          TO ACCT-STATUS
-           ACCEPT WS-CURRENT-DATE FROM DATE YYYYMMDD
-           MOVE WS-DATE-YYYYMMDD   TO ACCT-OPEN-DATE
-           WRITE ACCOUNT-RECORD
-           IF WS-ACCT-STATUS NOT = "00"
-               DISPLAY "WARN|Auto-create failed: "
-                   SR-TXN-ACCOUNT-NUM
-                   " status=" WS-ACCT-STATUS
-           ELSE
-               DISPLAY "NEW-ACCT|"
-                   ACCT-NUMBER "|"
-                   "Auto-created|"
-                   ACCT-TYPE "|"
-                   ACCT-CURRENCY
-           END-IF.
+       LOG-MISSING-ACCOUNT.
+      *    Account not found — log error, flag transaction as ALERT
+           MOVE SR-TXN-AMOUNT TO WS-DISPLAY-AMT
+           DISPLAY "ALERT|"
+               SR-TXN-ID "|"
+               SR-TXN-TIMESTAMP "|"
+               SR-TXN-ACCOUNT-NUM "|"
+               SR-TXN-TYPE "|"
+               WS-DISPLAY-AMT "|"
+               SR-TXN-CURRENCY "|"
+               SR-TXN-DESCRIPTION "|"
+               "ALERT   " "|"
+               SR-TXN-BATCH-NUM
+           DISPLAY "WARN|Account not found: "
+               SR-TXN-ACCOUNT-NUM
+               " - transaction " SR-TXN-ID " flagged as ALERT".
+
+       LOG-CLOSED-ACCOUNT.
+      *    Account is closed — log error, flag transaction as ALERT
+           MOVE SR-TXN-AMOUNT TO WS-DISPLAY-AMT
+           DISPLAY "ALERT|"
+               SR-TXN-ID "|"
+               SR-TXN-TIMESTAMP "|"
+               SR-TXN-ACCOUNT-NUM "|"
+               SR-TXN-TYPE "|"
+               WS-DISPLAY-AMT "|"
+               SR-TXN-CURRENCY "|"
+               SR-TXN-DESCRIPTION "|"
+               "ALERT   " "|"
+               SR-TXN-BATCH-NUM
+           DISPLAY "WARN|Account closed: "
+               SR-TXN-ACCOUNT-NUM
+               " - transaction " SR-TXN-ID " flagged as ALERT".
 
        ADVANCE-BATCH-STATE.
       *    Clear pending file (batch is now committed)
