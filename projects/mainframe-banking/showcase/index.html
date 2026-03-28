@@ -129,6 +129,7 @@
     tr.committed td { color: var(--green); background: var(--green-bg); }
     tr.pending td { color: var(--red); background: var(--red-bg); }
     tr.sorted td { color: var(--orange); background: var(--orange-bg); }
+    tr.alert td { color: #ffcc00; background: rgba(255,204,0,0.10); }
     tr.flash td { animation: flash-green 1.5s ease-out; }
     @keyframes flash-green { 0% { background: var(--green-flash); } 100% { background: var(--green-bg); } }
     tr.acct-row { cursor: pointer; }
@@ -309,8 +310,8 @@
             <div class="action-bar">
                 <button class="btn btn-red" onclick="addRandom(1)">+ 1 Random Transaction</button>
                 <button class="btn btn-red" onclick="addRandom(10)">+ 10 Random Transactions</button>
-                <button class="btn btn-orange" onclick="sortBatch()">Sort Batch</button>
-                <button class="btn btn-green" onclick="updateBalances()">Update Accounts &amp; DB</button>
+                <button class="btn btn-orange" id="btn-sort" onclick="sortBatch()" disabled>Sort Batch</button>
+                <button class="btn btn-green" id="btn-update" onclick="updateBalances()" disabled>Update Accounts &amp; DB</button>
             </div>
 
             <!-- Accounts Ledger -->
@@ -360,7 +361,6 @@ Ready.</pre></div>
                 <label>Currency:
                     <select id="new-cur"><option>USD</option><option>EUR</option><option>GBP</option><option>LBP</option><option>JPY</option></select>
                 </label>
-                <label>Opening Balance: <input type="number" id="new-bal" value="0" step="0.01"></label>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-blue" onclick="submitCreate()">CREATE</button>
@@ -408,16 +408,37 @@ Ready.</pre></div>
                 <div class="step"><div class="step-num">4</div><div><strong>Inspect a batch</strong> — Click any <span class="tag tag-red">BATCH #N</span> divider in the ledger to see per-account deltas and the full transaction list for that batch.</div></div>
                 <div class="step"><div class="step-num">5</div><div><strong>Manage accounts</strong> — Click a row in the accounts ledger to select it, then use <span class="tag tag-blue">+ New Account</span>, <span class="tag tag-red">Delete Account</span>, or <strong>Check Transactions</strong> for full history.</div></div>
 
-                <h3>AUTO-CREATE ACCOUNTS</h3>
-                If a transaction references an account that does not exist, the system automatically
-                creates it with owner <strong>UNKNOWN</strong>. This mirrors real mainframe behaviour where
-                the transaction file is authoritative and the accounts file is derived.
+                <h3>ERROR HANDLING</h3>
+                If a transaction references an account that does not exist or is <strong>closed</strong>,
+                the system rejects it. <code>ADD-TRANSACTION</code> returns an error.
+                <code>UPDATE-BALANCES</code> logs a warning and flags the transaction as
+                <span class="tag tag-yellow" style="color:#ffcc00;border-color:#ffcc00;">ALERT</span> (yellow)
+                in the ledger — the transaction is skipped, not committed.
+                This makes orphaned or invalid transactions immediately visible for investigation.
+
+                <h3>FILE ORGANIZATION</h3>
+                Five data files, each mirroring a mainframe VSAM dataset type:
+                <div class="step"><div class="step-num">1</div><div><code>accounts.dat</code> — <strong>INDEXED</strong> (KSDS), 120-byte records keyed on <code>ACCT-NUMBER</code>. Supports random reads by key and sequential scans.</div></div>
+                <div class="step"><div class="step-num">2</div><div><code>transactions.dat</code> — <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Append-only permanent ledger of committed transactions.</div></div>
+                <div class="step"><div class="step-num">3</div><div><code>pending.dat</code> — <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Unsorted buffer for raw transactions awaiting the SORT phase.</div></div>
+                <div class="step"><div class="step-num">4</div><div><code>sorted-staging.dat</code> — <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Output of COBOL SORT, input to the appareillage merge.</div></div>
+                <div class="step"><div class="step-num">5</div><div><code>batch-state.dat</code> — <strong>SEQUENTIAL</strong>, 80-byte single-record control file tracking batch lifecycle (IDLE → SORTED → POSTING → IDLE).</div></div>
+                All monetary values use <strong>COMP-3 packed decimal</strong> (<code>PIC S9(13)V99 COMP-3</code> = 8 bytes) — the same format used on IBM mainframes to avoid floating-point rounding.
+
+                <h3>ACCESS PATTERNS</h3>
+                Each COBOL program opens only the files it needs with the minimum access mode required:
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>CREATE-ACCOUNT</code> — DYNAMIC read on accounts (READ NEXT to find max key, then WRITE new record)</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>ADD-TRANSACTION</code> — RANDOM read on accounts (verify existence, reject if not found), EXTEND on pending</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>SORT-BATCH</code> — Reads pending sequentially, uses COBOL <code>SORT</code> verb with SD work file, writes sorted-staging</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>UPDATE-BALANCES</code> — Reads sorted-staging sequentially; for each transaction, does a <strong>random keyed read</strong> on accounts. If found and active: updates balance via REWRITE and appends to transactions. If missing or closed: logs warning and flags the transaction as <span class="tag tag-yellow" style="color:#ffcc00;border-color:#ffcc00;">ALERT</span></div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>QUERY-ACCOUNT</code> — RANDOM read on accounts by key, sequential scan of transactions for history</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>DELETE-ACCOUNT</code> — RANDOM read + REWRITE on accounts (mark CLOSED), EXTEND on transactions (closure record)</div></div>
 
                 <h3>TECH STACK</h3>
                 <strong>COBOL</strong> (GNU COBOL 3.2) — 7 programs, 4 copybooks, ISAM indexed files, COMP-3 packed decimal<br>
                 <strong>Python/Flask</strong> — Thin web layer calling COBOL binaries via subprocess<br>
                 <strong>JavaScript</strong> — Terminal-style UI with real-time ledger updates<br>
-                <strong>Data files</strong> — Indexed (<code>accounts.dat</code>) + sequential (<code>transactions.dat</code>, <code>pending.dat</code>)
+                <strong>Data files</strong> — Indexed (<code>accounts.dat</code>) + sequential (<code>transactions.dat</code>, <code>pending.dat</code>, <code>sorted-staging.dat</code>, <code>batch-state.dat</code>)
             </div>
         </div>
     </div>
@@ -426,130 +447,308 @@ Ready.</pre></div>
 /* ══════════════════════════════════════════════════════════════
    Mainframe Banking — Self-contained demo (no backend)
    All data in-memory, simulates COBOL program behaviour
+   Banking realism: balance rules, overdraft limits, weighted
+   transaction types, locale-aware descriptions, transfer legs
    ══════════════════════════════════════════════════════════════ */
 
+// ─── Constants ──────────────────────────────────────────
+const FX = { USD:1, EUR:0.92, GBP:0.79, LBP:89500, JPY:149.5 };
+
+// Account balance limits in USD-equivalent, converted per currency
+const LIMITS = {
+    CHECKING: { min: 500, max: 50000, floor: -500 },
+    SAVINGS:  { min: 1000, max: 500000, floor: 0 },
+    CREDIT:   { min: -15000, max: 0, floor: -15000 }
+};
+
+function toLocal(usd, cur) { return Math.round(usd * FX[cur] * 100) / 100; }
+function toUSD(amt, cur) { return amt / FX[cur]; }
+function isInt(cur) { return cur === 'JPY' || cur === 'LBP'; }
+function roundAmt(v, cur) { return isInt(cur) ? Math.round(v) : Math.round(v * 100) / 100; }
+
+// 10 seed accounts: 4 CHECKING, 4 SAVINGS, 2 CREDIT — 3 USD, 2 EUR, 2 GBP, 2 LBP, 1 JPY
 const ACCOUNTS_SEED = [
-    { n:'1000000001', owner:'Marcus J. Wellington',  type:'CHECKING', cur:'USD', bal:12450.75, status:'ACTIVE' },
-    { n:'1000000002', owner:'Sophia R. Nakamura',    type:'SAVINGS',  cur:'USD', bal:48920.30, status:'ACTIVE' },
-    { n:'1000000003', owner:'Ibrahim K. Al-Rashid',  type:'CHECKING', cur:'EUR', bal:7835.50,  status:'ACTIVE' },
-    { n:'1000000004', owner:'Elena V. Petrova',      type:'CREDIT',   cur:'USD', bal:-2150.00, status:'ACTIVE' },
-    { n:'1000000005', owner:'Jean-Pierre Dubois',    type:'SAVINGS',  cur:'EUR', bal:156780.00,status:'ACTIVE' },
-    { n:'1000000006', owner:'Nadia H. Mansour',      type:'CHECKING', cur:'LBP', bal:45000000, status:'ACTIVE' },
-    { n:'1000000007', owner:'Takeshi Yamamoto',      type:'SAVINGS',  cur:'JPY', bal:3850000,  status:'ACTIVE' },
-    { n:'1000000008', owner:'Catherine A. Brooks',   type:'CHECKING', cur:'GBP', bal:23100.45, status:'ACTIVE' },
-    { n:'1000000009', owner:'Omar F. Haddad',        type:'CREDIT',   cur:'LBP', bal:-12500000,status:'ACTIVE' },
-    { n:'1000000010', owner:'Victoria S. Chen',      type:'SAVINGS',  cur:'GBP', bal:89250.00, status:'ACTIVE' },
+    { n:'1000000001', owner:'Marcus J. Wellington',  type:'CHECKING', cur:'USD', bal:12450.75 },
+    { n:'1000000002', owner:'Sophia R. Nakamura',    type:'SAVINGS',  cur:'USD', bal:48920.30 },
+    { n:'1000000003', owner:'Ibrahim K. Al-Rashid',  type:'CHECKING', cur:'EUR', bal:7835.50  },
+    { n:'1000000004', owner:'Elena V. Petrova',      type:'CREDIT',   cur:'USD', bal:0 },
+    { n:'1000000005', owner:'Jean-Pierre Dubois',    type:'SAVINGS',  cur:'EUR', bal:156780.00},
+    { n:'1000000006', owner:'Nadia H. Mansour',      type:'CHECKING', cur:'LBP', bal:267500000},
+    { n:'1000000007', owner:'Takeshi Yamamoto',      type:'SAVINGS',  cur:'JPY', bal:3850000  },
+    { n:'1000000008', owner:'Catherine A. Brooks',   type:'CHECKING', cur:'GBP', bal:23100.45 },
+    { n:'1000000009', owner:'Omar F. Haddad',        type:'CREDIT',   cur:'LBP', bal:0},
+    { n:'1000000010', owner:'Victoria S. Chen',      type:'SAVINGS',  cur:'GBP', bal:89250.00 },
 ];
 
-const DESCS = [
-    ['DEPOSIT','Payroll direct deposit'],['DEPOSIT','Wire transfer received'],
-    ['DEPOSIT','Cash deposit at branch'],['DEPOSIT','Tax refund credit'],
-    ['DEPOSIT','Dividend income'],['WITHDRAWAL','ATM withdrawal'],
-    ['WITHDRAWAL','Online purchase'],['WITHDRAWAL','Grocery store'],
-    ['WITHDRAWAL','Monthly rent payment'],['WITHDRAWAL','Utility bill'],
-    ['PAYMENT','Insurance premium'],['PAYMENT','Subscription service'],
-    ['PAYMENT','Loan installment'],['TRANSFER','Interbank transfer'],
-    ['TRANSFER','Travel expense'],['WITHDRAWAL','Restaurant charge'],
-    ['DEPOSIT','Mobile payment received'],['PAYMENT','Medical expense'],
-    ['WITHDRAWAL','Fuel station'],['PAYMENT','Membership fee'],
-];
+// Locale-aware descriptions by currency and type
+const DESC_POOL = {
+    DEPOSIT: {
+        USD: ['Payroll - Accenture Ltd','Wire transfer received','Freelance invoice #2041','Tax refund - IRS','Dividend income - Vanguard','Mobile deposit - check #4419','Consulting fee received','Royalty payment - Wiley'],
+        EUR: ['Virement salaire - Capgemini','Remboursement impôts','Freelance facture #887','Dividendes - BNP Paribas','CAF allocation logement','Virement reçu - famille','Prime annuelle','Remboursement Sécu'],
+        GBP: ['Payroll - Barclays PLC','HMRC tax refund','Freelance invoice #312','Dividend - FTSE fund','Pension credit received','Wire from parent account','Rental income - flat 4B','ISA interest credit'],
+        LBP: ['Virement salaire - BDL','Transfert Western Union','Dépôt espèces - Hamra','Paiement reçu - OMT','Remise chèque #2201','Virement familial','Indemnité fin service','Loyer perçu - Achrafieh'],
+        JPY: ['Payroll - Sony Corp','Tax refund - NTA','Freelance payment received','Dividend - Nikkei fund','Bonus payment - Q4','Wire from savings','Rental income - Shibuya','Interest credit - MUFG']
+    },
+    WITHDRAWAL: {
+        USD: ['ATM withdrawal - Chase','POS - Whole Foods Market','Online purchase - Amazon','Monthly rent payment','Utility bill - ConEd','Gym membership - Equinox','Fuel station - Shell','Restaurant - The Capital Grille'],
+        EUR: ['Retrait DAB - BNP Paribas','Achat CB - Carrefour','Amazon.fr commande','Loyer mensuel','EDF facture électricité','Abonnement Basic-Fit','Station essence - TotalEnergies','Restaurant - Le Comptoir'],
+        GBP: ['ATM withdrawal - HSBC','POS - Tesco Express','Online purchase - Amazon.co.uk','Monthly rent - flat share','Utility bill - British Gas','Gym - PureGym membership','Fuel - BP station','Restaurant - Dishoom'],
+        LBP: ['Retrait DAB - Verdun','POS - Spinneys Achrafieh','Online - Amazon.ae','Loyer - Hamra','Facture EDL','Abonnement FitZone','Station Medco - Jounieh','Restaurant - Em Sherif'],
+        JPY: ['ATM - Mizuho Bank','POS - Lawson convenience','Online - Amazon.co.jp','Monthly rent - Minato','Utility - TEPCO bill','Gym - Anytime Fitness','Fuel - ENEOS station','Restaurant - Ichiran Ramen']
+    },
+    TRANSFER: ['Internal transfer','Account transfer','Fund reallocation','Savings sweep','Balance transfer'],
+    PAYMENT: {
+        USD: ['Credit card payment','Online bill pay - VISA','Minimum payment - Amex','Statement balance payment'],
+        EUR: ['Paiement carte crédit','Règlement CB - VISA','Paiement minimum mensuel','Solde relevé carte'],
+        GBP: ['Credit card payment','Online bill pay - VISA','Minimum payment due','Statement balance payment'],
+        LBP: ['Paiement carte crédit','Règlement mensuel CB','Paiement minimum','Solde carte de crédit'],
+        JPY: ['Credit card payment','VISA bill payment','Minimum payment - JCB','Statement balance payment']
+    },
+    CHARGE: {
+        USD: ['CC purchase - Amazon','CC purchase - Uber Eats','CC purchase - Netflix','CC purchase - Target','CC purchase - Costco','CC charge - Delta Airlines','CC purchase - Apple Store','CC charge - Hilton Hotels'],
+        EUR: ['Achat CB - Amazon.fr','Achat CB - Fnac','Achat CB - Booking.com','Achat CB - Zara','Abonnement CB - Canal+','Achat CB - SNCF','Achat CB - Decathlon','Achat CB - Air France'],
+        GBP: ['CC purchase - Amazon.co.uk','CC purchase - Deliveroo','CC purchase - Sky','CC purchase - John Lewis','CC charge - EasyJet','CC purchase - Boots','CC charge - Premier Inn','CC purchase - Sainsburys'],
+        LBP: ['Achat CB - Spinneys','Achat CB - ABC Achrafieh','Achat CB - Roadster','Achat CB - Virgin Megastore','Achat CB - MEA Airlines','Achat CB - Le Gray Hotel','Achat CB - Patchi','Achat CB - Aishti'],
+        JPY: ['CC purchase - Amazon.co.jp','CC purchase - Uniqlo','CC charge - ANA','CC purchase - Don Quijote','CC purchase - Muji','CC charge - Tokyo Metro','CC purchase - Lawson','CC charge - Hotel Okura']
+    }
+};
 
-const MUL = { USD:1, EUR:0.92, GBP:0.79, LBP:89500, JPY:149 };
-
-let accounts = [], committed = [], pending = [], sorted = [];
+// ─── State ──────────────────────────────────────────────
+let accounts = [], committed = [], pending = [], sorted = [], alerts = [];
 let batchBounds = [], nextTxn = 1, batchSeq = 1, selectedAcct = null, selectedBatchNum = null;
 
+// ─── Utilities ──────────────────────────────────────────
 function fmtAmt(v, c) {
     const n = parseFloat(v) || 0;
-    return (c==='JPY'||c==='LBP') ? n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})
-                                   : n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return isInt(c) ? n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})
+                    : n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 function fmtTs(t) {
     if (!t || t.length < 14) return t || '';
     return `${t.slice(0,4)}-${t.slice(4,6)}-${t.slice(6,8)} ${t.slice(8,10)}:${t.slice(10,12)}:${t.slice(12,14)}`;
 }
-function nowTs() {
-    const d = new Date();
+function dateToTs(d) {
     return d.getFullYear().toString() + String(d.getMonth()+1).padStart(2,'0') +
            String(d.getDate()).padStart(2,'0') + String(d.getHours()).padStart(2,'0') +
            String(d.getMinutes()).padStart(2,'0') + String(d.getSeconds()).padStart(2,'0');
 }
+function nowTs() { return dateToTs(new Date()); }
 function randEl(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
-function randRange(a,b) { return Math.round((a + Math.random()*(b-a))*100)/100; }
+function randRange(a,b) { return a + Math.random()*(b-a); }
 
-// ─── Seed ────────────────────────────────────────────────
+function getFloor(acct) {
+    return toLocal(LIMITS[acct.type].floor, acct.cur);
+}
+function canWithdraw(acct, amt) {
+    // amt is negative for withdrawals
+    const newBal = roundAmt(acct.bal + amt, acct.cur);
+    if (acct.type === 'SAVINGS') return newBal >= 0;
+    if (acct.type === 'CHECKING') return newBal >= toLocal(-500, acct.cur);
+    return false; // CREDIT accounts don't have withdrawals
+}
+
+function getDesc(type, cur) {
+    const pool = DESC_POOL[type];
+    if (!pool) return type;
+    if (Array.isArray(pool)) return randEl(pool);
+    const list = pool[cur] || pool['USD'] || [];
+    return randEl(list);
+}
+
+// ─── Transaction Generation ─────────────────────────────
+function pickWeightedType(acct) {
+    // DEPOSIT 35%, WITHDRAWAL 40%, TRANSFER 15%, PAYMENT 10%
+    const r = Math.random();
+    if (r < 0.35) return 'DEPOSIT';
+    if (r < 0.75) return 'WITHDRAWAL';
+    if (r < 0.90) return 'TRANSFER';
+    return 'PAYMENT';
+}
+
+function generateOneTxn(ts) {
+    const active = accounts.filter(a => a.status === 'ACTIVE');
+    const acct = randEl(active);
+    let type = pickWeightedType(acct);
+
+    // CREDIT accounts: 60% charge (increase debt), 40% payment (reduce debt)
+    if (acct.type === 'CREDIT') {
+        type = Math.random() < 0.6 ? 'CHARGE' : 'PAYMENT';
+    }
+
+    // PAYMENT only if a CREDIT account with debt exists
+    if (type === 'PAYMENT') {
+        const creditAccts = active.filter(a => a.type === 'CREDIT' && a.bal < 0);
+        if (creditAccts.length === 0) type = acct.type === 'CREDIT' ? 'CHARGE' : 'DEPOSIT';
+    }
+
+    const mul = FX[acct.cur];
+    const txns = [];
+
+    if (type === 'CHARGE') {
+        // Credit card purchase — increases debt (balance goes more negative)
+        const creditLimit = Math.abs(toLocal(LIMITS.CREDIT.floor, acct.cur));
+        const currentDebt = Math.abs(acct.bal);
+        const headroom = creditLimit - currentDebt;
+        if (headroom <= 0) return [];
+        let maxCharge = Math.min(roundAmt(randRange(20, 2000) * mul, acct.cur), headroom);
+        const minCharge = isInt(acct.cur) ? toLocal(2, acct.cur) : toLocal(5, acct.cur);
+        if (maxCharge < minCharge) return [];
+        let charge = roundAmt(randRange(minCharge, maxCharge), acct.cur);
+        txns.push({ acct: acct.n, type: 'WITHDRAWAL', amt: -charge, cur: acct.cur, desc: getDesc('CHARGE', acct.cur) });
+        return txns;
+    }
+
+    if (type === 'DEPOSIT') {
+        if (acct.type === 'CREDIT') return [];
+        let amt = roundAmt(randRange(50, 5000) * mul, acct.cur);
+        txns.push({ acct: acct.n, type: 'DEPOSIT', amt, cur: acct.cur, desc: getDesc('DEPOSIT', acct.cur) });
+
+    } else if (type === 'WITHDRAWAL') {
+        if (acct.type === 'CREDIT') return [];
+        let maxW = roundAmt(randRange(50, 5000) * mul, acct.cur);
+        const headroom = acct.bal - getFloor(acct);
+        if (headroom <= 0) return [];
+        maxW = Math.min(maxW, headroom);
+        if (maxW < (isInt(acct.cur) ? 1000 : 10)) return [];
+        let amt = roundAmt(randRange(isInt(acct.cur) ? 1000 : 10, maxW), acct.cur);
+        txns.push({ acct: acct.n, type: 'WITHDRAWAL', amt: -amt, cur: acct.cur, desc: getDesc('WITHDRAWAL', acct.cur) });
+
+    } else if (type === 'TRANSFER') {
+        if (acct.type === 'CREDIT') return []; // can't transfer from credit
+        // Find a destination (not same account, not CREDIT, must be ACTIVE)
+        const dests = active.filter(a => a.n !== acct.n && a.type !== 'CREDIT');
+        if (dests.length === 0) return [];
+        const dest = randEl(dests);
+        let maxT = roundAmt(randRange(50, 3000) * mul, acct.cur);
+        const headroom = acct.bal - getFloor(acct);
+        if (headroom <= 0) return [];
+        maxT = Math.min(maxT, headroom);
+        if (maxT < (isInt(acct.cur) ? 1000 : 10)) return [];
+        let amt = roundAmt(randRange(isInt(acct.cur) ? 1000 : 10, maxT), acct.cur);
+        // Convert to dest currency for credit leg
+        const destAmt = roundAmt(amt / FX[acct.cur] * FX[dest.cur], dest.cur);
+        txns.push({ acct: acct.n, type: 'TRANSFER', amt: -amt, cur: acct.cur, desc: `Transfer to acct #${dest.n}` });
+        txns.push({ acct: dest.n, type: 'TRANSFER', amt: destAmt, cur: dest.cur, desc: `Transfer from acct #${acct.n}` });
+
+    } else if (type === 'PAYMENT') {
+        // Pay down a credit account from a checking/savings
+        const creditAccts = active.filter(a => a.type === 'CREDIT' && a.bal < 0);
+        if (creditAccts.length === 0) return [];
+        const credit = acct.type === 'CREDIT' ? acct : randEl(creditAccts);
+        const source = acct.type === 'CREDIT' ? randEl(active.filter(a => a.n !== credit.n && (a.type === 'CHECKING' || a.type === 'SAVINGS'))) : acct;
+        if (!source) return [];
+        const debt = Math.abs(credit.bal);
+        if (debt <= 0) return [];
+        const maxPay = Math.min(roundAmt(randRange(50, 3000) * FX[source.cur], source.cur), source.bal - getFloor(source));
+        if (maxPay <= 0) return [];
+        let payAmt = roundAmt(Math.min(randRange(isInt(source.cur) ? 1000 : 10, maxPay), debt / FX[credit.cur] * FX[source.cur]), source.cur);
+        if (payAmt <= 0) return [];
+        const creditAmt = roundAmt(payAmt / FX[source.cur] * FX[credit.cur], credit.cur);
+        if (creditAmt > debt) return []; // would overpay
+        txns.push({ acct: source.n, type: 'PAYMENT', amt: -payAmt, cur: source.cur, desc: `Credit card payment to #${credit.n}` });
+        txns.push({ acct: credit.n, type: 'PAYMENT', amt: creditAmt, cur: credit.cur, desc: `Payment received from #${source.n}` });
+    }
+
+    return txns;
+}
+
+// ─── Seed ───────────────────────────────────────────────
 function seed() {
-    accounts = ACCOUNTS_SEED.map(a => ({...a}));
+    accounts = ACCOUNTS_SEED.map(a => {
+        const bal = a.type === 'CREDIT' ? 0 : roundAmt(a.bal * 0.4, a.cur);
+        return {...a, bal, status:'ACTIVE'};
+    });
     committed = []; pending = []; sorted = [];
     batchBounds = []; nextTxn = 1; batchSeq = 1;
 
-    // Generate 100 seed transactions across 5 batches
-    const batchSizes = [25, 20, 20, 15, 20];
-    let baseDate = new Date(2024, 0, 15, 8, 30, 0);
+    // 100 transactions across 4 batches, spanning ~90 days
+    const batchSizes = [28, 25, 25, 22];
+    let baseDate = new Date(2024, 9, 1, 8, 0, 0); // Oct 1 2024
 
     for (const size of batchSizes) {
         const batch = [];
-        for (let i = 0; i < size; i++) {
-            const acct = randEl(accounts.filter(a => a.status === 'ACTIVE'));
-            const [type, desc] = randEl(DESCS);
-            const mul = MUL[acct.cur] || 1;
-            let amt = randRange(20, 5000) * mul;
-            if (type !== 'DEPOSIT') amt = -amt;
+        let generated = 0;
+        let attempts = 0;
+        while (generated < size && attempts < size * 5) {
+            attempts++;
+            // Weekday bias: 80% weekday hours (8-18), 15% evening (18-23), 5% late night (23-06)
+            const dayOffset = Math.floor(Math.random() * 18); // spread across ~18 days
+            const d = new Date(baseDate.getTime() + dayOffset * 86400000);
+            const dow = d.getDay();
+            // Reduce weekend activity
+            if ((dow === 0 || dow === 6) && Math.random() > 0.3) continue;
 
-            const offset = Math.floor(Math.random()*28800)*1000;
-            const ts = new Date(baseDate.getTime() + offset);
-            const tsStr = ts.getFullYear().toString() + String(ts.getMonth()+1).padStart(2,'0') +
-                          String(ts.getDate()).padStart(2,'0') + String(ts.getHours()).padStart(2,'0') +
-                          String(ts.getMinutes()).padStart(2,'0') + String(ts.getSeconds()).padStart(2,'0');
+            const hourRoll = Math.random();
+            let hour;
+            if (hourRoll < 0.80) hour = 8 + Math.floor(Math.random() * 10); // 8-17
+            else if (hourRoll < 0.95) hour = 18 + Math.floor(Math.random() * 5); // 18-22
+            else hour = Math.random() < 0.5 ? 23 : Math.floor(Math.random() * 6); // late night
 
-            acct.bal = Math.round((acct.bal + amt)*100)/100;
-            batch.push({ id: String(nextTxn++).padStart(10,'0'), ts: tsStr, acct: acct.n,
-                         type, amt, cur: acct.cur, desc, runBal: acct.bal, batch: batchSeq });
+            d.setHours(hour, Math.floor(Math.random() * 60), Math.floor(Math.random() * 60));
+            const ts = dateToTs(d);
+
+            const txnGroup = generateOneTxn(ts);
+            if (txnGroup.length === 0) continue;
+
+            for (const t of txnGroup) {
+                const acct = accounts.find(a => a.n === t.acct);
+                acct.bal = roundAmt(acct.bal + t.amt, acct.cur);
+                batch.push({
+                    id: String(nextTxn++).padStart(10,'0'), ts, acct: t.acct,
+                    type: t.type, amt: t.amt, cur: t.cur, desc: t.desc,
+                    runBal: acct.bal, batch: batchSeq
+                });
+            }
+            generated++;
         }
         batch.sort((a,b) => a.acct.localeCompare(b.acct) || a.ts.localeCompare(b.ts));
         committed.push(...batch);
         batchBounds.push({ num: batchSeq, ts: batch[batch.length-1].ts });
         batchSeq++;
-        baseDate = new Date(baseDate.getTime() + (2+Math.floor(Math.random()*5))*86400000);
+        baseDate = new Date(baseDate.getTime() + (18 + Math.floor(Math.random()*5)) * 86400000);
     }
 }
 
-// ─── Render ──────────────────────────────────────────────
+// ─── Render ─────────────────────────────────────────────
 function render() {
-    renderTxns(); renderAccts(); updateStatus();
+    renderTxns(); renderAccts(); updateStatus(); updateButtons();
 }
 
 function renderTxns() {
     const tbody = document.getElementById('txn-body');
     let html = '', curBatch = 0;
 
-    for (const t of committed) {
+    // Merge committed + alerts by batch for interleaved rendering
+    const allBatchTxns = [...committed.map(t => ({...t, _cls: 'committed'})), ...alerts.map(t => ({...t, _cls: 'alert'}))];
+    allBatchTxns.sort((a,b) => (a.batch - b.batch) || a.acct.localeCompare(b.acct) || a.ts.localeCompare(b.ts));
+
+    for (const t of allBatchTxns) {
         if (t.batch > curBatch) {
             if (curBatch > 0) html += batchDividerHtml(curBatch);
             curBatch = t.batch;
         }
-        html += txnRow(t, 'committed');
+        html += txnRow(t, t._cls);
     }
     if (curBatch > 0) html += batchDividerHtml(curBatch);
     for (const t of sorted) html += txnRow(t, 'sorted');
     for (const t of pending) html += txnRow(t, 'pending');
 
     tbody.innerHTML = html;
-    document.getElementById('txn-count').textContent = `${committed.length + sorted.length + pending.length} records`;
+    document.getElementById('txn-count').textContent = `${committed.length + alerts.length + sorted.length + pending.length} records`;
     const ledger = document.getElementById('txn-ledger');
     ledger.scrollTop = ledger.scrollHeight;
 }
 
 function txnRow(t, cls) {
     const ac = t.amt >= 0 ? 'amt-pos' : 'amt-neg';
-    const st = cls === 'committed' ? 'COMMIT' : cls === 'sorted' ? 'SORTED' : 'PENDING';
+    const st = cls === 'alert' ? 'ALERT' : cls === 'committed' ? 'COMMIT' : cls === 'sorted' ? 'SORTED' : 'PENDING';
     return `<tr class="${cls}" data-id="${t.id}"><td>${t.id}</td><td>${fmtTs(t.ts)}</td><td>${t.acct}</td><td>${t.type}</td><td class="${ac}">${fmtAmt(t.amt, t.cur)}</td><td>${t.cur}</td><td>${t.desc}</td><td>${st}</td></tr>`;
 }
 
 function renderAccts() {
     const tbody = document.getElementById('acct-body');
-    const sorted = [...accounts].sort((a,b) => a.n.localeCompare(b.n));
-    tbody.innerHTML = sorted.map(a => {
+    const sortedA = [...accounts].sort((a,b) => a.n.localeCompare(b.n));
+    tbody.innerHTML = sortedA.map(a => {
         const cls = ['acct-row', a.status==='CLOSED'?'acct-closed':'', a.n===selectedAcct?'selected':''].filter(Boolean).join(' ');
         const bc = a.bal >= 0 ? 'amt-pos' : 'amt-neg';
         return `<tr class="${cls}" onclick="selectAcct('${a.n}')"><td>${a.n}</td><td>${a.owner}</td><td>${a.type}</td><td>${a.cur}</td><td class="${bc}">${fmtAmt(a.bal, a.cur)}</td><td>${a.status}</td></tr>`;
@@ -565,6 +764,11 @@ function updateStatus() {
     document.getElementById('batch-seq').textContent = `BATCH #${batchSeq}`;
 }
 
+function updateButtons() {
+    document.getElementById('btn-sort').disabled = (pending.length === 0);
+    document.getElementById('btn-update').disabled = (sorted.length === 0);
+}
+
 function setLog(html) { document.getElementById('action-log').innerHTML = html; }
 function setResults(text) { document.getElementById('results-log').textContent = text; }
 
@@ -576,24 +780,17 @@ function hl(text) {
         .replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>');
 }
 
-// ─── Helpers ─────────────────────────────────────────────
+// ─── Batch Helpers ──────────────────────────────────────
 function batchDividerHtml(num) {
     const b = batchBounds.find(x => x.num === num);
     const sel = num === selectedBatchNum ? ' batch-selected' : '';
     return `<tr class="batch-divider${sel}" onclick="selectBatch(${num})"><td colspan="8"><div class="divider-line">── BATCH #${num} COMMITTED ${b ? '['+fmtTs(b.ts)+']' : ''} ──</div></td></tr>`;
 }
 
-function ensureAccountExists(acctNum, currency) {
-    if (!accounts.find(a => a.n === acctNum)) {
-        accounts.push({ n: acctNum, owner: 'UNKNOWN', type: 'CHECKING', cur: currency, bal: 0, status: 'ACTIVE', _auto_created: true });
-    }
-}
-
 function selectBatch(num) {
     selectedBatchNum = num;
     selectedAcct = null;
-    renderTxns();
-    renderAccts();
+    renderTxns(); renderAccts();
     showBatchDetails(num);
 }
 
@@ -601,11 +798,10 @@ function showBatchDetails(num) {
     const batchTxns = committed.filter(t => t.batch === num);
     if (batchTxns.length === 0) { setResults('No transactions in this batch.'); return; }
 
-    // Compute per-account deltas
     const deltas = {};
     for (const t of batchTxns) {
         if (!deltas[t.acct]) deltas[t.acct] = { cur: t.cur, total: 0, count: 0 };
-        deltas[t.acct].total = Math.round((deltas[t.acct].total + t.amt)*100)/100;
+        deltas[t.acct].total = roundAmt(deltas[t.acct].total + t.amt, t.cur);
         deltas[t.acct].count++;
     }
 
@@ -630,24 +826,25 @@ function showBatchDetails(num) {
     setLog(hl(`PROCEDURE DIVISION.\nQUERY-BATCH.\n    OPEN INPUT TRANS-FILE\n    PERFORM UNTIL WS-EOF = 1\n        READ TRANS-FILE NEXT\n        IF TXN-BATCH-NUM = ${num}\n            DISPLAY TXN record\n        END-IF\n    END-PERFORM\n\n    * ${batchTxns.length} transactions in batch #${num}\n    * ${Object.keys(deltas).length} accounts affected`));
 }
 
-// ─── Actions ─────────────────────────────────────────────
+// ─── Actions ────────────────────────────────────────────
 function addRandom(n) {
     const lines = [];
-    for (let i = 0; i < n; i++) {
-        const acct = randEl(accounts.filter(a => a.status === 'ACTIVE'));
-        const [type, desc] = randEl(DESCS);
-        const mul = MUL[acct.cur] || 1;
-        let amt = randRange(20, 5000) * mul;
-        if (type !== 'DEPOSIT') amt = -amt;
+    let generated = 0, attempts = 0;
+    while (generated < n && attempts < n * 10) {
+        attempts++;
+        const txnGroup = generateOneTxn(nowTs());
+        if (txnGroup.length === 0) continue;
 
-        const txnAcct = acct.n;
-        ensureAccountExists(txnAcct, acct.cur);
-        pending.push({ id: String(nextTxn++).padStart(10,'0'), ts: nowTs(), acct: txnAcct,
-                       type, amt, cur: acct.cur, desc, runBal: 0, batch: batchSeq });
-        lines.push(`    WRITE txn #${nextTxn-1} → ${txnAcct} ${type} ${fmtAmt(amt, acct.cur)} ${acct.cur}`);
+        for (const t of txnGroup) {
+            const id = String(nextTxn++).padStart(10,'0');
+            pending.push({ id, ts: nowTs(), acct: t.acct, type: t.type, amt: t.amt,
+                           cur: t.cur, desc: t.desc, runBal: 0, batch: batchSeq });
+            lines.push(`    WRITE txn #${nextTxn-1} → ${t.acct} ${t.type} ${fmtAmt(t.amt, t.cur)} ${t.cur}`);
+        }
+        generated++;
     }
     render();
-    setLog(hl(`PROCEDURE DIVISION.\nGENERATE-ONE-TXN.\n    COMPUTE WS-RAND = FUNCTION RANDOM\n    OPEN EXTEND PENDING-FILE\n${lines.join('\n')}\n    CLOSE PENDING-FILE.\n\n    * Generated ${n} transaction(s)\n    * Appended to pending.dat (unsorted buffer)`));
+    setLog(hl(`PROCEDURE DIVISION.\nGENERATE-ONE-TXN.\n    COMPUTE WS-RAND = FUNCTION RANDOM\n    OPEN EXTEND PENDING-FILE\n${lines.join('\n')}\n    CLOSE PENDING-FILE.\n\n    * Generated ${generated} transaction(s) (${pending.length} pending rows)\n    * Appended to pending.dat (unsorted buffer)`));
 }
 
 function sortBatch() {
@@ -666,27 +863,27 @@ function updateBalances() {
     }
     if (sorted.length === 0) { setLog('No sorted transactions to commit.'); return; }
 
-    // Snapshot balances before update for highlighting changes
     const balBefore = {};
     accounts.forEach(a => balBefore[a.n] = a.bal);
 
-    const autoCreated = [];
+    const alertTxns = [];
+    const commitTxns = [];
     for (const t of sorted) {
         let acct = accounts.find(a => a.n === t.acct);
-        if (!acct) {
-            // Auto-create account if not found
-            acct = { n: t.acct, owner: 'UNKNOWN', type: 'CHECKING', cur: t.cur, bal: 0, status: 'ACTIVE', _auto_created: true };
-            accounts.push(acct);
-            balBefore[acct.n] = null; // mark as new
-            autoCreated.push(acct.n);
+        if (!acct || acct.status === 'CLOSED') {
+            t.batch = batchSeq;
+            alertTxns.push(t);
+            continue;
         }
-        acct.bal = Math.round((acct.bal + t.amt)*100)/100;
+        acct.bal = roundAmt(acct.bal + t.amt, acct.cur);
         t.runBal = acct.bal;
         t.batch = batchSeq;
+        commitTxns.push(t);
     }
-    committed.push(...sorted);
+    committed.push(...commitTxns);
+    alerts.push(...alertTxns);
     batchBounds.push({ num: batchSeq, ts: nowTs() });
-    const count = sorted.length;
+    const count = commitTxns.length;
     const newBatchNum = batchSeq;
     sorted = []; pending = [];
     batchSeq++;
@@ -694,7 +891,6 @@ function updateBalances() {
     selectedAcct = null;
     render();
 
-    // Flash new rows
     setTimeout(() => {
         document.querySelectorAll('#txn-body tr.committed').forEach(tr => {
             const id = tr.dataset.id;
@@ -702,10 +898,9 @@ function updateBalances() {
         });
     }, 50);
 
-    // Build results with green highlight on changed balances
     let resultHtml = `Batch committed: ${count} transactions posted.\n`;
-    if (autoCreated.length > 0)
-        resultHtml += `<span class="ok">Auto-created ${autoCreated.length} account(s): ${autoCreated.join(', ')}</span>\n`;
+    if (alertTxns.length > 0)
+        resultHtml += `<span class="err">ALERT: ${alertTxns.length} transaction(s) skipped — account not found: ${alertTxns.map(t => t.acct).join(', ')}</span>\n`;
     resultHtml += `\nUpdated Account Balances:\n${'─'.repeat(68)}\n`;
     resultHtml += `${'ACCOUNT #'.padEnd(10)}  ${'BEFORE'.padStart(14)}     ${'AFTER'.padStart(14)}  ${'CUR'}  CHANGE\n`;
     resultHtml += '─'.repeat(68) + '\n';
@@ -715,7 +910,7 @@ function updateBalances() {
         const changed = isNew || before !== a.bal;
         const beforeStr = isNew ? '(new)'.padStart(14) : fmtAmt(before, a.cur).padStart(14);
         const afterStr = fmtAmt(a.bal, a.cur).padStart(14);
-        const diff = isNew ? a.bal : Math.round((a.bal - before)*100)/100;
+        const diff = isNew ? a.bal : roundAmt(a.bal - before, a.cur);
         const diffStr = diff === 0 ? '' : (diff > 0 ? '+' : '') + fmtAmt(diff, a.cur);
         if (changed) {
             resultHtml += `<span class="ok">${a.n}  ${beforeStr}  →  ${afterStr}  ${a.cur}  ${diffStr}</span>\n`;
@@ -726,18 +921,17 @@ function updateBalances() {
     document.getElementById('results-log').innerHTML = resultHtml;
 
     let logExtra = '';
-    if (autoCreated.length > 0) {
-        logExtra = autoCreated.map(n => `\n    * AUTO-CREATED account ${n} (not found during update)`).join('');
+    if (alertTxns.length > 0) {
+        logExtra = alertTxns.map(t => `\n    * ALERT: account ${t.acct} not found — txn ${t.id} skipped`).join('');
     }
-
-    setLog(hl(`PROCEDURE DIVISION.\nAPPLY-TRANSACTIONS.\n    * Appareillage: lockstep walk of sorted files\n    OPEN INPUT SORTED-FILE\n    OPEN I-O ACCOUNT-FILE\n    OPEN EXTEND TRANS-FILE\n\nPROCESS-ONE-TRANSACTION.\n    READ ACCOUNT-FILE  (by key: ACCT-NUMBER)\n    IF INVALID KEY\n        PERFORM AUTO-CREATE-ACCT\n    END-IF\n    ADD SR-TXN-AMOUNT TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD\n    WRITE COMMITTED-RECORD${logExtra}\n\n    * ${count} transactions committed to accounts\n    * Batch pointer advanced\n    * Pending buffer cleared`));
+    setLog(hl(`PROCEDURE DIVISION.\nAPPLY-TRANSACTIONS.\n    * Appareillage: sorted transactions vs indexed accounts\n    OPEN INPUT SORTED-FILE\n    OPEN I-O ACCOUNT-FILE\n    OPEN EXTEND TRANS-FILE\n\nPROCESS-ONE-TRANSACTION.\n    READ ACCOUNT-FILE  (by key: ACCT-NUMBER)\n    IF INVALID KEY\n        PERFORM LOG-MISSING-ACCOUNT\n    END-IF\n    ADD SR-TXN-AMOUNT TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD\n    WRITE COMMITTED-RECORD${logExtra}\n\n    * ${count} transactions committed to accounts\n    * Batch pointer advanced\n    * Pending buffer cleared`));
 }
 
+// ─── Account Management ─────────────────────────────────
 function selectAcct(n) {
     selectedAcct = n;
     selectedBatchNum = null;
-    renderAccts();
-    renderTxns();
+    renderAccts(); renderTxns();
     const a = accounts.find(x => x.n === n);
     if (a) setResults(`Account Selected: ${a.n}\nOwner:    ${a.owner}\nType:     ${a.type}\nCurrency: ${a.cur}\nBalance:  ${fmtAmt(a.bal, a.cur)}\nStatus:   ${a.status}\n\nClick "Check Transactions" to view history.`);
 }
@@ -746,38 +940,53 @@ function createAccount() { document.getElementById('modal-overlay').classList.re
 function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
 
 function submitCreate() {
-    const owner = document.getElementById('new-owner').value || 'New Account Holder';
+    const owner = document.getElementById('new-owner').value.trim();
+    if (!owner) { alert('Please enter an owner name.'); return; }
     const type = document.getElementById('new-type').value;
     const cur = document.getElementById('new-cur').value;
-    const bal = parseFloat(document.getElementById('new-bal').value) || 0;
     const maxN = accounts.reduce((m,a) => Math.max(m, parseInt(a.n)), 0);
     const newN = String(maxN + 1).padStart(10, '0');
-    // Replace auto-created stub if it exists, otherwise add new
-    const stubIdx = accounts.findIndex(a => a.n === newN && a._auto_created);
-    if (stubIdx >= 0) {
-        accounts[stubIdx] = { n: newN, owner, type, cur, bal, status: 'ACTIVE' };
-    } else {
-        accounts.push({ n: newN, owner, type, cur, bal, status: 'ACTIVE' });
-    }
+    accounts.push({ n: newN, owner, type, cur, bal: 0, status: 'ACTIVE' });
     closeModal();
+    document.getElementById('new-owner').value = '';
     render();
-    setLog(hl(`PROCEDURE DIVISION.\nWRITE-NEW-ACCOUNT.\n    MOVE '${owner}' TO ACCT-OWNER-NAME\n    MOVE '${type}' TO ACCT-TYPE\n    MOVE '${cur}' TO ACCT-CURRENCY\n    MOVE ${bal} TO ACCT-BALANCE\n    WRITE ACCOUNT-RECORD\n\n    * Record written to indexed ACCOUNTS file\n    * New account number: ${newN}`));
-    setResults(`Account created successfully.\n\nAccount #: ${newN}\nOwner:     ${owner}\nType:      ${type}\nCurrency:  ${cur}\nBalance:   ${bal}`);
+    setLog(hl(`PROCEDURE DIVISION.\nWRITE-NEW-ACCOUNT.\n    MOVE '${owner}' TO ACCT-OWNER-NAME\n    MOVE '${type}' TO ACCT-TYPE\n    MOVE '${cur}' TO ACCT-CURRENCY\n    MOVE ZERO TO ACCT-BALANCE\n    WRITE ACCOUNT-RECORD\n\n    * Record written to indexed ACCOUNTS file\n    * New account number: ${newN}`));
+    setResults(`Account created successfully.\n\nAccount #: ${newN}\nOwner:     ${owner}\nType:      ${type}\nCurrency:  ${cur}\nBalance:   0.00`);
 }
 
 function deleteAccount() {
-    if (!selectedAcct) { setLog('Select an account first.'); return; }
+    if (!selectedAcct) { setLog('<span class="err">Select an account first.</span>'); return; }
     const a = accounts.find(x => x.n === selectedAcct);
-    if (!a || a.status === 'CLOSED') { setLog('Account is already closed.'); return; }
+    if (!a || a.status === 'CLOSED') { setLog('<span class="err">Account is already closed.</span>'); return; }
+
+    // CREDIT with outstanding debt: block deletion
+    if (a.type === 'CREDIT' && a.bal < 0) {
+        setLog('<span class="err">ERROR: Cannot close account with outstanding balance. Please pay off credit balance first.</span>');
+        setResults(`Cannot close CREDIT account ${a.n}.\n\nOutstanding balance: ${fmtAmt(a.bal, a.cur)} ${a.cur}\nPlease pay off the credit balance before closing.`);
+        return;
+    }
+
     if (!confirm(`Close account ${selectedAcct}?`)) return;
-    a.status = 'CLOSED'; a.bal = 0;
+
+    let closureLog = '';
+    // Drain non-zero balance with a closure transaction
+    if (a.bal !== 0) {
+        const drainAmt = -a.bal;
+        const id = String(nextTxn++).padStart(10,'0');
+        const closureTxn = { id, ts: nowTs(), acct: a.n, type: 'WITHDRAWAL', amt: drainAmt,
+            cur: a.cur, desc: 'Account closure — balance withdrawal', runBal: 0, batch: 0 };
+        committed.push(closureTxn);
+        closureLog = `\n    * CLOSURE withdrawal: ${fmtAmt(drainAmt, a.cur)} ${a.cur}`;
+    }
+    a.bal = 0;
+    a.status = 'CLOSED';
     render();
-    setLog(hl(`PROCEDURE DIVISION.\nCLOSE-ACCOUNT.\n    MOVE ${selectedAcct} TO ACCT-NUMBER\n    READ ACCOUNT-FILE (by key)\n    IF ACCT-BALANCE NOT = ZERO\n        PERFORM WRITE-CLOSURE-TXN\n    END-IF\n    MOVE 'CLOSED' TO ACCT-STATUS\n    MOVE ZERO TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD\n\n    * Account ${selectedAcct} marked CLOSED\n    * Past transactions preserved in ledger\n    * CLOSURE withdrawal appended if balance > 0`));
+    setLog(hl(`PROCEDURE DIVISION.\nCLOSE-ACCOUNT.\n    MOVE ${selectedAcct} TO ACCT-NUMBER\n    READ ACCOUNT-FILE (by key)\n    IF ACCT-BALANCE NOT = ZERO\n        PERFORM WRITE-CLOSURE-TXN\n    END-IF\n    MOVE 'CLOSED' TO ACCT-STATUS\n    MOVE ZERO TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD${closureLog}\n\n    * Account ${selectedAcct} marked CLOSED\n    * Past transactions preserved in ledger`));
     setResults(`Account ${selectedAcct} has been closed.\n\nPast transactions remain in the ledger.\nThe account is marked CLOSED — no new transactions accepted.`);
 }
 
 function checkTransactions() {
-    if (!selectedAcct) { setLog('Select an account first.'); return; }
+    if (!selectedAcct) { setLog('<span class="err">Select an account first.</span>'); return; }
     const a = accounts.find(x => x.n === selectedAcct);
     const txns = committed.filter(t => t.acct === selectedAcct);
     let result = '';
@@ -791,11 +1000,11 @@ function checkTransactions() {
     setLog(hl(`PROCEDURE DIVISION.\nQUERY-ACCOUNT-RECORD.\n    MOVE ${selectedAcct} TO ACCT-NUMBER\n    READ ACCOUNT-FILE (indexed, by key)\n\nQUERY-TRANSACTIONS.\n    OPEN INPUT TRANS-FILE\n    PERFORM UNTIL WS-EOF = 1\n        READ TRANS-FILE NEXT\n        IF TXN-ACCOUNT-NUM = ${selectedAcct}\n            DISPLAY TXN record\n        END-IF\n    END-PERFORM\n\n    -- Equivalent SQL:\n    SELECT * FROM TRANSACTIONS\n     WHERE ACCOUNT_NUMBER = '${selectedAcct}'\n     ORDER BY TIMESTAMP ASC;`));
 }
 
-// ─── Init ────────────────────────────────────────────────
+// ─── Init ───────────────────────────────────────────────
 seed();
 render();
 setLog(`System initialized successfully.
-Loaded ${accounts.length} accounts.
+Loaded ${accounts.length} accounts (4 checking, 4 savings, 2 credit).
 Loaded ${committed.length} committed transactions.
 Across ${batchBounds.length} historical batches.
 
