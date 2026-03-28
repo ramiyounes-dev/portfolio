@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mainframe Banking System — Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+    /* ═══════════════════════════════════════════════════════════
+       MAINFRAME BANKING SYSTEM — Static Showcase
+       Self-contained terminal-style demo (no backend required)
+       ═══════════════════════════════════════════════════════════ */
+
+    :root {
+        --bg-primary: #0a0e14;
+        --bg-secondary: #0d1117;
+        --bg-panel: #0f1319;
+        --bg-header: #131920;
+        --bg-row-hover: #1a2233;
+        --bg-row-selected: #1c2a3f;
+        --green: #00cc66;
+        --green-bg: rgba(0, 204, 102, 0.08);
+        --green-flash: rgba(0, 204, 102, 0.25);
+        --red: #ff4444;
+        --red-bg: rgba(255, 68, 68, 0.08);
+        --orange: #ff9900;
+        --orange-bg: rgba(255, 153, 0, 0.08);
+        --text: #c9d1d9;
+        --text-muted: #6e7681;
+        --text-header: #58a6ff;
+        --text-bright: #e6edf3;
+        --border: #21262d;
+        --border-heavy: #30363d;
+        --font: 'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        font-family: var(--font);
+        font-size: 12px;
+        background: var(--bg-primary);
+        color: var(--text);
+        overflow: hidden;
+        height: 100vh;
+    }
+
+    /* ─── Header ──────────────────────────────────── */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 16px;
+        background: var(--bg-header);
+        border-bottom: 2px solid var(--green);
+        height: 40px;
+    }
+    .header-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--green);
+        letter-spacing: 1px;
+    }
+    .header-sub {
+        font-size: 11px;
+        font-weight: 300;
+        color: var(--text-muted);
+        margin-left: 12px;
+    }
+    .header-right {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        font-size: 11px;
+    }
+    .blink { animation: blink 1s step-end infinite; color: var(--green); }
+    @keyframes blink { 50% { opacity: 0; } }
+    .status-badge {
+        padding: 2px 8px;
+        border: 1px solid;
+        font-size: 10px;
+    }
+    .status-idle { color: var(--green); border-color: var(--green); }
+    .status-pending { color: var(--red); border-color: var(--red); }
+    .status-sorted { color: var(--orange); border-color: var(--orange); }
+    .back-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 11px;
+        border: 1px solid var(--border-heavy);
+        padding: 2px 10px;
+    }
+    .back-link:hover { color: var(--text-bright); border-color: var(--text); }
+
+    /* ─── Main Layout ─────────────────────────────── */
+    main { display: flex; height: calc(100vh - 40px); gap: 2px; }
+    .left-column { flex: 3; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+    .right-column { flex: 2; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+
+    /* ─── Panels ──────────────────────────────────── */
+    .panel { flex: 1; display: flex; flex-direction: column; border: 1px solid var(--border); background: var(--bg-panel); min-height: 0; overflow: hidden; }
+    .panel-header {
+        padding: 6px 12px;
+        background: var(--bg-header);
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-header);
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .panel-count { margin-left: auto; font-weight: 300; color: var(--text-muted); font-size: 10px; }
+    .ledger-scroll { flex: 1; overflow-y: auto; overflow-x: auto; min-height: 0; }
+    .console-scroll { flex: 1; overflow-y: auto; padding: 8px 12px; min-height: 0; }
+
+    /* ─── Tables ──────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    thead { position: sticky; top: 0; z-index: 1; }
+    th {
+        padding: 5px 8px; text-align: left; background: var(--bg-header);
+        color: var(--text-header); font-weight: 500; font-size: 10px;
+        letter-spacing: 0.5px; border-bottom: 1px solid var(--border-heavy); white-space: nowrap;
+    }
+    td { padding: 3px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 11px; }
+    tr td { transition: color 0.5s ease, background 0.5s ease; }
+    tr.committed td { color: var(--green); background: var(--green-bg); }
+    tr.pending td { color: var(--red); background: var(--red-bg); }
+    tr.sorted td { color: var(--orange); background: var(--orange-bg); }
+    tr.flash td { animation: flash-green 1.5s ease-out; }
+    @keyframes flash-green { 0% { background: var(--green-flash); } 100% { background: var(--green-bg); } }
+    tr.acct-row { cursor: pointer; }
+    tr.acct-row:hover td { background: var(--bg-row-hover); }
+    tr.acct-row.selected td { background: var(--bg-row-selected); color: var(--text-bright); border-left: 2px solid var(--text-header); }
+    tr.acct-closed td { color: var(--text-muted); text-decoration: line-through; }
+    tr.batch-divider td { background: transparent; border-bottom: none; padding: 4px 0; }
+    .divider-line {
+        color: var(--red); font-weight: 700; font-size: 11px; letter-spacing: 1px;
+        text-align: center; padding: 2px 0;
+        border-top: 2px solid var(--red); border-bottom: 2px solid var(--red);
+        background: rgba(255, 68, 68, 0.05);
+    }
+    .amt-pos { color: var(--green); }
+    .amt-neg { color: var(--red); }
+    tr.batch-divider { cursor: pointer; }
+    tr.batch-divider:hover .divider-line { filter: brightness(1.3); }
+    tr.batch-selected .divider-line {
+        color: var(--text-header); border-top-color: var(--text-header);
+        border-bottom-color: var(--text-header); background: rgba(88,166,255,0.1);
+    }
+
+    /* ─── Action Bar ──────────────────────────────── */
+    .action-bar {
+        display: flex; gap: 6px; padding: 6px 8px;
+        background: var(--bg-header);
+        border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+    .btn {
+        font-family: var(--font); font-size: 11px; font-weight: 500;
+        padding: 5px 12px; border: 1px solid; cursor: pointer;
+        background: transparent; letter-spacing: 0.5px; transition: all 0.2s ease;
+    }
+    .btn:hover { filter: brightness(1.3); }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-red { color: var(--red); border-color: var(--red); }
+    .btn-red:hover { background: rgba(255,68,68,0.1); }
+    .btn-orange { color: var(--orange); border-color: var(--orange); }
+    .btn-orange:hover { background: rgba(255,153,0,0.1); }
+    .btn-green { color: var(--green); border-color: var(--green); }
+    .btn-green:hover { background: rgba(0,204,102,0.1); }
+    .btn-blue { color: var(--text-header); border-color: var(--text-header); }
+    .btn-blue:hover { background: rgba(88,166,255,0.1); }
+    .btn-muted { color: var(--text); border-color: var(--text-muted); }
+    .btn-muted:hover { background: rgba(201,209,217,0.08); }
+
+    pre {
+        font-family: var(--font); font-size: 11px; line-height: 1.5;
+        color: var(--text); white-space: pre-wrap; word-wrap: break-word;
+    }
+    .kw { color: var(--text-header); font-weight: 500; }
+    .str { color: var(--orange); }
+    .cmt { color: var(--text-muted); font-style: italic; }
+    .ok { color: var(--green); }
+    .err { color: var(--red); font-weight: 700; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-heavy); border-radius: 3px; }
+
+    /* ─── Modal ───────────────────────────────────── */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.7); display: flex;
+        justify-content: center; align-items: center; z-index: 100;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal { background: var(--bg-panel); border: 1px solid var(--text-header); min-width: 360px; }
+    .modal-header {
+        padding: 8px 16px; background: var(--bg-header);
+        border-bottom: 1px solid var(--text-header);
+        color: var(--text-header); font-weight: 700; font-size: 12px; letter-spacing: 1px;
+    }
+    .modal-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .modal-body label { display: flex; flex-direction: column; gap: 4px; color: var(--text-muted); font-size: 10px; }
+    .modal-body input, .modal-body select {
+        font-family: var(--font); font-size: 12px; padding: 6px 8px;
+        background: var(--bg-primary); color: var(--text-bright); border: 1px solid var(--border-heavy);
+    }
+    .modal-body input:focus, .modal-body select:focus { outline: none; border-color: var(--text-header); }
+    .modal-footer { padding: 10px 16px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); }
+
+    /* ─── Tutorial Modal ──────────────────────────── */
+    .tutorial-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.8); display: flex;
+        justify-content: center; align-items: center; z-index: 200;
+    }
+    .tutorial-overlay.hidden { display: none; }
+    .tutorial {
+        background: var(--bg-panel); border: 1px solid var(--green);
+        max-width: 680px; width: 90%; max-height: 85vh;
+        display: flex; flex-direction: column;
+    }
+    .tutorial-header {
+        padding: 10px 20px; background: var(--bg-header);
+        border-bottom: 1px solid var(--green);
+        color: var(--green); font-weight: 700; font-size: 13px;
+        letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .tutorial-close {
+        background: none; border: 1px solid var(--text-muted); color: var(--text-muted);
+        font-family: var(--font); font-size: 11px; padding: 2px 10px; cursor: pointer;
+    }
+    .tutorial-close:hover { color: var(--text-bright); border-color: var(--text); }
+    .tutorial-body {
+        padding: 20px; overflow-y: auto; line-height: 1.7; font-size: 12px;
+        color: var(--text);
+    }
+    .tutorial-body h3 {
+        color: var(--text-header); font-size: 12px; margin: 16px 0 6px 0;
+        letter-spacing: 0.5px;
+    }
+    .tutorial-body h3:first-child { margin-top: 0; }
+    .tutorial-body .step {
+        display: flex; gap: 10px; margin: 6px 0; align-items: flex-start;
+    }
+    .tutorial-body .step-num {
+        background: var(--bg-header); border: 1px solid var(--border-heavy);
+        color: var(--text-header); font-weight: 700; font-size: 10px;
+        min-width: 22px; height: 22px; display: flex; align-items: center;
+        justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+    .tutorial-body .tag {
+        display: inline-block; padding: 1px 6px; font-size: 10px;
+        border: 1px solid; font-weight: 500;
+    }
+    .tag-red { color: var(--red); border-color: var(--red); }
+    .tag-orange { color: var(--orange); border-color: var(--orange); }
+    .tag-green { color: var(--green); border-color: var(--green); }
+    .tag-blue { color: var(--text-header); border-color: var(--text-header); }
+    .tutorial-btn {
+        color: var(--green); text-decoration: none; font-size: 11px;
+        border: 1px solid var(--green); padding: 2px 10px; cursor: pointer;
+        background: none; font-family: var(--font);
+    }
+    .tutorial-btn:hover { background: rgba(0,204,102,0.1); color: var(--text-bright); }
+
+    @media (max-width: 900px) {
+        main { flex-direction: column; }
+        .left-column, .right-column { flex: none; height: 50vh; }
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <span class="blink">&#9608;</span>
+            MAINFRAME BANKING TRANSACTION SYSTEM
+            <span class="header-sub">// GNU COBOL BATCH PROCESSOR — DEMO</span>
+        </div>
+        <div class="header-right">
+            <span id="status-badge" class="status-badge status-idle">IDLE</span>
+            <span id="batch-seq">BATCH #6</span>
+            <button class="tutorial-btn" onclick="openTutorial()">? How It Works</button>
+            <a href="../../../" class="back-link">&larr; Portfolio</a>
+        </div>
+    </header>
+
+    <main>
+        <div class="left-column">
+            <!-- Transaction Ledger -->
+            <div class="panel">
+                <div class="panel-header">
+                    &#9638; TRANSACTION LEDGER
+                    <span class="panel-count" id="txn-count">0 records</span>
+                </div>
+                <div class="ledger-scroll" id="txn-ledger">
+                    <table><thead><tr>
+                        <th>TXN ID</th><th>TIMESTAMP</th><th>ACCOUNT #</th>
+                        <th>TYPE</th><th>AMOUNT</th><th>CUR</th><th>DESCRIPTION</th><th>STATUS</th>
+                    </tr></thead><tbody id="txn-body"></tbody></table>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-red" onclick="addRandom(1)">+ 1 Random Transaction</button>
+                <button class="btn btn-red" onclick="addRandom(10)">+ 10 Random Transactions</button>
+                <button class="btn btn-orange" onclick="sortBatch()">Sort Batch</button>
+                <button class="btn btn-green" onclick="updateBalances()">Update Accounts &amp; DB</button>
+            </div>
+
+            <!-- Accounts Ledger -->
+            <div class="panel">
+                <div class="panel-header">
+                    &#9638; ACCOUNTS LEDGER
+                    <span class="panel-count" id="acct-count">0 records</span>
+                </div>
+                <div class="ledger-scroll" id="acct-ledger">
+                    <table><thead><tr>
+                        <th>ACCOUNT #</th><th>OWNER</th><th>TYPE</th>
+                        <th>CUR</th><th>BALANCE</th><th>STATUS</th>
+                    </tr></thead><tbody id="acct-body"></tbody></table>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn btn-blue" onclick="createAccount()">+ New Account</button>
+                <button class="btn btn-red" onclick="deleteAccount()">Delete Account</button>
+                <button class="btn btn-muted" onclick="checkTransactions()">Check Transactions</button>
+            </div>
+        </div>
+
+        <div class="right-column">
+            <div class="panel">
+                <div class="panel-header">&#9654; SYSTEM ACTION LOG</div>
+                <div class="console-scroll"><pre id="action-log">Initializing mainframe banking system...
+Loading COBOL programs...
+Ready.</pre></div>
+            </div>
+            <div class="panel">
+                <div class="panel-header">&#9654; QUERY RESULTS</div>
+                <div class="console-scroll"><pre id="results-log">Awaiting query...</pre></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Account Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">CREATE NEW ACCOUNT</div>
+            <div class="modal-body">
+                <label>Owner Name: <input type="text" id="new-owner" placeholder="Full name"></label>
+                <label>Account Type:
+                    <select id="new-type"><option>CHECKING</option><option>SAVINGS</option><option>CREDIT</option></select>
+                </label>
+                <label>Currency:
+                    <select id="new-cur"><option>USD</option><option>EUR</option><option>GBP</option><option>LBP</option><option>JPY</option></select>
+                </label>
+                <label>Opening Balance: <input type="number" id="new-bal" value="0" step="0.01"></label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-blue" onclick="submitCreate()">CREATE</button>
+                <button class="btn btn-red" onclick="closeModal()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorial-overlay" class="tutorial-overlay hidden" onclick="if(event.target===this)closeTutorial()">
+        <div class="tutorial">
+            <div class="tutorial-header">
+                HOW IT WORKS
+                <button class="tutorial-close" onclick="closeTutorial()">CLOSE</button>
+            </div>
+            <div class="tutorial-body">
+                <h3>THE IDEA</h3>
+                This demo simulates a <strong>mainframe banking batch processing system</strong> built with GNU COBOL.
+                In real banks, transactions are not applied one by one — they are collected into
+                <strong>batches</strong>, sorted, then posted in bulk using an efficient algorithm called
+                <em>appareillage</em> (a lockstep walk of two sorted files).
+                <br><br>
+                The system is composed of <strong>7 COBOL programs</strong> compiled to native binaries,
+                a <strong>Flask web layer</strong> that calls them via subprocess, and a <strong>terminal-style UI</strong>.
+                This showcase page runs entirely in the browser with no backend — it simulates
+                the same logic client-side.
+
+                <h3>BATCH LIFECYCLE</h3>
+                Every transaction passes through three phases, each color-coded in the ledger:
+                <div class="step"><div class="step-num">1</div><div><span class="tag tag-red">PENDING</span> — Raw transaction appended to an unsorted buffer file (<code>pending.dat</code>). No account balances are touched yet.</div></div>
+                <div class="step"><div class="step-num">2</div><div><span class="tag tag-orange">SORTED</span> — The COBOL <code>SORT</code> verb reorders the batch by account number, then by timestamp. This is what makes the merge efficient.</div></div>
+                <div class="step"><div class="step-num">3</div><div><span class="tag tag-green">COMMITTED</span> — The sorted batch is walked in lockstep with the indexed accounts file. Each account balance is updated, and the transaction is written to the permanent ledger.</div></div>
+
+                <h3>THE ALGORITHM: APPAREILLAGE</h3>
+                <code>UPDATE-BALANCES</code> reads the sorted transaction file sequentially.
+                For each transaction, it does a keyed read on the indexed accounts file,
+                adds the amount to the balance, rewrites the account record, and appends
+                a committed record to the transaction log — all in a single pass at <strong>O(N+M)</strong>
+                complexity. This is the same pattern mainframes use to process millions of records nightly.
+
+                <h3>HOW TO USE THIS DEMO</h3>
+                <div class="step"><div class="step-num">1</div><div><strong>Add transactions</strong> — Click <span class="tag tag-red">+ 1 Random Transaction</span> or <span class="tag tag-red">+ 10</span>. New rows appear in red at the bottom of the ledger.</div></div>
+                <div class="step"><div class="step-num">2</div><div><strong>Sort the batch</strong> — Click <span class="tag tag-orange">Sort Batch</span>. Red rows turn orange and are reordered by account number. The system log shows the COBOL SORT statement.</div></div>
+                <div class="step"><div class="step-num">3</div><div><strong>Post to accounts</strong> — Click <span class="tag tag-green">Update Accounts &amp; DB</span>. Orange rows turn green, balances update, and the batch divider appears. Changed balances are highlighted in the results panel.</div></div>
+                <div class="step"><div class="step-num">4</div><div><strong>Inspect a batch</strong> — Click any <span class="tag tag-red">BATCH #N</span> divider in the ledger to see per-account deltas and the full transaction list for that batch.</div></div>
+                <div class="step"><div class="step-num">5</div><div><strong>Manage accounts</strong> — Click a row in the accounts ledger to select it, then use <span class="tag tag-blue">+ New Account</span>, <span class="tag tag-red">Delete Account</span>, or <strong>Check Transactions</strong> for full history.</div></div>
+
+                <h3>AUTO-CREATE ACCOUNTS</h3>
+                If a transaction references an account that does not exist, the system automatically
+                creates it with owner <strong>UNKNOWN</strong>. This mirrors real mainframe behaviour where
+                the transaction file is authoritative and the accounts file is derived.
+
+                <h3>TECH STACK</h3>
+                <strong>COBOL</strong> (GNU COBOL 3.2) — 7 programs, 4 copybooks, ISAM indexed files, COMP-3 packed decimal<br>
+                <strong>Python/Flask</strong> — Thin web layer calling COBOL binaries via subprocess<br>
+                <strong>JavaScript</strong> — Terminal-style UI with real-time ledger updates<br>
+                <strong>Data files</strong> — Indexed (<code>accounts.dat</code>) + sequential (<code>transactions.dat</code>, <code>pending.dat</code>)
+            </div>
+        </div>
+    </div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Mainframe Banking — Self-contained demo (no backend)
+   All data in-memory, simulates COBOL program behaviour
+   ══════════════════════════════════════════════════════════════ */
+
+const ACCOUNTS_SEED = [
+    { n:'1000000001', owner:'Marcus J. Wellington',  type:'CHECKING', cur:'USD', bal:12450.75, status:'ACTIVE' },
+    { n:'1000000002', owner:'Sophia R. Nakamura',    type:'SAVINGS',  cur:'USD', bal:48920.30, status:'ACTIVE' },
+    { n:'1000000003', owner:'Ibrahim K. Al-Rashid',  type:'CHECKING', cur:'EUR', bal:7835.50,  status:'ACTIVE' },
+    { n:'1000000004', owner:'Elena V. Petrova',      type:'CREDIT',   cur:'USD', bal:-2150.00, status:'ACTIVE' },
+    { n:'1000000005', owner:'Jean-Pierre Dubois',    type:'SAVINGS',  cur:'EUR', bal:156780.00,status:'ACTIVE' },
+    { n:'1000000006', owner:'Nadia H. Mansour',      type:'CHECKING', cur:'LBP', bal:45000000, status:'ACTIVE' },
+    { n:'1000000007', owner:'Takeshi Yamamoto',      type:'SAVINGS',  cur:'JPY', bal:3850000,  status:'ACTIVE' },
+    { n:'1000000008', owner:'Catherine A. Brooks',   type:'CHECKING', cur:'GBP', bal:23100.45, status:'ACTIVE' },
+    { n:'1000000009', owner:'Omar F. Haddad',        type:'CREDIT',   cur:'LBP', bal:-12500000,status:'ACTIVE' },
+    { n:'1000000010', owner:'Victoria S. Chen',      type:'SAVINGS',  cur:'GBP', bal:89250.00, status:'ACTIVE' },
+];
+
+const DESCS = [
+    ['DEPOSIT','Payroll direct deposit'],['DEPOSIT','Wire transfer received'],
+    ['DEPOSIT','Cash deposit at branch'],['DEPOSIT','Tax refund credit'],
+    ['DEPOSIT','Dividend income'],['WITHDRAWAL','ATM withdrawal'],
+    ['WITHDRAWAL','Online purchase'],['WITHDRAWAL','Grocery store'],
+    ['WITHDRAWAL','Monthly rent payment'],['WITHDRAWAL','Utility bill'],
+    ['PAYMENT','Insurance premium'],['PAYMENT','Subscription service'],
+    ['PAYMENT','Loan installment'],['TRANSFER','Interbank transfer'],
+    ['TRANSFER','Travel expense'],['WITHDRAWAL','Restaurant charge'],
+    ['DEPOSIT','Mobile payment received'],['PAYMENT','Medical expense'],
+    ['WITHDRAWAL','Fuel station'],['PAYMENT','Membership fee'],
+];
+
+const MUL = { USD:1, EUR:0.92, GBP:0.79, LBP:89500, JPY:149 };
+
+let accounts = [], committed = [], pending = [], sorted = [];
+let batchBounds = [], nextTxn = 1, batchSeq = 1, selectedAcct = null, selectedBatchNum = null;
+
+function fmtAmt(v, c) {
+    const n = parseFloat(v) || 0;
+    return (c==='JPY'||c==='LBP') ? n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0})
+                                   : n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtTs(t) {
+    if (!t || t.length < 14) return t || '';
+    return `${t.slice(0,4)}-${t.slice(4,6)}-${t.slice(6,8)} ${t.slice(8,10)}:${t.slice(10,12)}:${t.slice(12,14)}`;
+}
+function nowTs() {
+    const d = new Date();
+    return d.getFullYear().toString() + String(d.getMonth()+1).padStart(2,'0') +
+           String(d.getDate()).padStart(2,'0') + String(d.getHours()).padStart(2,'0') +
+           String(d.getMinutes()).padStart(2,'0') + String(d.getSeconds()).padStart(2,'0');
+}
+function randEl(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+function randRange(a,b) { return Math.round((a + Math.random()*(b-a))*100)/100; }
+
+// ─── Seed ────────────────────────────────────────────────
+function seed() {
+    accounts = ACCOUNTS_SEED.map(a => ({...a}));
+    committed = []; pending = []; sorted = [];
+    batchBounds = []; nextTxn = 1; batchSeq = 1;
+
+    // Generate 100 seed transactions across 5 batches
+    const batchSizes = [25, 20, 20, 15, 20];
+    let baseDate = new Date(2024, 0, 15, 8, 30, 0);
+
+    for (const size of batchSizes) {
+        const batch = [];
+        for (let i = 0; i < size; i++) {
+            const acct = randEl(accounts.filter(a => a.status === 'ACTIVE'));
+            const [type, desc] = randEl(DESCS);
+            const mul = MUL[acct.cur] || 1;
+            let amt = randRange(20, 5000) * mul;
+            if (type !== 'DEPOSIT') amt = -amt;
+
+            const offset = Math.floor(Math.random()*28800)*1000;
+            const ts = new Date(baseDate.getTime() + offset);
+            const tsStr = ts.getFullYear().toString() + String(ts.getMonth()+1).padStart(2,'0') +
+                          String(ts.getDate()).padStart(2,'0') + String(ts.getHours()).padStart(2,'0') +
+                          String(ts.getMinutes()).padStart(2,'0') + String(ts.getSeconds()).padStart(2,'0');
+
+            acct.bal = Math.round((acct.bal + amt)*100)/100;
+            batch.push({ id: String(nextTxn++).padStart(10,'0'), ts: tsStr, acct: acct.n,
+                         type, amt, cur: acct.cur, desc, runBal: acct.bal, batch: batchSeq });
+        }
+        batch.sort((a,b) => a.acct.localeCompare(b.acct) || a.ts.localeCompare(b.ts));
+        committed.push(...batch);
+        batchBounds.push({ num: batchSeq, ts: batch[batch.length-1].ts });
+        batchSeq++;
+        baseDate = new Date(baseDate.getTime() + (2+Math.floor(Math.random()*5))*86400000);
+    }
+}
+
+// ─── Render ──────────────────────────────────────────────
+function render() {
+    renderTxns(); renderAccts(); updateStatus();
+}
+
+function renderTxns() {
+    const tbody = document.getElementById('txn-body');
+    let html = '', curBatch = 0;
+
+    for (const t of committed) {
+        if (t.batch > curBatch) {
+            if (curBatch > 0) html += batchDividerHtml(curBatch);
+            curBatch = t.batch;
+        }
+        html += txnRow(t, 'committed');
+    }
+    if (curBatch > 0) html += batchDividerHtml(curBatch);
+    for (const t of sorted) html += txnRow(t, 'sorted');
+    for (const t of pending) html += txnRow(t, 'pending');
+
+    tbody.innerHTML = html;
+    document.getElementById('txn-count').textContent = `${committed.length + sorted.length + pending.length} records`;
+    const ledger = document.getElementById('txn-ledger');
+    ledger.scrollTop = ledger.scrollHeight;
+}
+
+function txnRow(t, cls) {
+    const ac = t.amt >= 0 ? 'amt-pos' : 'amt-neg';
+    const st = cls === 'committed' ? 'COMMIT' : cls === 'sorted' ? 'SORTED' : 'PENDING';
+    return `<tr class="${cls}" data-id="${t.id}"><td>${t.id}</td><td>${fmtTs(t.ts)}</td><td>${t.acct}</td><td>${t.type}</td><td class="${ac}">${fmtAmt(t.amt, t.cur)}</td><td>${t.cur}</td><td>${t.desc}</td><td>${st}</td></tr>`;
+}
+
+function renderAccts() {
+    const tbody = document.getElementById('acct-body');
+    const sorted = [...accounts].sort((a,b) => a.n.localeCompare(b.n));
+    tbody.innerHTML = sorted.map(a => {
+        const cls = ['acct-row', a.status==='CLOSED'?'acct-closed':'', a.n===selectedAcct?'selected':''].filter(Boolean).join(' ');
+        const bc = a.bal >= 0 ? 'amt-pos' : 'amt-neg';
+        return `<tr class="${cls}" onclick="selectAcct('${a.n}')"><td>${a.n}</td><td>${a.owner}</td><td>${a.type}</td><td>${a.cur}</td><td class="${bc}">${fmtAmt(a.bal, a.cur)}</td><td>${a.status}</td></tr>`;
+    }).join('');
+    document.getElementById('acct-count').textContent = `${accounts.length} records`;
+}
+
+function updateStatus() {
+    const badge = document.getElementById('status-badge');
+    if (sorted.length > 0) { badge.textContent='SORTED'; badge.className='status-badge status-sorted'; }
+    else if (pending.length > 0) { badge.textContent='PENDING'; badge.className='status-badge status-pending'; }
+    else { badge.textContent='IDLE'; badge.className='status-badge status-idle'; }
+    document.getElementById('batch-seq').textContent = `BATCH #${batchSeq}`;
+}
+
+function setLog(html) { document.getElementById('action-log').innerHTML = html; }
+function setResults(text) { document.getElementById('results-log').textContent = text; }
+
+function hl(text) {
+    return text
+        .replace(/\b(PROCEDURE|DIVISION|SORT|OPEN|CLOSE|READ|WRITE|REWRITE|MOVE|COMPUTE|ADD|IF|END-IF|PERFORM|UNTIL|INPUT|OUTPUT|EXTEND|I-O|ASCENDING|KEY|USING|GIVING|NOT|EQUAL|FUNCTION|RANDOM|SELECT|FROM|WHERE|ORDER BY|ASC)\b/g, '<span class="kw">$1</span>')
+        .replace(/'([^']*)'/g, '<span class="str">\'$1\'</span>')
+        .replace(/(\*[^\n]*)/g, '<span class="cmt">$1</span>')
+        .replace(/(--[^\n]*)/g, '<span class="cmt">$1</span>');
+}
+
+// ─── Helpers ─────────────────────────────────────────────
+function batchDividerHtml(num) {
+    const b = batchBounds.find(x => x.num === num);
+    const sel = num === selectedBatchNum ? ' batch-selected' : '';
+    return `<tr class="batch-divider${sel}" onclick="selectBatch(${num})"><td colspan="8"><div class="divider-line">── BATCH #${num} COMMITTED ${b ? '['+fmtTs(b.ts)+']' : ''} ──</div></td></tr>`;
+}
+
+function ensureAccountExists(acctNum, currency) {
+    if (!accounts.find(a => a.n === acctNum)) {
+        accounts.push({ n: acctNum, owner: 'UNKNOWN', type: 'CHECKING', cur: currency, bal: 0, status: 'ACTIVE', _auto_created: true });
+    }
+}
+
+function selectBatch(num) {
+    selectedBatchNum = num;
+    selectedAcct = null;
+    renderTxns();
+    renderAccts();
+    showBatchDetails(num);
+}
+
+function showBatchDetails(num) {
+    const batchTxns = committed.filter(t => t.batch === num);
+    if (batchTxns.length === 0) { setResults('No transactions in this batch.'); return; }
+
+    // Compute per-account deltas
+    const deltas = {};
+    for (const t of batchTxns) {
+        if (!deltas[t.acct]) deltas[t.acct] = { cur: t.cur, total: 0, count: 0 };
+        deltas[t.acct].total = Math.round((deltas[t.acct].total + t.amt)*100)/100;
+        deltas[t.acct].count++;
+    }
+
+    let result = `Batch #${num} — ${batchTxns.length} transactions\n`;
+    result += '─'.repeat(70) + '\n\n';
+    result += 'Per-Account Summary:\n';
+    result += 'ACCOUNT #     TXNS   NET CHANGE       CUR\n';
+    result += '─'.repeat(50) + '\n';
+    for (const [acct, d] of Object.entries(deltas).sort((a,b) => a[0].localeCompare(b[0]))) {
+        const sign = d.total >= 0 ? '+' : '';
+        result += `${acct}      ${String(d.count).padStart(3)}   ${(sign + fmtAmt(d.total, d.cur)).padStart(14)}  ${d.cur}\n`;
+    }
+    result += '\n' + '─'.repeat(76) + '\n';
+    result += `${'TXN ID'.padEnd(10)} | ${'TIMESTAMP'.padEnd(19)} | ${'ACCT'.padEnd(10)} | ${'TYPE'.padEnd(10)} | AMOUNT\n`;
+    result += '─'.repeat(76) + '\n';
+    for (const t of batchTxns) {
+        result += `${t.id} | ${fmtTs(t.ts).padEnd(19)} | ${t.acct} | ${t.type.padEnd(10)} | ${fmtAmt(t.amt, t.cur).padStart(14)} ${t.cur}\n`;
+    }
+    result += '\n-- SQL Equivalent:\nSELECT * FROM TRANSACTIONS\n WHERE BATCH_NUM = ' + num + '\n ORDER BY ACCOUNT_NUMBER ASC, TIMESTAMP ASC;';
+    setResults(result);
+
+    setLog(hl(`PROCEDURE DIVISION.\nQUERY-BATCH.\n    OPEN INPUT TRANS-FILE\n    PERFORM UNTIL WS-EOF = 1\n        READ TRANS-FILE NEXT\n        IF TXN-BATCH-NUM = ${num}\n            DISPLAY TXN record\n        END-IF\n    END-PERFORM\n\n    * ${batchTxns.length} transactions in batch #${num}\n    * ${Object.keys(deltas).length} accounts affected`));
+}
+
+// ─── Actions ─────────────────────────────────────────────
+function addRandom(n) {
+    const lines = [];
+    for (let i = 0; i < n; i++) {
+        const acct = randEl(accounts.filter(a => a.status === 'ACTIVE'));
+        const [type, desc] = randEl(DESCS);
+        const mul = MUL[acct.cur] || 1;
+        let amt = randRange(20, 5000) * mul;
+        if (type !== 'DEPOSIT') amt = -amt;
+
+        const txnAcct = acct.n;
+        ensureAccountExists(txnAcct, acct.cur);
+        pending.push({ id: String(nextTxn++).padStart(10,'0'), ts: nowTs(), acct: txnAcct,
+                       type, amt, cur: acct.cur, desc, runBal: 0, batch: batchSeq });
+        lines.push(`    WRITE txn #${nextTxn-1} → ${txnAcct} ${type} ${fmtAmt(amt, acct.cur)} ${acct.cur}`);
+    }
+    render();
+    setLog(hl(`PROCEDURE DIVISION.\nGENERATE-ONE-TXN.\n    COMPUTE WS-RAND = FUNCTION RANDOM\n    OPEN EXTEND PENDING-FILE\n${lines.join('\n')}\n    CLOSE PENDING-FILE.\n\n    * Generated ${n} transaction(s)\n    * Appended to pending.dat (unsorted buffer)`));
+}
+
+function sortBatch() {
+    if (pending.length === 0) { setLog('<span class="err">No pending transactions to sort.</span>'); return; }
+    sorted = [...pending].sort((a,b) => a.acct.localeCompare(b.acct) || a.ts.localeCompare(b.ts));
+    pending = [];
+    render();
+    setLog(hl(`PROCEDURE DIVISION.\nEXECUTE-SORT.\n    SORT SORT-WORK\n        ON ASCENDING KEY SW-TXN-ACCOUNT-NUM\n        ON ASCENDING KEY SW-TXN-TIMESTAMP\n        USING PENDING-FILE\n        GIVING SORTED-FILE.\n\n    * ${sorted.length} records sorted by account number\n    * Batch state updated to SORTED\n    * Pending transactions now in sorted-staging.dat`));
+}
+
+function updateBalances() {
+    if (sorted.length === 0 && pending.length > 0) {
+        setLog('<span class="err">ERROR: Batch must be sorted before posting. Please sort first.</span>');
+        alert('Batch must be sorted before posting. Please sort first.');
+        return;
+    }
+    if (sorted.length === 0) { setLog('No sorted transactions to commit.'); return; }
+
+    // Snapshot balances before update for highlighting changes
+    const balBefore = {};
+    accounts.forEach(a => balBefore[a.n] = a.bal);
+
+    const autoCreated = [];
+    for (const t of sorted) {
+        let acct = accounts.find(a => a.n === t.acct);
+        if (!acct) {
+            // Auto-create account if not found
+            acct = { n: t.acct, owner: 'UNKNOWN', type: 'CHECKING', cur: t.cur, bal: 0, status: 'ACTIVE', _auto_created: true };
+            accounts.push(acct);
+            balBefore[acct.n] = null; // mark as new
+            autoCreated.push(acct.n);
+        }
+        acct.bal = Math.round((acct.bal + t.amt)*100)/100;
+        t.runBal = acct.bal;
+        t.batch = batchSeq;
+    }
+    committed.push(...sorted);
+    batchBounds.push({ num: batchSeq, ts: nowTs() });
+    const count = sorted.length;
+    const newBatchNum = batchSeq;
+    sorted = []; pending = [];
+    batchSeq++;
+    selectedBatchNum = newBatchNum;
+    selectedAcct = null;
+    render();
+
+    // Flash new rows
+    setTimeout(() => {
+        document.querySelectorAll('#txn-body tr.committed').forEach(tr => {
+            const id = tr.dataset.id;
+            if (committed.slice(-count).find(t => t.id === id)) tr.classList.add('flash');
+        });
+    }, 50);
+
+    // Build results with green highlight on changed balances
+    let resultHtml = `Batch committed: ${count} transactions posted.\n`;
+    if (autoCreated.length > 0)
+        resultHtml += `<span class="ok">Auto-created ${autoCreated.length} account(s): ${autoCreated.join(', ')}</span>\n`;
+    resultHtml += `\nUpdated Account Balances:\n${'─'.repeat(68)}\n`;
+    resultHtml += `${'ACCOUNT #'.padEnd(10)}  ${'BEFORE'.padStart(14)}     ${'AFTER'.padStart(14)}  ${'CUR'}  CHANGE\n`;
+    resultHtml += '─'.repeat(68) + '\n';
+    for (const a of [...accounts].sort((x,y) => x.n.localeCompare(y.n))) {
+        const before = balBefore[a.n];
+        const isNew = before === null;
+        const changed = isNew || before !== a.bal;
+        const beforeStr = isNew ? '(new)'.padStart(14) : fmtAmt(before, a.cur).padStart(14);
+        const afterStr = fmtAmt(a.bal, a.cur).padStart(14);
+        const diff = isNew ? a.bal : Math.round((a.bal - before)*100)/100;
+        const diffStr = diff === 0 ? '' : (diff > 0 ? '+' : '') + fmtAmt(diff, a.cur);
+        if (changed) {
+            resultHtml += `<span class="ok">${a.n}  ${beforeStr}  →  ${afterStr}  ${a.cur}  ${diffStr}</span>\n`;
+        } else {
+            resultHtml += `${a.n}  ${beforeStr}     ${afterStr}  ${a.cur}\n`;
+        }
+    }
+    document.getElementById('results-log').innerHTML = resultHtml;
+
+    let logExtra = '';
+    if (autoCreated.length > 0) {
+        logExtra = autoCreated.map(n => `\n    * AUTO-CREATED account ${n} (not found during update)`).join('');
+    }
+
+    setLog(hl(`PROCEDURE DIVISION.\nAPPLY-TRANSACTIONS.\n    * Appareillage: lockstep walk of sorted files\n    OPEN INPUT SORTED-FILE\n    OPEN I-O ACCOUNT-FILE\n    OPEN EXTEND TRANS-FILE\n\nPROCESS-ONE-TRANSACTION.\n    READ ACCOUNT-FILE  (by key: ACCT-NUMBER)\n    IF INVALID KEY\n        PERFORM AUTO-CREATE-ACCT\n    END-IF\n    ADD SR-TXN-AMOUNT TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD\n    WRITE COMMITTED-RECORD${logExtra}\n\n    * ${count} transactions committed to accounts\n    * Batch pointer advanced\n    * Pending buffer cleared`));
+}
+
+function selectAcct(n) {
+    selectedAcct = n;
+    selectedBatchNum = null;
+    renderAccts();
+    renderTxns();
+    const a = accounts.find(x => x.n === n);
+    if (a) setResults(`Account Selected: ${a.n}\nOwner:    ${a.owner}\nType:     ${a.type}\nCurrency: ${a.cur}\nBalance:  ${fmtAmt(a.bal, a.cur)}\nStatus:   ${a.status}\n\nClick "Check Transactions" to view history.`);
+}
+
+function createAccount() { document.getElementById('modal-overlay').classList.remove('hidden'); }
+function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+function submitCreate() {
+    const owner = document.getElementById('new-owner').value || 'New Account Holder';
+    const type = document.getElementById('new-type').value;
+    const cur = document.getElementById('new-cur').value;
+    const bal = parseFloat(document.getElementById('new-bal').value) || 0;
+    const maxN = accounts.reduce((m,a) => Math.max(m, parseInt(a.n)), 0);
+    const newN = String(maxN + 1).padStart(10, '0');
+    // Replace auto-created stub if it exists, otherwise add new
+    const stubIdx = accounts.findIndex(a => a.n === newN && a._auto_created);
+    if (stubIdx >= 0) {
+        accounts[stubIdx] = { n: newN, owner, type, cur, bal, status: 'ACTIVE' };
+    } else {
+        accounts.push({ n: newN, owner, type, cur, bal, status: 'ACTIVE' });
+    }
+    closeModal();
+    render();
+    setLog(hl(`PROCEDURE DIVISION.\nWRITE-NEW-ACCOUNT.\n    MOVE '${owner}' TO ACCT-OWNER-NAME\n    MOVE '${type}' TO ACCT-TYPE\n    MOVE '${cur}' TO ACCT-CURRENCY\n    MOVE ${bal} TO ACCT-BALANCE\n    WRITE ACCOUNT-RECORD\n\n    * Record written to indexed ACCOUNTS file\n    * New account number: ${newN}`));
+    setResults(`Account created successfully.\n\nAccount #: ${newN}\nOwner:     ${owner}\nType:      ${type}\nCurrency:  ${cur}\nBalance:   ${bal}`);
+}
+
+function deleteAccount() {
+    if (!selectedAcct) { setLog('Select an account first.'); return; }
+    const a = accounts.find(x => x.n === selectedAcct);
+    if (!a || a.status === 'CLOSED') { setLog('Account is already closed.'); return; }
+    if (!confirm(`Close account ${selectedAcct}?`)) return;
+    a.status = 'CLOSED'; a.bal = 0;
+    render();
+    setLog(hl(`PROCEDURE DIVISION.\nCLOSE-ACCOUNT.\n    MOVE ${selectedAcct} TO ACCT-NUMBER\n    READ ACCOUNT-FILE (by key)\n    IF ACCT-BALANCE NOT = ZERO\n        PERFORM WRITE-CLOSURE-TXN\n    END-IF\n    MOVE 'CLOSED' TO ACCT-STATUS\n    MOVE ZERO TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD\n\n    * Account ${selectedAcct} marked CLOSED\n    * Past transactions preserved in ledger\n    * CLOSURE withdrawal appended if balance > 0`));
+    setResults(`Account ${selectedAcct} has been closed.\n\nPast transactions remain in the ledger.\nThe account is marked CLOSED — no new transactions accepted.`);
+}
+
+function checkTransactions() {
+    if (!selectedAcct) { setLog('Select an account first.'); return; }
+    const a = accounts.find(x => x.n === selectedAcct);
+    const txns = committed.filter(t => t.acct === selectedAcct);
+    let result = '';
+    if (a) result += `Account: ${a.n}\nOwner:   ${a.owner}\nType:    ${a.type}\nCurrency:${a.cur}  Balance: ${fmtAmt(a.bal, a.cur)}\nStatus:  ${a.status}\n\n`;
+    result += `-- SQL Equivalent:\nSELECT * FROM TRANSACTIONS\n WHERE ACCOUNT_NUMBER = '${selectedAcct}'\n ORDER BY TIMESTAMP ASC;\n\n`;
+    result += `Transaction History (${txns.length} records):\n${'─'.repeat(78)}\n`;
+    result += `${'TXN ID'.padEnd(10)} | ${'TIMESTAMP'.padEnd(19)} | ${'TYPE'.padEnd(10)} | ${'AMOUNT'.padStart(14)} | ${'BAL AFTER'.padStart(14)}\n`;
+    result += '─'.repeat(78) + '\n';
+    for (const t of txns) result += `${t.id} | ${fmtTs(t.ts).padEnd(19)} | ${t.type.padEnd(10)} | ${fmtAmt(t.amt,t.cur).padStart(14)} | ${fmtAmt(t.runBal,t.cur).padStart(14)}\n`;
+    setResults(result);
+    setLog(hl(`PROCEDURE DIVISION.\nQUERY-ACCOUNT-RECORD.\n    MOVE ${selectedAcct} TO ACCT-NUMBER\n    READ ACCOUNT-FILE (indexed, by key)\n\nQUERY-TRANSACTIONS.\n    OPEN INPUT TRANS-FILE\n    PERFORM UNTIL WS-EOF = 1\n        READ TRANS-FILE NEXT\n        IF TXN-ACCOUNT-NUM = ${selectedAcct}\n            DISPLAY TXN record\n        END-IF\n    END-PERFORM\n\n    -- Equivalent SQL:\n    SELECT * FROM TRANSACTIONS\n     WHERE ACCOUNT_NUMBER = '${selectedAcct}'\n     ORDER BY TIMESTAMP ASC;`));
+}
+
+// ─── Init ────────────────────────────────────────────────
+seed();
+render();
+setLog(`System initialized successfully.
+Loaded ${accounts.length} accounts.
+Loaded ${committed.length} committed transactions.
+Across ${batchBounds.length} historical batches.
+
+Ready for operations.`);
+setResults('System ready.\nSelect an account and click "Check Transactions" to query.');
+
+function openTutorial() { document.getElementById('tutorial-overlay').classList.remove('hidden'); }
+function closeTutorial() { document.getElementById('tutorial-overlay').classList.add('hidden'); }
+</script>
+</body>
+</html>
