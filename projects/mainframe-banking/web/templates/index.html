@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAINFRAME BANKING SYSTEM</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <span class="blink">&#9608;</span>
+            MAINFRAME BANKING TRANSACTION SYSTEM
+            <span class="header-sub">// GNU COBOL BATCH PROCESSOR</span>
+        </div>
+        <div class="header-status">
+            <span id="batch-status-indicator" class="status-idle">IDLE</span>
+            <span id="batch-seq">BATCH #--</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- LEFT COLUMN -->
+        <div class="left-column">
+            <!-- Transaction Ledger -->
+            <div class="panel" id="txn-panel">
+                <div class="panel-header">
+                    <span class="panel-icon">&#9638;</span>
+                    TRANSACTION LEDGER
+                    <span class="panel-count" id="txn-count">0 records</span>
+                </div>
+                <div class="ledger-scroll" id="txn-ledger">
+                    <table id="txn-table">
+                        <thead>
+                            <tr>
+                                <th>TXN ID</th>
+                                <th>TIMESTAMP</th>
+                                <th>ACCOUNT #</th>
+                                <th>TYPE</th>
+                                <th>AMOUNT</th>
+                                <th>CURRENCY</th>
+                                <th>DESCRIPTION</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txn-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Transaction Action Bar -->
+            <div class="action-bar">
+                <button id="btn-add-1" class="btn btn-pending" onclick="addRandom(1)">+ 1 Random Transaction</button>
+                <button id="btn-add-10" class="btn btn-pending" onclick="addRandom(10)">+ 10 Random Transactions</button>
+                <button id="btn-sort" class="btn btn-sorted" onclick="sortBatch()">Sort Batch</button>
+                <button id="btn-update" class="btn btn-committed" onclick="updateBalances()">Update Accounts &amp; DB</button>
+            </div>
+
+            <!-- Accounts Ledger -->
+            <div class="panel" id="acct-panel">
+                <div class="panel-header">
+                    <span class="panel-icon">&#9638;</span>
+                    ACCOUNTS LEDGER
+                    <span class="panel-count" id="acct-count">0 records</span>
+                </div>
+                <div class="ledger-scroll" id="acct-ledger">
+                    <table id="acct-table">
+                        <thead>
+                            <tr>
+                                <th>ACCOUNT #</th>
+                                <th>OWNER</th>
+                                <th>TYPE</th>
+                                <th>CURRENCY</th>
+                                <th>BALANCE</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="acct-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Account Action Bar -->
+            <div class="action-bar">
+                <button id="btn-new-acct" class="btn btn-create" onclick="createAccount()">+ New Account</button>
+                <button id="btn-delete-acct" class="btn btn-delete" onclick="deleteAccount()">Delete Account</button>
+                <button id="btn-check-txns" class="btn btn-query" onclick="checkTransactions()">Check Transactions</button>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-column">
+            <!-- Action Console -->
+            <div class="panel console-panel">
+                <div class="panel-header">
+                    <span class="panel-icon">&#9654;</span>
+                    SYSTEM ACTION LOG
+                </div>
+                <div class="console-scroll" id="action-console">
+                    <pre id="action-log">Initializing mainframe banking system...
+Loading COBOL programs...
+Ready.</pre>
+                </div>
+            </div>
+
+            <!-- Results Console -->
+            <div class="panel console-panel">
+                <div class="panel-header">
+                    <span class="panel-icon">&#9654;</span>
+                    QUERY RESULTS
+                </div>
+                <div class="console-scroll" id="results-console">
+                    <pre id="results-log">Awaiting query...</pre>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Account Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-header">CREATE NEW ACCOUNT</div>
+            <div class="modal-body">
+                <label>Owner Name:
+                    <input type="text" id="new-acct-owner" value="" placeholder="Full name">
+                </label>
+                <label>Account Type:
+                    <select id="new-acct-type">
+                        <option value="CHECKING">CHECKING</option>
+                        <option value="SAVINGS">SAVINGS</option>
+                        <option value="CREDIT">CREDIT</option>
+                    </select>
+                </label>
+                <label>Currency:
+                    <select id="new-acct-currency">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="LBP">LBP</option>
+                        <option value="JPY">JPY</option>
+                    </select>
+                </label>
+                <label>Opening Balance:
+                    <input type="number" id="new-acct-balance" value="0" step="0.01">
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-create" onclick="submitCreateAccount()">CREATE</button>
+                <button class="btn btn-delete" onclick="closeModal()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/main.js"></script>
+</body>
+</html>

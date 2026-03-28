@@ -1,0 +1,555 @@
+/* ═══════════════════════════════════════════════════════════════
+   MAINFRAME BANKING SYSTEM — Terminal Aesthetic
+   IBM 3270 green-screen modernized
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+
+:root {
+    --bg-primary: #0a0e14;
+    --bg-secondary: #0d1117;
+    --bg-panel: #0f1319;
+    --bg-header: #131920;
+    --bg-row-hover: #1a2233;
+    --bg-row-selected: #1c2a3f;
+
+    --green-committed: #00cc66;
+    --green-bg: rgba(0, 204, 102, 0.08);
+    --green-flash: rgba(0, 204, 102, 0.25);
+
+    --red-pending: #ff4444;
+    --red-bg: rgba(255, 68, 68, 0.08);
+
+    --orange-sorted: #ff9900;
+    --orange-bg: rgba(255, 153, 0, 0.08);
+
+    --text-primary: #c9d1d9;
+    --text-muted: #6e7681;
+    --text-header: #58a6ff;
+    --text-bright: #e6edf3;
+
+    --border: #21262d;
+    --border-heavy: #30363d;
+    --divider-red: #ff4444;
+
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--bg-header);
+    border-bottom: 2px solid var(--green-committed);
+    height: 40px;
+}
+
+.header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-committed);
+    letter-spacing: 1px;
+}
+
+.header-sub {
+    font-size: 11px;
+    font-weight: 300;
+    color: var(--text-muted);
+    margin-left: 12px;
+}
+
+.header-status {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 11px;
+}
+
+#batch-seq {
+    color: var(--text-muted);
+}
+
+.status-idle {
+    color: var(--green-committed);
+    padding: 2px 8px;
+    border: 1px solid var(--green-committed);
+    font-size: 10px;
+}
+
+.status-sorted {
+    color: var(--orange-sorted);
+    padding: 2px 8px;
+    border: 1px solid var(--orange-sorted);
+    font-size: 10px;
+}
+
+.status-pending {
+    color: var(--red-pending);
+    padding: 2px 8px;
+    border: 1px solid var(--red-pending);
+    font-size: 10px;
+}
+
+.blink {
+    animation: blink 1s step-end infinite;
+    color: var(--green-committed);
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* ─── Main Layout ────────────────────────────────────────── */
+
+main {
+    display: flex;
+    height: calc(100vh - 40px);
+    gap: 2px;
+}
+
+.left-column {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.right-column {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* ─── Panels ─────────────────────────────────────────────── */
+
+.panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    min-height: 0;
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 6px 12px;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-header);
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.panel-icon {
+    font-size: 9px;
+}
+
+.panel-count {
+    margin-left: auto;
+    font-weight: 300;
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+.console-panel {
+    flex: 1;
+}
+
+/* ─── Ledger Tables ──────────────────────────────────────── */
+
+.ledger-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    min-height: 0;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+th {
+    padding: 5px 8px;
+    text-align: left;
+    background: var(--bg-header);
+    color: var(--text-header);
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-heavy);
+    white-space: nowrap;
+}
+
+td {
+    padding: 3px 8px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+/* Row states */
+tr.row-committed td {
+    color: var(--green-committed);
+    background: var(--green-bg);
+}
+
+tr.row-pending td {
+    color: var(--red-pending);
+    background: var(--red-bg);
+}
+
+tr.row-sorted td {
+    color: var(--orange-sorted);
+    background: var(--orange-bg);
+}
+
+tr.row-flash td {
+    animation: flash-green 1.5s ease-out;
+}
+
+@keyframes flash-green {
+    0% { background: var(--green-flash); }
+    100% { background: var(--green-bg); }
+}
+
+/* Transition for state changes */
+tr td {
+    transition: color 0.5s ease, background 0.5s ease;
+}
+
+/* Account rows */
+tr.acct-row {
+    cursor: pointer;
+}
+
+tr.acct-row:hover td {
+    background: var(--bg-row-hover);
+}
+
+tr.acct-row.selected td {
+    background: var(--bg-row-selected);
+    color: var(--text-bright);
+    border-left: 2px solid var(--text-header);
+}
+
+tr.acct-closed td {
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+/* Batch dividers */
+tr.batch-divider td {
+    background: transparent;
+    border-bottom: none;
+    padding: 4px 0;
+}
+
+.divider-line {
+    color: var(--divider-red);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-align: center;
+    padding: 2px 0;
+    border-top: 2px solid var(--divider-red);
+    border-bottom: 2px solid var(--divider-red);
+    background: rgba(255, 68, 68, 0.05);
+}
+
+/* Amount formatting */
+.amount-positive {
+    color: var(--green-committed);
+}
+
+.amount-negative {
+    color: var(--red-pending);
+}
+
+/* ─── Action Bar ─────────────────────────────────────────── */
+
+.action-bar {
+    display: flex;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--bg-header);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border: 1px solid;
+    cursor: pointer;
+    background: transparent;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    filter: brightness(1.3);
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-pending {
+    color: var(--red-pending);
+    border-color: var(--red-pending);
+}
+
+.btn-pending:hover {
+    background: rgba(255, 68, 68, 0.1);
+}
+
+.btn-sorted {
+    color: var(--orange-sorted);
+    border-color: var(--orange-sorted);
+}
+
+.btn-sorted:hover {
+    background: rgba(255, 153, 0, 0.1);
+}
+
+.btn-committed {
+    color: var(--green-committed);
+    border-color: var(--green-committed);
+}
+
+.btn-committed:hover {
+    background: rgba(0, 204, 102, 0.1);
+}
+
+.btn-create {
+    color: var(--text-header);
+    border-color: var(--text-header);
+}
+
+.btn-create:hover {
+    background: rgba(88, 166, 255, 0.1);
+}
+
+.btn-delete {
+    color: var(--red-pending);
+    border-color: var(--red-pending);
+}
+
+.btn-query {
+    color: var(--text-primary);
+    border-color: var(--text-muted);
+}
+
+.btn-query:hover {
+    background: rgba(201, 209, 217, 0.08);
+}
+
+/* ─── Console ────────────────────────────────────────────── */
+
+.console-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 12px;
+    min-height: 0;
+}
+
+pre {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.log-keyword {
+    color: var(--text-header);
+    font-weight: 500;
+}
+
+.log-string {
+    color: var(--orange-sorted);
+}
+
+.log-comment {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.log-success {
+    color: var(--green-committed);
+}
+
+.log-error {
+    color: var(--red-pending);
+    font-weight: 700;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-heavy);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* ─── Modal ──────────────────────────────────────────────── */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal {
+    background: var(--bg-panel);
+    border: 1px solid var(--text-header);
+    padding: 0;
+    min-width: 360px;
+}
+
+.modal-header {
+    padding: 8px 16px;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--text-header);
+    color: var(--text-header);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.modal-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-body label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+}
+
+.modal-body input,
+.modal-body select {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px 8px;
+    background: var(--bg-primary);
+    color: var(--text-bright);
+    border: 1px solid var(--border-heavy);
+}
+
+.modal-body input:focus,
+.modal-body select:focus {
+    outline: none;
+    border-color: var(--text-header);
+}
+
+.modal-footer {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+}
+
+/* ─── Batch Selected ────────────────────────────────────── */
+
+tr.batch-divider {
+    cursor: pointer;
+}
+
+tr.batch-divider:hover .divider-line {
+    filter: brightness(1.3);
+}
+
+tr.batch-selected .divider-line {
+    color: var(--text-header);
+    border-top-color: var(--text-header);
+    border-bottom-color: var(--text-header);
+    background: rgba(88, 166, 255, 0.1);
+}
+
+/* ─── Loading state ──────────────────────────────────────── */
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: " Processing...";
+    color: var(--orange-sorted);
+}
