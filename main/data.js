@@ -48,6 +48,20 @@ const SITE_DATA = {
       githubLabel: 'View on GitHub',
       items: [
         {
+          title: 'Mainframe Banking System',
+          description: 'A mainframe-style batch processing system built with GNU COBOL. Simulates a real banking workload — account management, transaction batching, sorted-file merge (appareillage), and packed decimal arithmetic — with a terminal-inspired web UI that visualizes the full batch lifecycle.',
+          tech: [
+            { icon: 'fas fa-code', text: 'COBOL' },
+            { icon: 'fab fa-python', text: 'Python' },
+            { icon: 'fas fa-database', text: 'ISAM / Flat Files' },
+            { icon: 'fas fa-project-diagram', text: 'Batch Processing' },
+            { icon: 'fas fa-terminal', text: 'Terminal UI' }
+          ],
+          github: 'https://github.com/ramiyounes-dev/portfolio',
+          link: './projects/mainframe-banking/showcase/',
+          linkLabel: 'View Demo'
+        },
+        {
           title: 'OnePhone',
           description: 'A local multiplayer party game app for Android featuring 8 games — Charades, Truth Bombs, Hot Potato, Undercover, 20 Questions, Spin the Bottle, Simon, and Word Blitz. Runs entirely offline: no internet, no accounts, no ads. Supports English, French, and Arabic.',
           tech: [
@@ -70,20 +84,6 @@ const SITE_DATA = {
           ],
           link: './explore/',
           linkLabel: 'Try it'
-        },
-        {
-          title: 'Mainframe Banking System',
-          description: 'A mainframe-style batch processing system built with GNU COBOL. Simulates a real banking workload — account management, transaction batching, sorted-file merge (appareillage), and packed decimal arithmetic — with a terminal-inspired web UI that visualizes the full batch lifecycle.',
-          tech: [
-            { icon: 'fas fa-code', text: 'COBOL' },
-            { icon: 'fab fa-python', text: 'Python' },
-            { icon: 'fas fa-database', text: 'ISAM / Flat Files' },
-            { icon: 'fas fa-project-diagram', text: 'Batch Processing' },
-            { icon: 'fas fa-terminal', text: 'Terminal UI' }
-          ],
-          github: 'https://github.com/ramiyounes-dev/portfolio',
-          link: './projects/mainframe-banking/showcase/',
-          linkLabel: 'View Demo'
         }
       ]
     },
@@ -139,6 +139,20 @@ const SITE_DATA = {
       githubLabel: 'Voir sur GitHub',
       items: [
         {
+          title: 'Système Bancaire Mainframe',
+          description: 'Un système de traitement batch de style mainframe développé en GNU COBOL. Simule une charge bancaire réelle — gestion de comptes, lots de transactions, fusion de fichiers triés (appareillage) et arithmétique en décimal condensé — avec une interface web inspirée du terminal qui visualise le cycle batch complet.',
+          tech: [
+            { icon: 'fas fa-code', text: 'COBOL' },
+            { icon: 'fab fa-python', text: 'Python' },
+            { icon: 'fas fa-database', text: 'ISAM / Fichiers plats' },
+            { icon: 'fas fa-project-diagram', text: 'Traitement Batch' },
+            { icon: 'fas fa-terminal', text: 'Interface Terminal' }
+          ],
+          github: 'https://github.com/ramiyounes-dev/portfolio',
+          link: './projects/mainframe-banking/showcase/',
+          linkLabel: 'Voir la démo'
+        },
+        {
           title: 'OnePhone',
           description: 'Application de jeux de société multijoueur pour Android avec 8 jeux — Charades, Truth Bombs, Hot Potato, Undercover, 20 Questions, Spin the Bottle, Simon et Word Blitz. Fonctionne entièrement hors ligne : sans internet, sans compte, sans pub. Disponible en anglais, français et arabe.',
           tech: [
@@ -161,20 +175,6 @@ const SITE_DATA = {
           ],
           link: './explore/',
           linkLabel: 'Essayer'
-        },
-        {
-          title: 'Système Bancaire Mainframe',
-          description: 'Un système de traitement batch de style mainframe développé en GNU COBOL. Simule une charge bancaire réelle — gestion de comptes, lots de transactions, fusion de fichiers triés (appareillage) et arithmétique en décimal condensé — avec une interface web inspirée du terminal qui visualise le cycle batch complet.',
-          tech: [
-            { icon: 'fas fa-code', text: 'COBOL' },
-            { icon: 'fab fa-python', text: 'Python' },
-            { icon: 'fas fa-database', text: 'ISAM / Fichiers plats' },
-            { icon: 'fas fa-project-diagram', text: 'Traitement Batch' },
-            { icon: 'fas fa-terminal', text: 'Interface Terminal' }
-          ],
-          github: 'https://github.com/ramiyounes-dev/portfolio',
-          link: './projects/mainframe-banking/showcase/',
-          linkLabel: 'Voir la démo'
         }
       ]
     },
