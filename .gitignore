@@ -6,6 +6,7 @@
 .Trashes
 Icon?
 *.dmg
+.cv_latex
 
 node_modules/
 package-lock.json
