@@ -795,18 +795,21 @@ function selectBatch(num) {
 }
 
 function showBatchDetails(num) {
-    const batchTxns = committed.filter(t => t.batch === num);
+    const batchCommitted = committed.filter(t => t.batch === num);
+    const batchAlerts = alerts.filter(t => t.batch === num);
+    const batchTxns = [...batchCommitted, ...batchAlerts];
     if (batchTxns.length === 0) { setResults('No transactions in this batch.'); return; }
 
     const deltas = {};
-    for (const t of batchTxns) {
+    for (const t of batchCommitted) {
         if (!deltas[t.acct]) deltas[t.acct] = { cur: t.cur, total: 0, count: 0 };
         deltas[t.acct].total = roundAmt(deltas[t.acct].total + t.amt, t.cur);
         deltas[t.acct].count++;
     }
 
-    let result = `Batch #${num} — ${batchTxns.length} transactions\n`;
-    result += '─'.repeat(70) + '\n\n';
+    let result = `Batch #${num} — ${batchCommitted.length} committed`;
+    if (batchAlerts.length > 0) result += `, <span class="err">${batchAlerts.length} alert(s)</span>`;
+    result += '\n' + '─'.repeat(70) + '\n\n';
     result += 'Per-Account Summary:\n';
     result += 'ACCOUNT #     TXNS   NET CHANGE       CUR\n';
     result += '─'.repeat(50) + '\n';
@@ -814,14 +817,17 @@ function showBatchDetails(num) {
         const sign = d.total >= 0 ? '+' : '';
         result += `${acct}      ${String(d.count).padStart(3)}   ${(sign + fmtAmt(d.total, d.cur)).padStart(14)}  ${d.cur}\n`;
     }
-    result += '\n' + '─'.repeat(76) + '\n';
-    result += `${'TXN ID'.padEnd(10)} | ${'TIMESTAMP'.padEnd(19)} | ${'ACCT'.padEnd(10)} | ${'TYPE'.padEnd(10)} | AMOUNT\n`;
-    result += '─'.repeat(76) + '\n';
-    for (const t of batchTxns) {
-        result += `${t.id} | ${fmtTs(t.ts).padEnd(19)} | ${t.acct} | ${t.type.padEnd(10)} | ${fmtAmt(t.amt, t.cur).padStart(14)} ${t.cur}\n`;
+    result += '\n' + '─'.repeat(84) + '\n';
+    result += `${'TXN ID'.padEnd(10)} | ${'TIMESTAMP'.padEnd(19)} | ${'ACCT'.padEnd(10)} | ${'TYPE'.padEnd(10)} | ${'AMOUNT'.padStart(14)} | STATUS\n`;
+    result += '─'.repeat(84) + '\n';
+    for (const t of batchCommitted) {
+        result += `${t.id} | ${fmtTs(t.ts).padEnd(19)} | ${t.acct} | ${t.type.padEnd(10)} | ${fmtAmt(t.amt, t.cur).padStart(14)} | <span class="ok">COMMIT</span>\n`;
+    }
+    for (const t of batchAlerts) {
+        result += `<span class="err">${t.id} | ${fmtTs(t.ts).padEnd(19)} | ${t.acct} | ${t.type.padEnd(10)} | ${fmtAmt(t.amt, t.cur).padStart(14)} | ALERT </span>\n`;
     }
     result += '\n-- SQL Equivalent:\nSELECT * FROM TRANSACTIONS\n WHERE BATCH_NUM = ' + num + '\n ORDER BY ACCOUNT_NUMBER ASC, TIMESTAMP ASC;';
-    setResults(result);
+    document.getElementById('results-log').innerHTML = result;
 
     setLog(hl(`PROCEDURE DIVISION.\nQUERY-BATCH.\n    OPEN INPUT TRANS-FILE\n    PERFORM UNTIL WS-EOF = 1\n        READ TRANS-FILE NEXT\n        IF TXN-BATCH-NUM = ${num}\n            DISPLAY TXN record\n        END-IF\n    END-PERFORM\n\n    * ${batchTxns.length} transactions in batch #${num}\n    * ${Object.keys(deltas).length} accounts affected`));
 }

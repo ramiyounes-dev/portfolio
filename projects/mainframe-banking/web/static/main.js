@@ -154,11 +154,13 @@ function selectBatch(batchNum) {
 function showBatchDetails(batchNum) {
     // Gather all transactions in this batch
     const batchTxns = allTransactions.filter(t => parseInt(t.batch_num) === batchNum);
+    const batchCommitted = batchTxns.filter(t => t.status !== 'ALERT');
+    const batchAlerts = batchTxns.filter(t => t.status === 'ALERT');
     const boundary = batchBoundaries.find(b => b.batch_num === batchNum);
 
-    // Compute per-account deltas for this batch
+    // Compute per-account deltas (committed only)
     const deltas = {};
-    for (const txn of batchTxns) {
+    for (const txn of batchCommitted) {
         const acctNum = txn.acct_number;
         if (!deltas[acctNum]) {
             deltas[acctNum] = { count: 0, total: 0, currency: txn.currency };
@@ -171,7 +173,8 @@ function showBatchDetails(batchNum) {
     setActionLog(highlightCobol(
         `* Inspecting BATCH #${batchNum}\n` +
         `* Committed: ${boundary ? formatTimestamp(boundary.timestamp) : 'N/A'}\n` +
-        `* Transactions: ${batchTxns.length}\n` +
+        `* Transactions: ${batchCommitted.length} committed` +
+        (batchAlerts.length > 0 ? `, ${batchAlerts.length} alert(s)` : '') + `\n` +
         `* Accounts affected: ${Object.keys(deltas).length}\n\n` +
         `PROCEDURE DIVISION.\n` +
         `    OPEN INPUT TRANS-FILE\n` +
@@ -190,7 +193,9 @@ function showBatchDetails(batchNum) {
     // Results: batch summary + per-account impact
     let html = `BATCH #${batchNum} DETAILS\n`;
     html += `Committed: ${boundary ? formatTimestamp(boundary.timestamp) : 'N/A'}\n`;
-    html += `Total transactions: ${batchTxns.length}\n\n`;
+    html += `${batchCommitted.length} committed`;
+    if (batchAlerts.length > 0) html += `, <span class="log-error">${batchAlerts.length} alert(s)</span>`;
+    html += '\n\n';
     html += `Per-Account Impact:\n`;
     html += '─'.repeat(54) + '\n';
     html += `${'ACCOUNT #'.padEnd(10)}  ${'TXNS'.padStart(4)}   ${'NET CHANGE'.padStart(14)}   CUR\n`;
@@ -207,11 +212,15 @@ function showBatchDetails(batchNum) {
 
     html += '─'.repeat(54) + '\n';
     html += `\nTransactions:\n`;
-    html += `${'TXN ID'.padEnd(10)} | ${'ACCOUNT #'.padEnd(10)} | ${'TYPE'.padEnd(10)} | ${'AMOUNT'.padStart(14)} | DESCRIPTION\n`;
-    html += '─'.repeat(76) + '\n';
-    for (const txn of batchTxns) {
+    html += `${'TXN ID'.padEnd(10)} | ${'ACCOUNT #'.padEnd(10)} | ${'TYPE'.padEnd(10)} | ${'AMOUNT'.padStart(14)} | STATUS\n`;
+    html += '─'.repeat(84) + '\n';
+    for (const txn of batchCommitted) {
         const amt = formatAmount(parseFloat(txn.amount) || 0, txn.currency).padStart(14);
-        html += `${(txn.txn_id || '').padEnd(10)} | ${(txn.acct_number || '').padEnd(10)} | ${(txn.txn_type || '').trim().padEnd(10)} | ${amt} | ${(txn.description || '').trim()}\n`;
+        html += `${(txn.txn_id || '').padEnd(10)} | ${(txn.acct_number || '').padEnd(10)} | ${(txn.txn_type || '').trim().padEnd(10)} | ${amt} | <span class="log-success">COMMIT</span>\n`;
+    }
+    for (const txn of batchAlerts) {
+        const amt = formatAmount(parseFloat(txn.amount) || 0, txn.currency).padStart(14);
+        html += `<span class="log-error">${(txn.txn_id || '').padEnd(10)} | ${(txn.acct_number || '').padEnd(10)} | ${(txn.txn_type || '').trim().padEnd(10)} | ${amt} | ALERT </span>\n`;
     }
 
     document.getElementById('results-log').innerHTML = html;
