@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paie France — Démonstration</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2333;--bg4:#21283b;
+  --border:#30363d;--text:#c9d1d9;--text2:#8b949e;--text3:#58a6ff;
+  --navy:#1B2A4A;--green:#2ea043;--green-bg:rgba(46,160,67,.08);
+  --red:#da3633;--red-bg:rgba(218,54,51,.08);
+  --orange:#d29922;--orange-bg:rgba(210,153,34,.08);
+  --blue:#58a6ff;--blue-bg:rgba(88,166,255,.08);
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;overflow-x:hidden}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:var(--navy);padding:8px 20px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--border)}
+.header h1{font-family:var(--mono);font-size:15px;color:#fff;white-space:nowrap}
+.header h1::after{content:'_';animation:blink 1s step-end infinite;color:var(--green)}
+@keyframes blink{50%{opacity:0}}
+.header .company{font-family:var(--mono);font-size:11px;color:var(--text2);margin-left:auto}
+.header .back{font-size:12px;color:var(--text2);white-space:nowrap}
+.lang-toggle{display:flex;gap:2px;background:rgba(255,255,255,.04);border:1px solid rgba(88,166,255,.15);border-radius:20px;padding:3px}
+.lang-btn{background:none;border:none;color:#777;font-size:11px;font-weight:700;padding:3px 9px;border-radius:16px;cursor:pointer;letter-spacing:.5px;transition:background .2s,color .2s;font-family:var(--sans)}
+.lang-btn.active{background:var(--blue);color:#0d1117}
+.status-badge{font-family:var(--mono);font-size:11px;padding:2px 10px;border-radius:3px;font-weight:600}
+.status-idle{background:var(--green-bg);color:var(--green);border:1px solid var(--green)}
+.status-running{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange)}
+
+/* Tabs */
+.tabs{display:flex;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 12px;overflow-x:auto}
+.tab{padding:10px 18px;font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--text);background:var(--bg3)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+
+/* Layout */
+.main{display:flex;height:calc(100vh - 82px)}
+.content{flex:1;overflow-y:auto;padding:16px 20px}
+.panel{display:none}.panel.active{display:block}
+
+/* KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:14px 16px}
+.kpi-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.kpi-value{font-family:var(--mono);font-size:22px;font-weight:700}
+.kpi-value.pos{color:var(--green)}.kpi-value.neg{color:var(--red)}.kpi-value.blue{color:var(--blue)}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:6px;background:var(--bg2)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--bg3);color:var(--text3);font-weight:600;text-align:left;padding:8px 10px;position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+td{padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+tr:hover td{background:var(--bg3)}
+tr.selected td{background:var(--blue-bg)}
+td.mono{font-family:var(--mono);text-align:right}
+td.pos{color:var(--green)}td.neg{color:var(--red)}
+
+/* Section titles */
+.section-title{font-size:14px;font-weight:600;color:var(--text);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.section-title .badge{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:3px;background:var(--bg3);color:var(--text2)}
+
+/* Bulletin detail */
+.bulletin-detail{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:20px 24px;max-width:700px;font-family:var(--mono);font-size:12px;line-height:1.8}
+.bulletin-detail h3{font-size:16px;text-align:center;margin-bottom:12px;color:var(--blue)}
+.bulletin-detail .sep{border-top:1px solid var(--border);margin:8px 0}
+.bulletin-detail .line{display:flex;justify-content:space-between}
+.bulletin-detail .line.bold{font-weight:700}
+.bulletin-detail .line .lbl{color:var(--text2)}
+.bulletin-detail .line .val{text-align:right}
+.bulletin-detail .line .val.pos{color:var(--green)}.bulletin-detail .line .val.neg{color:var(--red)}
+
+/* Action bar */
+.action-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.btn{font-family:var(--mono);font-size:12px;padding:6px 14px;border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:4px;cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--bg4);border-color:var(--text2)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-green{border-color:var(--green);color:var(--green)}.btn-green:hover{background:var(--green-bg)}
+.btn-red{border-color:var(--red);color:var(--red)}.btn-red:hover{background:var(--red-bg)}
+.btn-orange{border-color:var(--orange);color:var(--orange)}.btn-orange:hover{background:var(--orange-bg)}
+.btn-blue{border-color:var(--blue);color:var(--blue)}.btn-blue:hover{background:var(--blue-bg)}
+
+/* Log */
+.log{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-family:var(--mono);font-size:11px;max-height:300px;overflow-y:auto;color:var(--text2);line-height:1.7}
+.log .ok{color:var(--green)}.log .err{color:var(--red)}.log .warn{color:var(--orange)}.log .info{color:var(--blue)}
+
+/* Split layout for dashboard */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+
+/* Balance check */
+.balance-ok{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-weight:600;font-size:12px}
+.balance-err{display:inline-flex;align-items:center;gap:4px;color:var(--red);font-weight:600;font-size:12px}
+
+/* How it works modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:8px;max-width:720px;width:90%;max-height:85vh;overflow-y:auto;padding:28px}
+.modal h2{font-size:18px;color:var(--blue);margin-bottom:16px}
+.modal h3{font-size:14px;color:var(--text);margin:16px 0 8px}
+.modal p,.modal li{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:8px}
+.modal ul{padding-left:20px}
+.modal code{font-family:var(--mono);font-size:12px;background:var(--bg);padding:1px 5px;border-radius:3px;color:var(--orange)}
+.modal .close-btn{float:right;font-size:20px;cursor:pointer;color:var(--text2);background:none;border:none}
+.modal .close-btn:hover{color:var(--text)}
+.modal table{margin:12px 0}
+.modal td,.modal th{padding:4px 10px;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PAIE FRANCE</h1>
+  <span id="statusBadge" class="status-badge status-idle">PRÊT</span>
+  <span class="company">MÉTALLURGIQUE FRANÇAISE SAS — SIRET 123 456 789 00012</span>
+  <button class="btn" id="btnHowItWorks" onclick="openModal()" style="margin-left:8px;font-size:11px">? Comment ça marche</button>
+  <div class="lang-toggle" id="langToggle">
+    <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+  </div>
+  <a class="back" id="backLink" href="../../../">&#8592; Portfolio</a>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="dashboard" data-i18n="tabDashboard">Tableau de bord</div>
+  <div class="tab" data-tab="bulletins" data-i18n="tabBulletins">Bulletins de paie</div>
+  <div class="tab" data-tab="cotisations" data-i18n="tabCotisations">Cotisations & charges</div>
+  <div class="tab" data-tab="journal" data-i18n="tabJournal">Journal PCG</div>
+  <div class="tab" data-tab="rapport" data-i18n="tabRapport">Masse salariale</div>
+  <div class="tab" data-tab="run" data-i18n="tabRun">Lancer la paie</div>
+</div>
+
+<div class="main">
+  <div class="content">
+    <!-- Dashboard -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="kpi-row" id="kpiRow"></div>
+      <div class="grid-2">
+        <div>
+          <div class="section-title" data-i18n="dashCotTitle">Cotisations salariales vs patronales</div>
+          <div class="tbl-wrap" id="dashCotTable"></div>
+        </div>
+        <div>
+          <div class="section-title" data-i18n="dashNetTitle">Net à payer par département</div>
+          <div class="tbl-wrap" id="dashNetTable"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulletins -->
+    <div class="panel" id="panel-bulletins">
+      <div class="action-bar">
+        <input id="bulletinSearch" type="text" data-i18n-placeholder="searchPlaceholder" placeholder="Rechercher (matricule, nom, département...)" style="font-family:var(--sans);font-size:12px;padding:6px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);width:320px" oninput="renderBulletins()">
+        <button class="btn" id="btnBackList" onclick="closeBulletinDetail()" style="display:none" data-i18n="btnBackList">&#8592; Retour à la liste</button>
+      </div>
+      <div id="bulletinList"></div>
+      <div id="bulletinDetail" style="display:none"></div>
+    </div>
+
+    <!-- Cotisations -->
+    <div class="panel" id="panel-cotisations">
+      <div class="action-bar">
+        <select id="cotView" onchange="renderCotisations()" style="font-family:var(--mono);font-size:12px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)">
+          <option value="patronales" data-i18n="cotPatronales">Cotisations patronales</option>
+          <option value="salariales" data-i18n="cotSalariales">Cotisations salariales</option>
+        </select>
+      </div>
+      <div id="cotTable"></div>
+      <div class="section-title" style="margin-top:20px" data-i18n="cotDeptTotals">Totaux par département</div>
+      <div id="cotDeptTable"></div>
+    </div>
+
+    <!-- Journal -->
+    <div class="panel" id="panel-journal">
+      <div id="journalBalance" style="margin-bottom:12px"></div>
+      <div id="journalTable"></div>
+    </div>
+
+    <!-- Rapport -->
+    <div class="panel" id="panel-rapport">
+      <div class="action-bar">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+          <input type="checkbox" id="annualToggle" onchange="renderRapport()"> <span data-i18n="annualToggle">Projection annuelle (×12 + taxes)</span>
+        </label>
+      </div>
+      <div id="rapportTable"></div>
+    </div>
+
+    <!-- Run -->
+    <div class="panel" id="panel-run">
+      <div style="max-width:600px">
+        <p style="color:var(--text2);margin-bottom:16px" data-i18n="runDesc">
+          Lance le traitement COBOL de la paie. Les programmes CALC-PAIE, CALC-JOURNAL,
+          GENERATE-BULLETIN-TXT et REPORT-MASSE-SALARIALE s'exécutent en séquence.
+        </p>
+        <div class="action-bar">
+          <span style="font-family:var(--mono);font-size:12px;color:var(--text2)" data-i18n="periodLabel">Période :</span>
+          <select id="runPeriode" onchange="switchPeriod(this.value)" style="font-family:var(--mono);font-size:12px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);width:160px;cursor:pointer">
+            <option value="202604" selected>202604 — Avril 2026</option>
+            <option value="202603">202603 — Mars 2026</option>
+          </select>
+          <button class="btn btn-green" id="btnRun" onclick="runPayroll()" data-i18n="btnRun">▶ Lancer le traitement</button>
+        </div>
+      </div>
+      <div id="runLog" class="log" style="margin-top:16px;display:none"></div>
+      <div id="runResult" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- How it works modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <h2 data-i18n="modalTitle">Comment ça marche</h2>
+    <div id="modalBody">
+    <p>Ce système simule un <strong>traitement de paie batch</strong> en COBOL avec une couche de présentation .NET / Blazor. Toute la logique de calcul est reproduite fidèlement côté client pour cette démonstration.</p>
+
+    <h3>Architecture réelle</h3>
+    <p>En production, le flux est :</p>
+    <ul>
+      <li><strong>GNU COBOL</strong> lit les fichiers employés et variables mensuelles</li>
+      <li>Calcule le brut, toutes les cotisations (salariales et patronales), le PAS, le net</li>
+      <li>Produit des fichiers plats en <code>COMP-3</code> (décimal condensé)</li>
+      <li><strong>ASP.NET Core API</strong> parse les fichiers COBOL et sert du JSON</li>
+      <li><strong>Blazor Server</strong> affiche le tableau de bord</li>
+    </ul>
+
+    <h3>Structure du bulletin de paie</h3>
+    <p>Conforme à l'<strong>arrêté du 25 février 2016</strong>, chaque bulletin suit cet ordre :</p>
+    <ul>
+      <li>Identification employeur / employé (SIRET, NAF, matricule, NTT)</li>
+      <li>Période de paie et date de paiement</li>
+      <li>Salaire de base (taux horaire × heures, ou forfait mensuel)</li>
+      <li>Éléments variables (heures sup à 25% et 50%, primes, absences)</li>
+      <li>Cotisations salariales détaillées (maladie, vieillesse, CSG, retraite AGIRC-ARRCO...)</li>
+      <li>Net imposable, prélèvement à la source (barème neutre 2024)</li>
+      <li>Net à payer</li>
+    </ul>
+
+    <h3>Cotisations sociales (taux 2024)</h3>
+    <table>
+      <tr><th>Cotisation</th><th>Salarié</th><th>Employeur</th><th>Source</th></tr>
+      <tr><td>Maladie</td><td>0%</td><td>7% / 13%</td><td>Art. L241-2 CSS</td></tr>
+      <tr><td>Vieillesse plafonnée</td><td>6,90%</td><td>8,55%</td><td>Décret n°2012-1116</td></tr>
+      <tr><td>Vieillesse déplafonnée</td><td>0,40%</td><td>1,90%</td><td>Décret n°2013-1290</td></tr>
+      <tr><td>CSG déductible</td><td>6,80%</td><td>—</td><td>Art. L136-2 CSS</td></tr>
+      <tr><td>AGIRC-ARRCO T1</td><td>3,15%</td><td>4,72%</td><td>ANI 17/11/2017</td></tr>
+      <tr><td>AGIRC-ARRCO T2</td><td>8,64%</td><td>12,95%</td><td>ANI 17/11/2017</td></tr>
+      <tr><td>Chômage</td><td>0%</td><td>4,05%</td><td>Conv. Unédic</td></tr>
+    </table>
+
+    <h3>Écritures comptables PCG</h3>
+    <p>Chaque paie produit des écritures équilibrées (Σ débits = Σ crédits) :</p>
+    <table>
+      <tr><th>Événement</th><th>Débit</th><th>Crédit</th></tr>
+      <tr><td>Salaires bruts</td><td><code>6411</code></td><td><code>421</code></td></tr>
+      <tr><td>Cotisations salariales</td><td><code>421</code></td><td><code>431</code></td></tr>
+      <tr><td>PAS retenu</td><td><code>421</code></td><td><code>4421</code></td></tr>
+      <tr><td>Net à payer</td><td><code>421</code></td><td><code>512</code></td></tr>
+      <tr><td>Charges patronales</td><td><code>645x</code></td><td><code>431/437</code></td></tr>
+    </table>
+
+    <h3>Pourquoi COBOL ?</h3>
+    <p>L'arithmétique <code>COMP-3</code> (décimal condensé) garantit une précision au centime sans dérive de virgule flottante — essentiel quand on calcule des millions d'euros de cotisations. Le traitement batch correspond naturellement au cycle mensuel de la paie.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ================================================================
+   I18N — French / English translations
+   ================================================================ */
+let currentLang='fr';
+const I18N={
+  fr:{
+    // Header & nav
+    title:'PAIE FRANCE',
+    statusIdle:'PRÊT',statusRunning:'EN COURS',
+    btnHowItWorks:'? Comment ça marche',
+    backLink:'\u2190 Portfolio',
+    tabDashboard:'Tableau de bord',tabBulletins:'Bulletins de paie',
+    tabCotisations:'Cotisations & charges',tabJournal:'Journal PCG',
+    tabRapport:'Masse salariale',tabRun:'Lancer la paie',
+    // Dashboard
+    kpiBrut:'Masse salariale brute',kpiNet:'Total net à payer',
+    kpiPat:'Charges patronales',kpiBulletins:'Bulletins générés',
+    dashCotTitle:'Cotisations salariales vs patronales',
+    dashNetTitle:'Net à payer par département',
+    thDept:'Département',thCotSal:'Cot. salariales',thCotPat:'Cot. patronales',
+    thEffectif:'Effectif',thNet:'Net à payer',
+    // Bulletins
+    searchPlaceholder:'Rechercher (matricule, nom, département...)',
+    btnBackList:'\u2190 Retour à la liste',
+    thMatricule:'Matricule',thNom:'Nom',thDepartement:'Département',
+    thClassification:'Classification',thBrut:'Brut',thNetImposable:'Net imposable',
+    thPAS:'PAS retenu',thNetAPayer:'Net à payer',
+    // Bulletin detail
+    bdTitle:'BULLETIN DE PAIE',bdEmployeur:'Employeur',bdSIRET:'SIRET',
+    bdConvention:'Convention',bdPeriode:'Période',
+    bdSalaireBase:'SALAIRE DE BASE',bdForfait:'Forfait mensuel',
+    bdElements:'ÉLÉMENTS VARIABLES',bdHS25:'HS 25%',bdHS50:'HS 50%',
+    bdPrimeAnc:'Prime ancienneté',bdPrimeExcept:'Prime exceptionnelle',
+    bdAbsence:'Absence',bdBrutTotal:'BRUT TOTAL',
+    bdCotSal:'COTISATIONS SALARIALES',
+    bdMaladie:'Maladie',bdVieillPlaf:'Vieillesse plafonnée',
+    bdVieillDeplaf:'Vieillesse déplafonnée',bdCSGDed:'CSG déductible',
+    bdCSGNonDed:'CSG/CRDS non déductible',bdMutuelle:'Mutuelle',
+    bdRetrT1:'Retraite T1 AGIRC-ARRCO',bdRetrT2:'Retraite T2 AGIRC-ARRCO',
+    bdPrevoy:'Prévoyance',bdCEGT1:'CEG T1',bdCEGT2:'CEG T2',
+    bdExoHS:'Exonération HS (loi TEPA)',bdTotalCot:'TOTAL COTISATIONS',
+    bdNetImposable:'NET IMPOSABLE',bdPASLabel:'Prélèvement à la source',
+    bdNetAvantPas:'NET À PAYER AVANT PAS',bdNetAPayer:'NET À PAYER',
+    bdSalaireBaseCalc:'Salaire base',
+    // Cotisations
+    cotPatronales:'Cotisations patronales',cotSalariales:'Cotisations salariales',
+    cotDeptTotals:'Totaux par département',
+    thMaladie:'Maladie',thVieillesse:'Vieillesse',thAllocFam:'Alloc. fam.',
+    thATMP:'AT/MP',thRetraite:'Retraite',thChomage:'Chômage',
+    thTotalPat:'Total pat.',thCSG:'CSG/CRDS',thPrevoy:'Prévoy.',thCEG:'CEG',
+    thTotalSal:'Total sal.',thTotalBrut:'Total brut',thTotalCharges:'Total charges',
+    // Journal
+    journalBalanced:'\u2713 Journal équilibré — Débit:',journalUnbalanced:'\u2717 DÉSÉQUILIBRE — Débit:',
+    journalEquals:'= Crédit:',journalNotEquals:'\u2260 Crédit:',
+    thDebit:'Débit',thCredit:'Crédit',thMontant:'Montant',thLibelle:'Libellé',thType:'Type',
+    journalMore:'employés supplémentaires','journalEntries':'écritures au total',
+    journalEmployee:'Employé',
+    // Rapport
+    annualToggle:'Projection annuelle (×12 + taxes)',
+    thBrutTotal:'Brut total',thNetTotal:'Net total',thPASRetenu:'PAS retenu',
+    thCoutEmployeur:'Coût employeur',rapportTotal:'TOTAL GÉNÉRAL',
+    rapportTaxeApp:'dont Taxe d\'apprentissage (0,68%)',
+    rapportDialogue:'dont Contribution dialogue social (0,016%)',
+    // Run
+    runDesc:'Lance le traitement COBOL de la paie. Les programmes CALC-PAIE, CALC-JOURNAL, GENERATE-BULLETIN-TXT et REPORT-MASSE-SALARIALE s\'exécutent en séquence.',
+    periodLabel:'Période :',btnRun:'\u25B6 Lancer le traitement',
+    runLaunching:'Lancement du traitement — période',
+    runCalcPaie:'Calcul des bulletins de paie',runCalcJournal:'Génération écritures PCG',
+    runBulletinTxt:'Bulletins texte',runRapportMasse:'Rapport masse salariale',
+    runDone:'TRAITEMENT TERMINÉ — 0 ERREURS',
+    runSuccess:'\u2713 Traitement terminé avec succès —',runEmployees:'employés traités',
+    // Modal
+    modalTitle:'Comment ça marche',
+    modalBodyFr:true,
+  },
+  en:{
+    title:'FRENCH PAYROLL',
+    statusIdle:'READY',statusRunning:'RUNNING',
+    btnHowItWorks:'? How It Works',
+    backLink:'\u2190 Portfolio',
+    tabDashboard:'Dashboard',tabBulletins:'Pay Slips',
+    tabCotisations:'Contributions & Charges',tabJournal:'PCG Journal',
+    tabRapport:'Payroll Summary',tabRun:'Run Payroll',
+    kpiBrut:'Gross Payroll',kpiNet:'Total Net Pay',
+    kpiPat:'Employer Contributions',kpiBulletins:'Pay Slips Generated',
+    dashCotTitle:'Employee vs Employer Contributions',
+    dashNetTitle:'Net Pay by Department',
+    thDept:'Department',thCotSal:'Employee Contrib.',thCotPat:'Employer Contrib.',
+    thEffectif:'Headcount',thNet:'Net Pay',
+    searchPlaceholder:'Search (ID, name, department...)',
+    btnBackList:'\u2190 Back to List',
+    thMatricule:'Employee ID',thNom:'Name',thDepartement:'Department',
+    thClassification:'Classification',thBrut:'Gross',thNetImposable:'Taxable Net',
+    thPAS:'Withholding Tax',thNetAPayer:'Net Pay',
+    bdTitle:'PAY SLIP',bdEmployeur:'Employer',bdSIRET:'SIRET',
+    bdConvention:'Collective Agreement',bdPeriode:'Period',
+    bdSalaireBase:'BASE SALARY',bdForfait:'Monthly Lump Sum',
+    bdElements:'VARIABLE ELEMENTS',bdHS25:'OT 25%',bdHS50:'OT 50%',
+    bdPrimeAnc:'Seniority Bonus',bdPrimeExcept:'Exceptional Bonus',
+    bdAbsence:'Absence',bdBrutTotal:'GROSS TOTAL',
+    bdCotSal:'EMPLOYEE CONTRIBUTIONS',
+    bdMaladie:'Health Insurance',bdVieillPlaf:'Pension (capped)',
+    bdVieillDeplaf:'Pension (uncapped)',bdCSGDed:'CSG (deductible)',
+    bdCSGNonDed:'CSG/CRDS (non-deductible)',bdMutuelle:'Mutual Fund',
+    bdRetrT1:'AGIRC-ARRCO T1',bdRetrT2:'AGIRC-ARRCO T2',
+    bdPrevoy:'Disability Insurance',bdCEGT1:'CEG T1',bdCEGT2:'CEG T2',
+    bdExoHS:'OT Exemption (TEPA law)',bdTotalCot:'TOTAL CONTRIBUTIONS',
+    bdNetImposable:'TAXABLE NET',bdPASLabel:'Withholding Tax (PAS)',
+    bdNetAvantPas:'NET PAY BEFORE TAX',bdNetAPayer:'NET PAY',
+    bdSalaireBaseCalc:'Base salary',
+    cotPatronales:'Employer contributions',cotSalariales:'Employee contributions',
+    cotDeptTotals:'Totals by Department',
+    thMaladie:'Health',thVieillesse:'Pension',thAllocFam:'Family Alloc.',
+    thATMP:'Work Inj.',thRetraite:'Retirement',thChomage:'Unemploy.',
+    thTotalPat:'Total empl.',thCSG:'CSG/CRDS',thPrevoy:'Disab.',thCEG:'CEG',
+    thTotalSal:'Total emp.',thTotalBrut:'Total Gross',thTotalCharges:'Total Charges',
+    journalBalanced:'\u2713 Journal Balanced — Debit:',journalUnbalanced:'\u2717 IMBALANCE — Debit:',
+    journalEquals:'= Credit:',journalNotEquals:'\u2260 Credit:',
+    thDebit:'Debit',thCredit:'Credit',thMontant:'Amount',thLibelle:'Description',thType:'Type',
+    journalMore:'more employees','journalEntries':'entries total',
+    journalEmployee:'Employee',
+    annualToggle:'Annual Projection (×12 + taxes)',
+    thBrutTotal:'Total Gross',thNetTotal:'Total Net',thPASRetenu:'Tax Withheld',
+    thCoutEmployeur:'Employer Cost',rapportTotal:'GRAND TOTAL',
+    rapportTaxeApp:'incl. Apprenticeship Tax (0.68%)',
+    rapportDialogue:'incl. Social Dialogue Contribution (0.016%)',
+    runDesc:'Runs the COBOL payroll batch. Programs CALC-PAIE, CALC-JOURNAL, GENERATE-BULLETIN-TXT and REPORT-MASSE-SALARIALE execute in sequence.',
+    periodLabel:'Period:',btnRun:'\u25B6 Run Payroll',
+    runLaunching:'Launching payroll batch — period',
+    runCalcPaie:'Computing pay slips',runCalcJournal:'Generating PCG journal entries',
+    runBulletinTxt:'Text pay slips',runRapportMasse:'Payroll summary report',
+    runDone:'PROCESSING COMPLETE — 0 ERRORS',
+    runSuccess:'\u2713 Processing completed successfully —',runEmployees:'employees processed',
+    modalTitle:'How It Works',
+    modalBodyEn:`<p>This system simulates a <strong>COBOL batch payroll processor</strong> with a .NET / Blazor presentation layer. All computation logic is faithfully reproduced client-side for this demo.</p>
+    <h3>Production Architecture</h3>
+    <p>In production, the flow is:</p>
+    <ul>
+      <li><strong>GNU COBOL</strong> reads employee files and monthly variables</li>
+      <li>Computes gross pay, all contributions (employee and employer), withholding tax, net pay</li>
+      <li>Produces flat files in <code>COMP-3</code> (packed decimal)</li>
+      <li><strong>ASP.NET Core API</strong> parses COBOL files and serves JSON</li>
+      <li><strong>Blazor Server</strong> renders the dashboard</li>
+    </ul>
+    <h3>Pay Slip Structure</h3>
+    <p>Compliant with the <strong>decree of February 25, 2016</strong>, each pay slip follows this order:</p>
+    <ul>
+      <li>Employer / employee identification (SIRET, NAF, employee ID, NTT)</li>
+      <li>Pay period and payment date</li>
+      <li>Base salary (hourly rate × hours, or monthly lump sum)</li>
+      <li>Variable elements (overtime at 25% and 50%, bonuses, absences)</li>
+      <li>Detailed employee contributions (health, pension, CSG, AGIRC-ARRCO retirement...)</li>
+      <li>Taxable net, withholding tax (2024 neutral rate schedule)</li>
+      <li>Net pay</li>
+    </ul>
+    <h3>Social Contributions (2024 Rates)</h3>
+    <table>
+      <tr><th>Contribution</th><th>Employee</th><th>Employer</th><th>Source</th></tr>
+      <tr><td>Health Insurance</td><td>0%</td><td>7% / 13%</td><td>Art. L241-2 CSS</td></tr>
+      <tr><td>Pension (capped)</td><td>6.90%</td><td>8.55%</td><td>Decree 2012-1116</td></tr>
+      <tr><td>Pension (uncapped)</td><td>0.40%</td><td>1.90%</td><td>Decree 2013-1290</td></tr>
+      <tr><td>CSG (deductible)</td><td>6.80%</td><td>\u2014</td><td>Art. L136-2 CSS</td></tr>
+      <tr><td>AGIRC-ARRCO T1</td><td>3.15%</td><td>4.72%</td><td>ANI 17/11/2017</td></tr>
+      <tr><td>AGIRC-ARRCO T2</td><td>8.64%</td><td>12.95%</td><td>ANI 17/11/2017</td></tr>
+      <tr><td>Unemployment</td><td>0%</td><td>4.05%</td><td>Unedic Agreement</td></tr>
+    </table>
+    <h3>PCG Accounting Entries</h3>
+    <p>Each payroll run produces balanced journal entries (\u03A3 debits = \u03A3 credits):</p>
+    <table>
+      <tr><th>Event</th><th>Debit</th><th>Credit</th></tr>
+      <tr><td>Gross Salaries</td><td><code>6411</code></td><td><code>421</code></td></tr>
+      <tr><td>Employee Contributions</td><td><code>421</code></td><td><code>431</code></td></tr>
+      <tr><td>Withholding Tax</td><td><code>421</code></td><td><code>4421</code></td></tr>
+      <tr><td>Net Pay</td><td><code>421</code></td><td><code>512</code></td></tr>
+      <tr><td>Employer Contributions</td><td><code>645x</code></td><td><code>431/437</code></td></tr>
+    </table>
+    <h3>Why COBOL?</h3>
+    <p><code>COMP-3</code> packed decimal arithmetic guarantees cent-level precision with no floating-point drift \u2014 essential when computing millions of euros in contributions. Batch processing naturally maps to the monthly payroll cycle.</p>`,
+  }
+};
+function tr(key){return I18N[currentLang][key]||I18N.fr[key]||key}
+
+/* ================================================================
+   CONSTANTS — French payroll rates 2024
+   All rates have legal citations in the COBOL source
+   ================================================================ */
+const PMSS = 3864.00;
+const SMIC = 1766.92;
+
+// Cotisations salariales
+const TX_VIEILL_PLAF_SAL = 6.90;
+const TX_VIEILL_DEPLAF_SAL = 0.40;
+const TX_CSG_DEDUCT = 6.80;
+const TX_CSG_NON_DED = 2.90;
+const TX_ASSIETTE_CSG = 98.25;
+const TX_MUTUELLE_SAL = 0.50;
+const TX_RETR_T1_SAL = 3.15;
+const TX_RETR_T2_SAL = 8.64;
+const TX_PREVOY_SAL = 0.50;
+const TX_CEG_T1_SAL = 0.86;
+const TX_CEG_T2_SAL = 1.08;
+
+// Cotisations patronales
+const TX_MALADIE_PAT_NC = 7.00;
+const TX_MALADIE_PAT_C = 13.00;
+const TX_VIEILL_PLAF_PAT = 8.55;
+const TX_VIEILL_DEPLAF_PAT = 1.90;
+const TX_ALLOC_FAM_REDUIT = 3.45;
+const TX_ALLOC_FAM_NORMAL = 5.25;
+const TX_ATMP = 2.22;
+const TX_FNAL = 0.50;
+const TX_RETR_T1_PAT = 4.72;
+const TX_RETR_T2_PAT = 12.95;
+const TX_CEG_T1_PAT = 1.29;
+const TX_CEG_T2_PAT = 1.62;
+const TX_PREVOY_PAT = 1.50;
+const TX_CHOMAGE_PAT = 4.05;
+const TX_AGS = 0.15;
+const SEUIL_ALLOC_FAM = 3.5 * SMIC;
+const PLAFOND_CHOMAGE = 4 * PMSS;
+
+// PAS barème neutre 2024
+const PAS_BRACKETS = [
+  [1592, 0],[1944, 2.5],[2592, 10],[3584, 15],[4897, 20],[6893, 25],[9085, 35],[12112, 38],[Infinity, 43]
+];
+
+/* ================================================================
+   SEED DATA — 80 employees
+   ================================================================ */
+const DEPTS = ['COMMERCIAL','TECHNIQUE','RH','DIRECTION'];
+const DEPT_COUNTS = {COMMERCIAL:{nc:17,c:4,cd:1},TECHNIQUE:{nc:20,c:7,cd:1},RH:{nc:10,c:4,cd:1},DIRECTION:{nc:8,c:5,cd:2}};
+
+const NOMS = ['MARTIN','BERNARD','THOMAS','PETIT','ROBERT','RICHARD','DURAND','DUBOIS','MOREAU','LAURENT','SIMON','MICHEL','LEFEVRE','LEROY','ROUX','DAVID','BERTRAND','MOREL','FOURNIER','GIRARD','BONNET','DUPONT','LAMBERT','FONTAINE','ROUSSEAU','VINCENT','MULLER','FAURE','ANDRE','MERCIER','BLANC','GUERIN','BOYER','GARNIER','CHEVALIER','FRANCOIS','LEGRAND','GAUTHIER','GARCIA','PERRIN','ROBIN','CLEMENT','MORIN','NICOLAS','HENRY','ROUSSEL','MATHIEU','GAUTIER','MASSON','MARCHAND','DUVAL','DENIS','DUMONT','MARIE','LEMAIRE','NOEL','MEYER','DUFOUR','MEUNIER','BRUN','BLANCHARD','GIRAUD','JOLY','RIVIERE','LUCAS','BRUNET','GAILLARD','BARBIER','ARNAUD','MARTINEZ','GERARD','ROCHE','RENARD','SCHMITT','ROY','LEROUX','COLIN','VIDAL','CARON','PICARD'];
+const PRENOMS = ['Jean','Pierre','Michel','Philippe','Alain','Patrick','Jacques','Christophe','Nicolas','Laurent','Frédéric','Éric','Stéphane','Olivier','David','Franck','Bruno','Pascal','Didier','Thierry','Marie','Nathalie','Isabelle','Catherine','Sylvie','Sandrine','Valérie','Sophie','Véronique','Christine','Anne','Céline','Émilie','Julie','Claire','Marion','Laure','Delphine','Camille','Antoine','Thomas','Alexandre','Maxime','Julien','Romain','Sébastien','Guillaume','Vincent','Hélène','Aurélien','Fabrice','Yannick','Rachid','Karim','Fatima','Amina','Mohamed','Samir','Leïla','Aïcha','Paolo','Marco','Elena','Carla','Andreï','Svetlana','Luc','Benoît','Estelle','Mathilde','Hugo','Lucas','Manon','Charlotte','Arthur','Louis','Emma','Léa','Paul','Gabriel'];
+
+let employees = [], bulletins = [], cotisations = [], journal = [], rapport = [];
+const PERIODES = ['202603','202604'];
+const PERIODE_LABELS = {'202603':'Mars 2026','202604':'Avril 2026'};
+const PERIODE_SEEDS = {'202603':37,'202604':42};
+const dataByPeriod = {};
+let currentPeriode = '202604';
+let rng = 42;
+function rand(){rng=(rng*1103515245+12345)&0x7fffffff;return rng/0x7fffffff}
+function randInt(a,b){return Math.floor(a+rand()*(b-a+1))}
+function randDec(a,b){return Math.round((a+rand()*(b-a))*100)/100}
+function r2(v){return Math.round(v*100)/100}
+function pct(base,rate){return r2(base*rate/100)}
+
+// Department salary adjustments — Direction pays more, RH mid-range
+const DEPT_SALARY_MULT = {COMMERCIAL:1.0,TECHNIQUE:1.05,RH:1.0,DIRECTION:1.15};
+
+function seedPeriod(periode){
+  rng=PERIODE_SEEDS[periode];
+  employees=[];let id=1;const usedNames=new Set();
+  for(const dept of DEPTS){
+    const dc=DEPT_COUNTS[dept];
+    const mult=DEPT_SALARY_MULT[dept];
+    for(const[cls,cnt]of[['NON-CADRE',dc.nc],['CADRE',dc.c],['CADRE-DIR',dc.cd]]){
+      for(let i=0;i<cnt;i++){
+        let nom,prenom;
+        do{nom=NOMS[randInt(0,NOMS.length-1)];prenom=PRENOMS[randInt(0,PRENOMS.length-1)]}while(usedNames.has(nom+prenom));
+        usedNames.add(nom+prenom);
+
+        // Ancienneté: cadres dirigeants tend to have more seniority
+        const anc=cls==='CADRE-DIR'?randInt(8,25):cls==='CADRE'?randInt(2,20):randInt(0,18);
+
+        let brut,tauxH=0,forfait=0;
+        if(cls==='NON-CADRE'){brut=r2(randDec(1900,3200)*mult);tauxH=r2(brut/151.67)}
+        else if(cls==='CADRE'){brut=r2(randDec(3500,6500)*mult);forfait=brut}
+        else{brut=r2(randDec(7500,14000)*mult);forfait=brut}
+
+        // HS: only non-cadres, ~30%
+        const hasHS=cls==='NON-CADRE'&&rand()<0.30;
+        // Absence: only non-cadres and cadres (not cadres dirigeants),
+        // never on same employee as HS — if you're doing overtime you're not absent
+        const hasAbs=!hasHS&&cls!=='CADRE-DIR'&&rand()<0.12;
+        // Prime exceptionnelle: ~5 employees across the company
+        const hasPrime=rand()<0.0625;
+        // Cap absence at 20% of monthly hours to keep brut reasonable
+        const maxAbsH=cls==='NON-CADRE'?r2(151.67*0.20):r2(22*0.20*7); // ~30h NC or ~30h cadre
+
+        employees.push({
+          matricule:'E'+String(id++).padStart(7,'0'),nom,prenom,
+          dept,cls,tauxH,forfait,brut,anc,
+          heures:cls==='NON-CADRE'?151.67:0,
+          hsSeed:hasHS?randDec(2,15):0,
+          primeSeed:hasPrime?randDec(500,2000):0,
+          absSeed:hasAbs?randDec(7,Math.min(35,maxAbsH)):0
+        });
+      }
+    }
+  }
+  computePayroll();
+  dataByPeriod[periode]={employees:[...employees],bulletins:[...bulletins],cotisations:[...cotisations],journal:[...journal],rapport:[...rapport]};
+}
+
+function loadPeriod(periode){
+  const d=dataByPeriod[periode];
+  employees=d.employees;bulletins=d.bulletins;cotisations=d.cotisations;journal=d.journal;rapport=d.rapport;
+  currentPeriode=periode;
+}
+
+function switchPeriod(periode){
+  loadPeriod(periode);
+  renderDashboard();renderBulletins();renderCotisations();renderJournal();renderRapport();
+}
+
+/* ================================================================
+   PAYROLL COMPUTATION — mirrors CALC-PAIE.cbl exactly
+   ================================================================ */
+function computePayroll(){
+  bulletins=[];cotisations=[];journal=[];rapport=[];
+
+  for(const e of employees){
+    // Salaire de base
+    let salaireBase=e.cls==='NON-CADRE'?r2(e.tauxH*e.heures):e.forfait;
+
+    // Heures supplémentaires
+    let hs25h=0,hs50h=0,hs25m=0,hs50m=0;
+    if(e.cls==='NON-CADRE'&&e.hsSeed>0){
+      if(e.hsSeed>8){hs25h=8;hs50h=r2(e.hsSeed-8)}else{hs25h=e.hsSeed}
+      hs25m=r2(hs25h*e.tauxH*1.25);
+      hs50m=r2(hs50h*e.tauxH*1.50);
+    }
+    const totalHS=r2(hs25m+hs50m);
+
+    // Prime ancienneté — convention métallurgie: starts at 3 years
+    let txAnc=e.anc>=3?Math.min(e.anc,15):0;
+    let primeAnc=txAnc>0?pct(salaireBase,txAnc):0;
+
+    // Absence — deduction based on hourly rate (NC) or daily rate (cadres)
+    // Cadres: daily rate = forfait / 21.67 working days, absH represents hours (÷7 for days)
+    let absMontant=0;
+    if(e.absSeed>0){
+      if(e.cls==='NON-CADRE'){
+        absMontant=r2(e.absSeed*e.tauxH);
+      }else{
+        const dailyRate=r2(e.forfait/21.67);
+        const absDays=r2(e.absSeed/7); // convert hours to days
+        absMontant=r2(dailyRate*absDays);
+      }
+    }
+
+    // Brut — ensure it stays positive (defensive)
+    let brut=r2(salaireBase+totalHS+primeAnc+e.primeSeed-absMontant);
+    if(brut<SMIC){absMontant=0;brut=r2(salaireBase+totalHS+primeAnc+e.primeSeed)}
+
+    // Tranches
+    let t1=Math.min(brut,PMSS),t2=Math.max(0,r2(brut-PMSS));
+    let baseCho=Math.min(brut,PLAFOND_CHOMAGE);
+
+    // --- Cotisations salariales ---
+    let csMaladie=0;
+    let csVieillPlaf=pct(t1,TX_VIEILL_PLAF_SAL);
+    let csVieillDeplaf=pct(brut,TX_VIEILL_DEPLAF_SAL);
+    let assietteCsg=pct(brut,TX_ASSIETTE_CSG);
+    let csCsgDed=pct(assietteCsg,TX_CSG_DEDUCT);
+    let csCsgNonDed=pct(assietteCsg,TX_CSG_NON_DED);
+    let csMutuelle=pct(brut,TX_MUTUELLE_SAL);
+    let csRetrT1=pct(t1,TX_RETR_T1_SAL);
+    let csRetrT2=pct(t2,TX_RETR_T2_SAL);
+    let csPrevoy=pct(t1,TX_PREVOY_SAL);
+    let csCegT1=pct(t1,TX_CEG_T1_SAL);
+    let csCegT2=pct(t2,TX_CEG_T2_SAL);
+
+    // Exonération HS (loi TEPA)
+    let exonerHS=totalHS>0?pct(totalHS,TX_VIEILL_PLAF_SAL+TX_VIEILL_DEPLAF_SAL+TX_RETR_T1_SAL+TX_CEG_T1_SAL):0;
+
+    let totalCotSal=r2(csMaladie+csVieillPlaf+csVieillDeplaf+csCsgDed+csCsgNonDed+csMutuelle+csRetrT1+csRetrT2+csPrevoy+csCegT1+csCegT2-exonerHS);
+
+    // Net imposable
+    let netImposable=r2(brut-totalCotSal+csCsgNonDed);
+
+    // PAS
+    let tauxPas=0;
+    for(const[lim,tx]of PAS_BRACKETS){if(netImposable<=lim){tauxPas=tx;break}}
+    let montantPas=pct(netImposable,tauxPas);
+    let netAvantPas=r2(brut-totalCotSal);
+    let netAPayer=r2(netAvantPas-montantPas);
+
+    bulletins.push({
+      matricule:e.matricule,nom:e.nom,prenom:e.prenom,dept:e.dept,cls:e.cls,
+      salaireBase,heures:e.heures,tauxH:e.tauxH,forfait:e.forfait,
+      hs25h,hs25m,hs50h,hs50m,primeAnc,primeExcept:e.primeSeed,
+      absH:e.absSeed,absMontant,brut,t1,t2,
+      csMaladie,csVieillPlaf,csVieillDeplaf,csCsgDed,csCsgNonDed,
+      csMutuelle,csRetrT1,csRetrT2,csPrevoy,csCegT1,csCegT2,
+      exonerHS,totalCotSal,netImposable,tauxPas,montantPas,netAvantPas,netAPayer
+    });
+
+    // --- Cotisations patronales ---
+    let cpMaladie=e.cls==='NON-CADRE'?pct(brut,TX_MALADIE_PAT_NC):pct(brut,TX_MALADIE_PAT_C);
+    let cpVieillPlaf=pct(t1,TX_VIEILL_PLAF_PAT);
+    let cpVieillDeplaf=pct(brut,TX_VIEILL_DEPLAF_PAT);
+    let cpAllocFam=brut<=SEUIL_ALLOC_FAM?pct(brut,TX_ALLOC_FAM_REDUIT):pct(brut,TX_ALLOC_FAM_NORMAL);
+    let cpAtmp=pct(brut,TX_ATMP);
+    let cpFnal=pct(brut,TX_FNAL);
+    let cpRetrT1=pct(t1,TX_RETR_T1_PAT);
+    let cpRetrT2=pct(t2,TX_RETR_T2_PAT);
+    let cpCegT1=pct(t1,TX_CEG_T1_PAT);
+    let cpCegT2=pct(t2,TX_CEG_T2_PAT);
+    let cpPrevoy=(e.cls==='CADRE'||e.cls==='CADRE-DIR')?pct(t1,TX_PREVOY_PAT):0;
+    let cpChomage=pct(baseCho,TX_CHOMAGE_PAT);
+    let cpAgs=pct(brut,TX_AGS);
+    let cpTotal=r2(cpMaladie+cpVieillPlaf+cpVieillDeplaf+cpAllocFam+cpAtmp+cpFnal+cpRetrT1+cpRetrT2+cpCegT1+cpCegT2+cpPrevoy+cpChomage+cpAgs);
+
+    cotisations.push({
+      matricule:e.matricule,nom:e.nom,prenom:e.prenom,dept:e.dept,cls:e.cls,brut,
+      cpMaladie,cpVieillPlaf,cpVieillDeplaf,cpAllocFam,cpAtmp,cpFnal,
+      cpRetrT1,cpRetrT2,cpCegT1,cpCegT2,cpPrevoy,cpChomage,cpAgs,cpTotal
+    });
+
+    // --- Journal entries ---
+    // 6411: total rémunération = base + HS - absences (everything except primes)
+    const remunerationDue=r2(salaireBase+totalHS-absMontant);
+    const primesTotal=r2(primeAnc+e.primeSeed);
+    journal.push({mat:e.matricule,debit:'6411',credit:'421',montant:remunerationDue,lib:'Rémunération due',type:'SAL'});
+    if(primesTotal>0)journal.push({mat:e.matricule,debit:'6413',credit:'421',montant:primesTotal,lib:'Primes',type:'SAL'});
+    // 421 debited: cotisations + PAS + net = brut (balanced)
+    journal.push({mat:e.matricule,debit:'421',credit:'431',montant:totalCotSal,lib:'Retenues sociales',type:'COT'});
+    if(montantPas>0)journal.push({mat:e.matricule,debit:'421',credit:'4421',montant:montantPas,lib:'Prélèvement à la source',type:'PAS'});
+    journal.push({mat:e.matricule,debit:'421',credit:'512',montant:netAPayer,lib:'Virement salaire',type:'NET'});
+
+    let cpUrssaf=r2(cpMaladie+cpVieillPlaf+cpVieillDeplaf+cpAllocFam+cpFnal+cpChomage+cpAgs);
+    journal.push({mat:e.matricule,debit:'6451',credit:'431',montant:cpUrssaf,lib:'Charges patronales URSSAF',type:'PAT'});
+    let cpRetr=r2(cpRetrT1+cpRetrT2+cpCegT1+cpCegT2);
+    journal.push({mat:e.matricule,debit:'6452',credit:'437',montant:cpRetr,lib:'Retraite complémentaire pat.',type:'PAT'});
+    journal.push({mat:e.matricule,debit:'6454',credit:'431',montant:cpAtmp,lib:'Accidents du travail',type:'PAT'});
+    if(cpPrevoy>0)journal.push({mat:e.matricule,debit:'6453',credit:'437',montant:cpPrevoy,lib:'Prévoyance patronale',type:'PAT'});
+  }
+
+  // Rapport masse salariale
+  for(const dept of DEPTS){
+    const bs=bulletins.filter(b=>b.dept===dept);
+    const cs=cotisations.filter(c=>c.dept===dept);
+    rapport.push({
+      dept,effectif:bs.length,
+      brut:r2(bs.reduce((s,b)=>s+b.brut,0)),
+      cotSal:r2(bs.reduce((s,b)=>s+b.totalCotSal,0)),
+      cotPat:r2(cs.reduce((s,c)=>s+c.cpTotal,0)),
+      net:r2(bs.reduce((s,b)=>s+b.netAPayer,0)),
+      pas:r2(bs.reduce((s,b)=>s+b.montantPas,0))
+    });
+  }
+  rapport.push({
+    dept:'TOTAL',effectif:employees.length,
+    brut:r2(rapport.reduce((s,r)=>s+r.brut,0)),
+    cotSal:r2(rapport.reduce((s,r)=>s+r.cotSal,0)),
+    cotPat:r2(rapport.reduce((s,r)=>s+r.cotPat,0)),
+    net:r2(rapport.reduce((s,r)=>s+r.net,0)),
+    pas:r2(rapport.reduce((s,r)=>s+r.pas,0))
+  });
+}
+
+/* ================================================================
+   FORMATTING
+   ================================================================ */
+const fr=new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+function fmt(v){return fr.format(v)}
+function fmtE(v){return fmt(v)+' €'}
+
+/* ================================================================
+   RENDERING
+   ================================================================ */
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+tab));
+}
+
+// Dashboard
+function renderDashboard(){
+  const tot=rapport.find(r=>r.dept==='TOTAL');
+  if(!tot)return;
+  document.getElementById('kpiRow').innerHTML=`
+    <div class="kpi"><div class="kpi-label">${tr('kpiBrut')}</div><div class="kpi-value blue">${fmtE(tot.brut)}</div></div>
+    <div class="kpi"><div class="kpi-label">${tr('kpiNet')}</div><div class="kpi-value pos">${fmtE(tot.net)}</div></div>
+    <div class="kpi"><div class="kpi-label">${tr('kpiPat')}</div><div class="kpi-value neg">${fmtE(tot.cotPat)}</div></div>
+    <div class="kpi"><div class="kpi-label">${tr('kpiBulletins')}</div><div class="kpi-value">${tot.effectif}</div></div>
+  `;
+  let h=`<table><tr><th>${tr('thDept')}</th><th style="text-align:right">${tr('thCotSal')}</th><th style="text-align:right">${tr('thCotPat')}</th></tr>`;
+  for(const r of rapport.filter(r=>r.dept!=='TOTAL'))h+=`<tr><td>${r.dept}</td><td class="mono">${fmtE(r.cotSal)}</td><td class="mono neg">${fmtE(r.cotPat)}</td></tr>`;
+  h+='</table>';
+  document.getElementById('dashCotTable').innerHTML=h;
+
+  h=`<table><tr><th>${tr('thDept')}</th><th style="text-align:right">${tr('thEffectif')}</th><th style="text-align:right">${tr('thNet')}</th></tr>`;
+  for(const r of rapport.filter(r=>r.dept!=='TOTAL'))h+=`<tr><td>${r.dept}</td><td class="mono">${r.effectif}</td><td class="mono pos">${fmtE(r.net)}</td></tr>`;
+  h+='</table>';
+  document.getElementById('dashNetTable').innerHTML=h;
+}
+
+// Bulletins
+function renderBulletins(){
+  const q=(document.getElementById('bulletinSearch').value||'').toLowerCase();
+  const filtered=bulletins.filter(b=>{
+    if(!q)return true;
+    return b.matricule.toLowerCase().includes(q)||b.nom.toLowerCase().includes(q)||b.prenom.toLowerCase().includes(q)||b.dept.toLowerCase().includes(q);
+  });
+  let h=`<div class="tbl-wrap"><table><tr><th>${tr('thMatricule')}</th><th>${tr('thNom')}</th><th>${tr('thDepartement')}</th><th>${tr('thClassification')}</th><th style="text-align:right">${tr('thBrut')}</th><th style="text-align:right">${tr('thNetImposable')}</th><th style="text-align:right">${tr('thPAS')}</th><th style="text-align:right">${tr('thNetAPayer')}</th></tr>`;
+  for(const b of filtered){
+    h+=`<tr style="cursor:pointer" onclick="showBulletin('${b.matricule}')">
+      <td class="mono" style="text-align:left">${b.matricule}</td><td>${b.nom} ${b.prenom}</td><td>${b.dept}</td><td>${b.cls}</td>
+      <td class="mono">${fmt(b.brut)}</td><td class="mono">${fmt(b.netImposable)}</td>
+      <td class="mono neg">${fmt(b.montantPas)}</td><td class="mono pos">${fmt(b.netAPayer)}</td></tr>`;
+  }
+  h+='</table></div>';
+  document.getElementById('bulletinList').innerHTML=h;
+  document.getElementById('bulletinList').style.display='block';
+  document.getElementById('bulletinDetail').style.display='none';
+  document.getElementById('btnBackList').style.display='none';
+}
+
+function showBulletin(mat){
+  const b=bulletins.find(x=>x.matricule===mat);if(!b)return;
+  document.getElementById('bulletinList').style.display='none';
+  document.getElementById('btnBackList').style.display='inline-flex';
+  const d=document.getElementById('bulletinDetail');d.style.display='block';
+  const L=(lbl,val,cls)=>`<div class="line"><span class="lbl">${lbl}</span><span class="val ${cls||''}">${fmtE(val)}</span></div>`;
+  const LB=(lbl,val,cls)=>`<div class="line bold"><span class="lbl">${lbl}</span><span class="val ${cls||''}">${fmtE(val)}</span></div>`;
+
+  let h='<div class="bulletin-detail">';
+  h+=`<h3>${tr('bdTitle')}</h3><div class="sep"></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('bdEmployeur')}</span><span>MÉTALLURGIQUE FRANÇAISE SAS</span></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('bdSIRET')}</span><span>123 456 789 00012 — NAF 2550A</span></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('bdConvention')}</span><span>CCN Métallurgie (IDCC 3248)</span></div>`;
+  h+='<div class="sep"></div>';
+  h+=`<div class="line"><span class="lbl">${tr('thMatricule')}</span><span>${b.matricule} — ${b.nom} ${b.prenom}</span></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('thDepartement')}</span><span>${b.dept}</span></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('thClassification')}</span><span>${b.cls}</span></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('bdPeriode')}</span><span>${currentPeriode}</span></div>`;
+  h+='<div class="sep"></div>';
+
+  h+=`<div class="line bold"><span>${tr('bdSalaireBase')}</span><span></span></div>`;
+  if(b.forfait>0)h+=L(tr('bdForfait'),b.forfait);
+  else h+=L(`${tr('bdSalaireBaseCalc')} (${b.heures.toFixed(2)}h × ${b.tauxH.toFixed(2)} €)`,b.salaireBase);
+
+  if(b.hs25m||b.primeAnc||b.primeExcept||b.absMontant){
+    h+=`<div class="line bold" style="margin-top:8px"><span>${tr('bdElements')}</span><span></span></div>`;
+    if(b.hs25m)h+=L(`${tr('bdHS25')} (${b.hs25h.toFixed(2)}h)`,b.hs25m);
+    if(b.hs50m)h+=L(`${tr('bdHS50')} (${b.hs50h.toFixed(2)}h)`,b.hs50m);
+    if(b.primeAnc)h+=L(tr('bdPrimeAnc'),b.primeAnc);
+    if(b.primeExcept)h+=L(tr('bdPrimeExcept'),b.primeExcept);
+    if(b.absMontant)h+=L(`${tr('bdAbsence')} (${b.absH.toFixed(2)}h)`,-b.absMontant,'neg');
+  }
+
+  h+='<div class="sep"></div>';
+  h+=LB(tr('bdBrutTotal'),b.brut);
+  h+='<div class="sep"></div>';
+
+  h+=`<div class="line bold"><span>${tr('bdCotSal')}</span><span></span></div>`;
+  h+=L(`${tr('bdMaladie')} (0,00%)`,0);
+  h+=L(`${tr('bdVieillPlaf')} (6,90%)`,b.csVieillPlaf);
+  h+=L(`${tr('bdVieillDeplaf')} (0,40%)`,b.csVieillDeplaf);
+  h+=L(`${tr('bdCSGDed')} (6,80%)`,b.csCsgDed);
+  h+=L(`${tr('bdCSGNonDed')} (2,90%)`,b.csCsgNonDed);
+  h+=L(`${tr('bdMutuelle')} (0,50%)`,b.csMutuelle);
+  h+=L(`${tr('bdRetrT1')} (3,15%)`,b.csRetrT1);
+  if(b.csRetrT2)h+=L(`${tr('bdRetrT2')} (8,64%)`,b.csRetrT2);
+  h+=L(`${tr('bdPrevoy')} (0,50%)`,b.csPrevoy);
+  h+=L(`${tr('bdCEGT1')} (0,86%)`,b.csCegT1);
+  if(b.csCegT2)h+=L(`${tr('bdCEGT2')} (1,08%)`,b.csCegT2);
+  if(b.exonerHS)h+=L(tr('bdExoHS'),-b.exonerHS,'pos');
+  h+='<div class="sep"></div>';
+  h+=LB(tr('bdTotalCot'),b.totalCotSal);
+  h+='<div class="sep"></div>';
+
+  h+=LB(tr('bdNetImposable'),b.netImposable);
+  h+=L(`${tr('bdPASLabel')} (${b.tauxPas.toFixed(2)}%)`,-b.montantPas,'neg');
+  h+='<div class="sep"></div>';
+  h+=LB(tr('bdNetAvantPas'),b.netAvantPas);
+  h+=LB(tr('bdNetAPayer'),b.netAPayer,'pos');
+  h+='</div>';
+  d.innerHTML=h;
+}
+
+function closeBulletinDetail(){
+  document.getElementById('bulletinList').style.display='block';
+  document.getElementById('bulletinDetail').style.display='none';
+  document.getElementById('btnBackList').style.display='none';
+}
+
+// Cotisations
+function renderCotisations(){
+  const view=document.getElementById('cotView').value;
+  let h=`<div class="tbl-wrap"><table><tr><th>${tr('thMatricule')}</th><th>${tr('thNom')}</th><th>${tr('thDepartement')}</th><th>${tr('thClassification')}</th><th style="text-align:right">${tr('thBrut')}</th>`;
+  if(view==='patronales'){
+    h+=`<th style="text-align:right">${tr('thMaladie')}</th><th style="text-align:right">${tr('thVieillesse')}</th><th style="text-align:right">${tr('thAllocFam')}</th><th style="text-align:right">${tr('thATMP')}</th><th style="text-align:right">${tr('thRetraite')}</th><th style="text-align:right">${tr('thChomage')}</th><th style="text-align:right">${tr('thTotalPat')}</th>`;
+  }else{
+    h+=`<th style="text-align:right">${tr('thVieillesse')}</th><th style="text-align:right">${tr('thCSG')}</th><th style="text-align:right">${tr('thMutuelle')}</th><th style="text-align:right">${tr('thRetraite')}</th><th style="text-align:right">${tr('thPrevoy')}</th><th style="text-align:right">${tr('thCEG')}</th><th style="text-align:right">${tr('thTotalSal')}</th>`;
+  }
+  h+='</tr>';
+  const list=view==='patronales'?cotisations:bulletins;
+  for(const c of list){
+    h+=`<tr><td class="mono" style="text-align:left">${c.matricule}</td><td>${c.nom} ${c.prenom}</td><td>${c.dept}</td><td>${c.cls}</td><td class="mono">${fmt(c.brut)}</td>`;
+    if(view==='patronales'){
+      h+=`<td class="mono">${fmt(c.cpMaladie)}</td><td class="mono">${fmt(r2(c.cpVieillPlaf+c.cpVieillDeplaf))}</td><td class="mono">${fmt(c.cpAllocFam)}</td><td class="mono">${fmt(c.cpAtmp)}</td><td class="mono">${fmt(r2(c.cpRetrT1+c.cpRetrT2))}</td><td class="mono">${fmt(c.cpChomage)}</td><td class="mono neg">${fmt(c.cpTotal)}</td>`;
+    }else{
+      h+=`<td class="mono">${fmt(r2(c.csVieillPlaf+c.csVieillDeplaf))}</td><td class="mono">${fmt(r2(c.csCsgDed+c.csCsgNonDed))}</td><td class="mono">${fmt(c.csMutuelle)}</td><td class="mono">${fmt(r2(c.csRetrT1+c.csRetrT2))}</td><td class="mono">${fmt(c.csPrevoy)}</td><td class="mono">${fmt(r2(c.csCegT1+c.csCegT2))}</td><td class="mono neg">${fmt(c.totalCotSal)}</td>`;
+    }
+    h+='</tr>';
+  }
+  h+='</table></div>';
+  document.getElementById('cotTable').innerHTML=h;
+
+  // Department totals
+  h=`<div class="tbl-wrap"><table><tr><th>${tr('thDept')}</th><th style="text-align:right">${tr('thEffectif')}</th><th style="text-align:right">${tr('thTotalBrut')}</th><th style="text-align:right">${tr('thTotalCharges')}</th></tr>`;
+  for(const dept of DEPTS){
+    const cs=cotisations.filter(c=>c.dept===dept);
+    const bs=bulletins.filter(b=>b.dept===dept);
+    h+=`<tr><td>${dept}</td><td class="mono">${cs.length}</td><td class="mono">${fmtE(cs.reduce((s,c)=>s+c.brut,0))}</td>`;
+    if(view==='patronales') h+=`<td class="mono neg">${fmtE(cs.reduce((s,c)=>s+c.cpTotal,0))}</td>`;
+    else h+=`<td class="mono neg">${fmtE(bs.reduce((s,b)=>s+b.totalCotSal,0))}</td>`;
+    h+='</tr>';
+  }
+  h+='</table></div>';
+  document.getElementById('cotDeptTable').innerHTML=h;
+}
+
+// Journal PCG
+function renderJournal(){
+  let totalDebit=0,totalCredit=0;
+  for(const j of journal){
+    if(j.debit.startsWith('6'))totalDebit+=j.montant;
+    else totalCredit+=j.montant;
+  }
+  const balanced=Math.abs(totalDebit-totalCredit)<0.5;
+  document.getElementById('journalBalance').innerHTML=balanced
+    ?`<span class="balance-ok">${tr('journalBalanced')} ${fmtE(totalDebit)} ${tr('journalEquals')} ${fmtE(totalCredit)}</span>`
+    :`<span class="balance-err">${tr('journalUnbalanced')} ${fmtE(totalDebit)} ${tr('journalNotEquals')} ${fmtE(totalCredit)}</span>`;
+
+  // Group by employee, show first 20 employees then totals summary
+  const grouped=new Map();
+  for(const j of journal){
+    if(!grouped.has(j.mat))grouped.set(j.mat,[]);
+    grouped.get(j.mat).push(j);
+  }
+
+  let h=`<div class="tbl-wrap" style="max-height:600px;overflow-y:auto"><table><tr><th>${tr('thMatricule')}</th><th>${tr('thDebit')}</th><th>${tr('thCredit')}</th><th style="text-align:right">${tr('thMontant')}</th><th>${tr('thLibelle')}</th><th>${tr('thType')}</th></tr>`;
+  let count=0;
+  for(const[mat,entries]of grouped){
+    if(count>=20){h+=`<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:12px">... ${grouped.size-20} ${tr('journalMore')} (${journal.length} ${tr('journalEntries')})</td></tr>`;break}
+    h+=`<tr><td colspan="6" style="background:var(--bg3);color:var(--blue);font-weight:600;padding:6px 10px">${tr('journalEmployee')} : ${mat}</td></tr>`;
+    for(const j of entries){
+      h+=`<tr><td class="mono" style="text-align:left">${j.mat}</td><td class="mono" style="text-align:left">${j.debit}</td><td class="mono" style="text-align:left">${j.credit}</td><td class="mono">${fmt(j.montant)}</td><td>${j.lib}</td><td class="mono" style="text-align:left">${j.type}</td></tr>`;
+    }
+    count++;
+  }
+  h+='</table></div>';
+  document.getElementById('journalTable').innerHTML=h;
+}
+
+// Rapport masse salariale
+function renderRapport(){
+  const annual=document.getElementById('annualToggle').checked;
+  const m=annual?12:1;
+  let h=`<div class="tbl-wrap"><table><tr><th>${tr('thDept')}</th><th style="text-align:right">${tr('thEffectif')}</th><th style="text-align:right">${tr('thBrutTotal')}</th><th style="text-align:right">${tr('thCotSal')}</th><th style="text-align:right">${tr('thCotPat')}</th><th style="text-align:right">${tr('thNetTotal')}</th><th style="text-align:right">${tr('thPASRetenu')}</th><th style="text-align:right">${tr('thCoutEmployeur')}</th></tr>`;
+  for(const r of rapport){
+    const isTotal=r.dept==='TOTAL';
+    const style=isTotal?'font-weight:700;background:var(--bg3)':'';
+    let taxeApp=0,contribDial=0;
+    if(annual&&isTotal){taxeApp=r2(r.brut*12*0.0068);contribDial=r2(r.brut*12*0.00016)}
+    const cout=r2(r.brut*m+r.cotPat*m+taxeApp+contribDial);
+    h+=`<tr style="${style}"><td>${isTotal?tr('rapportTotal'):r.dept}</td><td class="mono">${r.effectif}</td><td class="mono">${fmtE(r.brut*m)}</td><td class="mono">${fmtE(r.cotSal*m)}</td><td class="mono neg">${fmtE(r.cotPat*m)}</td><td class="mono pos">${fmtE(r.net*m)}</td><td class="mono">${fmtE(r.pas*m)}</td><td class="mono">${fmtE(cout)}</td></tr>`;
+    if(annual&&isTotal&&taxeApp>0){
+      h+=`<tr style="font-style:italic;color:var(--text2)"><td colspan="7">${tr('rapportTaxeApp')}</td><td class="mono">${fmtE(taxeApp)}</td></tr>`;
+      h+=`<tr style="font-style:italic;color:var(--text2)"><td colspan="7">${tr('rapportDialogue')}</td><td class="mono">${fmtE(contribDial)}</td></tr>`;
+    }
+  }
+  h+='</table></div>';
+  document.getElementById('rapportTable').innerHTML=h;
+}
+
+// Run simulation
+function runPayroll(){
+  const btn=document.getElementById('btnRun');btn.disabled=true;
+  const log=document.getElementById('runLog');log.style.display='block';log.innerHTML='';
+  const result=document.getElementById('runResult');result.innerHTML='';
+  const badge=document.getElementById('statusBadge');
+  badge.className='status-badge status-running';badge.textContent=tr('statusRunning');
+
+  const programs=[
+    {name:'CALC-PAIE',records:80,desc:tr('runCalcPaie')},
+    {name:'CALC-JOURNAL',records:journal.length,desc:tr('runCalcJournal')},
+    {name:'GENERATE-BULLETIN-TXT',records:80,desc:tr('runBulletinTxt')},
+    {name:'REPORT-MASSE-SALARIALE',records:5,desc:tr('runRapportMasse')}
+  ];
+
+  let step=0;
+  function nextStep(){
+    if(step>=programs.length){
+      badge.className='status-badge status-idle';badge.textContent=tr('statusIdle');
+      log.innerHTML+=`<div class="ok">════════════════════════════════════════</div>`;
+      log.innerHTML+=`<div class="ok">  ${tr('runDone')}</div>`;
+      log.innerHTML+=`<div class="ok">════════════════════════════════════════</div>`;
+      result.innerHTML=`<div style="margin-top:8px;color:var(--green);font-weight:600">${tr('runSuccess')} ${employees.length} ${tr('runEmployees')}</div>`;
+      btn.disabled=false;
+      log.scrollTop=log.scrollHeight;
+      return;
+    }
+    const p=programs[step];
+    log.innerHTML+=`<div class="info">${p.name}|START|0|0</div>`;
+    log.scrollTop=log.scrollHeight;
+    setTimeout(()=>{
+      log.innerHTML+=`<div class="ok">${p.name}|DONE|${String(p.records).padStart(6,'0')}|000000</div>`;
+      log.innerHTML+=`<div class="warn">  \u2192 ${p.desc} : ${p.records}</div>`;
+      log.scrollTop=log.scrollHeight;
+      step++;
+      setTimeout(nextStep,400+Math.random()*300);
+    },600+Math.random()*500);
+  }
+
+  log.innerHTML=`<div class="info">${tr('runLaunching')} ${currentPeriode}</div>`;
+  log.innerHTML+=`<div class="info">════════════════════════════════════════</div>`;
+  setTimeout(nextStep,300);
+}
+
+// Modal
+function openModal(){document.getElementById('modalOverlay').classList.add('open')}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+
+/* ================================================================
+   LANGUAGE TOGGLE
+   ================================================================ */
+function setLang(lang){
+  currentLang=lang;
+  document.documentElement.lang=lang;
+  document.title=lang==='fr'?'Paie France — Démonstration':'French Payroll — Demo';
+
+  // Toggle buttons
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+
+  // Static elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.getAttribute('data-i18n');
+    if(I18N[lang][key]!==undefined)el.textContent=I18N[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+    const key=el.getAttribute('data-i18n-placeholder');
+    if(I18N[lang][key]!==undefined)el.placeholder=I18N[lang][key];
+  });
+
+  // Header elements
+  document.getElementById('statusBadge').textContent=tr('statusIdle');
+
+  // Modal body — swap between FR (original HTML) and EN (from translations)
+  const modalBody=document.getElementById('modalBody');
+  if(lang==='en'&&I18N.en.modalBodyEn){
+    if(!window._modalBodyFr)window._modalBodyFr=modalBody.innerHTML;
+    modalBody.innerHTML=I18N.en.modalBodyEn;
+  }else if(window._modalBodyFr){
+    modalBody.innerHTML=window._modalBodyFr;
+  }
+
+  // Re-render dynamic content
+  renderDashboard();renderBulletins();renderCotisations();renderJournal();renderRapport();
+}
+
+/* ================================================================
+   INIT
+   ================================================================ */
+document.getElementById('tabs').addEventListener('click',e=>{
+  if(e.target.classList.contains('tab'))switchTab(e.target.dataset.tab);
+});
+
+for(const p of PERIODES)seedPeriod(p);
+loadPeriod('202604');
+setLang('fr');
+</script>
+</body>
+</html>
