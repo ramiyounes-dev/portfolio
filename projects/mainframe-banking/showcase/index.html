@@ -91,6 +91,9 @@
         padding: 2px 10px;
     }
     .back-link:hover { color: var(--text-bright); border-color: var(--text); }
+    .lang-toggle { display:flex; gap:2px; background:rgba(255,255,255,.04); border:1px solid rgba(0,204,102,.15); border-radius:20px; padding:3px; }
+    .lang-btn { background:none; border:none; color:#6e7681; font-size:10px; font-weight:700; padding:2px 8px; border-radius:16px; cursor:pointer; letter-spacing:.5px; transition:background .2s,color .2s; font-family:var(--font); }
+    .lang-btn.active { background:var(--green); color:#0a0e14; }
 
     /* ─── Main Layout ─────────────────────────────── */
     main { display: flex; height: calc(100vh - 40px); gap: 2px; }
@@ -280,14 +283,18 @@
     <header>
         <div class="header-title">
             <span class="blink">&#9608;</span>
-            MAINFRAME BANKING TRANSACTION SYSTEM
-            <span class="header-sub">// GNU COBOL BATCH PROCESSOR — DEMO</span>
+            <span data-i18n="headerTitle">MAINFRAME BANKING TRANSACTION SYSTEM</span>
+            <span class="header-sub" data-i18n="headerSub">// GNU COBOL BATCH PROCESSOR — DEMO</span>
         </div>
         <div class="header-right">
             <span id="status-badge" class="status-badge status-idle">IDLE</span>
             <span id="batch-seq">BATCH #6</span>
-            <button class="tutorial-btn" onclick="openTutorial()">? How It Works</button>
-            <a href="../../../" class="back-link">&larr; Portfolio</a>
+            <button class="tutorial-btn" id="btnHowItWorks" onclick="openTutorial()">? How It Works</button>
+            <div class="lang-toggle">
+                <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
+                <button class="lang-btn" data-lang="fr" onclick="setLang('fr')">FR</button>
+            </div>
+            <a href="../../../" class="back-link" id="backLink">&larr; Portfolio</a>
         </div>
     </header>
 
@@ -296,7 +303,7 @@
             <!-- Transaction Ledger -->
             <div class="panel">
                 <div class="panel-header">
-                    &#9638; TRANSACTION LEDGER
+                    <span data-i18n="panelTxn">&#9638; TRANSACTION LEDGER</span>
                     <span class="panel-count" id="txn-count">0 records</span>
                 </div>
                 <div class="ledger-scroll" id="txn-ledger">
@@ -308,16 +315,16 @@
             </div>
 
             <div class="action-bar">
-                <button class="btn btn-red" onclick="addRandom(1)">+ 1 Random Transaction</button>
-                <button class="btn btn-red" onclick="addRandom(10)">+ 10 Random Transactions</button>
-                <button class="btn btn-orange" id="btn-sort" onclick="sortBatch()" disabled>Sort Batch</button>
-                <button class="btn btn-green" id="btn-update" onclick="updateBalances()" disabled>Update Accounts &amp; DB</button>
+                <button class="btn btn-red" onclick="addRandom(1)" data-i18n="btn1Txn">+ 1 Random Transaction</button>
+                <button class="btn btn-red" onclick="addRandom(10)" data-i18n="btn10Txn">+ 10 Random Transactions</button>
+                <button class="btn btn-orange" id="btn-sort" onclick="sortBatch()" disabled data-i18n="btnSort">Sort Batch</button>
+                <button class="btn btn-green" id="btn-update" onclick="updateBalances()" disabled data-i18n="btnUpdate">Update Accounts &amp; DB</button>
             </div>
 
             <!-- Accounts Ledger -->
             <div class="panel">
                 <div class="panel-header">
-                    &#9638; ACCOUNTS LEDGER
+                    <span data-i18n="panelAcct">&#9638; ACCOUNTS LEDGER</span>
                     <span class="panel-count" id="acct-count">0 records</span>
                 </div>
                 <div class="ledger-scroll" id="acct-ledger">
@@ -329,21 +336,21 @@
             </div>
 
             <div class="action-bar">
-                <button class="btn btn-blue" onclick="createAccount()">+ New Account</button>
-                <button class="btn btn-red" onclick="deleteAccount()">Delete Account</button>
-                <button class="btn btn-muted" onclick="checkTransactions()">Check Transactions</button>
+                <button class="btn btn-blue" onclick="createAccount()" data-i18n="btnNewAcct">+ New Account</button>
+                <button class="btn btn-red" onclick="deleteAccount()" data-i18n="btnDeleteAcct">Delete Account</button>
+                <button class="btn btn-muted" onclick="checkTransactions()" data-i18n="btnCheckTxn">Check Transactions</button>
             </div>
         </div>
 
         <div class="right-column">
             <div class="panel">
-                <div class="panel-header">&#9654; SYSTEM ACTION LOG</div>
+                <div class="panel-header"><span data-i18n="panelLog">&#9654; SYSTEM ACTION LOG</span></div>
                 <div class="console-scroll"><pre id="action-log">Initializing mainframe banking system...
 Loading COBOL programs...
 Ready.</pre></div>
             </div>
             <div class="panel">
-                <div class="panel-header">&#9654; QUERY RESULTS</div>
+                <div class="panel-header"><span data-i18n="panelResults">&#9654; QUERY RESULTS</span></div>
                 <div class="console-scroll"><pre id="results-log">Awaiting query...</pre></div>
             </div>
         </div>
@@ -352,19 +359,19 @@ Ready.</pre></div>
     <!-- New Account Modal -->
     <div id="modal-overlay" class="modal-overlay hidden">
         <div class="modal">
-            <div class="modal-header">CREATE NEW ACCOUNT</div>
+            <div class="modal-header" data-i18n="modalCreateTitle">CREATE NEW ACCOUNT</div>
             <div class="modal-body">
-                <label>Owner Name: <input type="text" id="new-owner" placeholder="Full name"></label>
-                <label>Account Type:
+                <label><span data-i18n="labelOwner">Owner Name:</span> <input type="text" id="new-owner" placeholder="Full name" data-i18n-placeholder="placeholderOwner"></label>
+                <label><span data-i18n="labelType">Account Type:</span>
                     <select id="new-type"><option>CHECKING</option><option>SAVINGS</option><option>CREDIT</option></select>
                 </label>
-                <label>Currency:
+                <label><span data-i18n="labelCurrency">Currency:</span>
                     <select id="new-cur"><option>USD</option><option>EUR</option><option>GBP</option><option>LBP</option><option>JPY</option></select>
                 </label>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-blue" onclick="submitCreate()">CREATE</button>
-                <button class="btn btn-red" onclick="closeModal()">CANCEL</button>
+                <button class="btn btn-blue" onclick="submitCreate()" data-i18n="btnCreate">CREATE</button>
+                <button class="btn btn-red" onclick="closeModal()" data-i18n="btnCancel">CANCEL</button>
             </div>
         </div>
     </div>
@@ -373,10 +380,10 @@ Ready.</pre></div>
     <div id="tutorial-overlay" class="tutorial-overlay hidden" onclick="if(event.target===this)closeTutorial()">
         <div class="tutorial">
             <div class="tutorial-header">
-                HOW IT WORKS
-                <button class="tutorial-close" onclick="closeTutorial()">CLOSE</button>
+                <span data-i18n="tutorialTitle">HOW IT WORKS</span>
+                <button class="tutorial-close" onclick="closeTutorial()" data-i18n="btnClose">CLOSE</button>
             </div>
-            <div class="tutorial-body">
+            <div class="tutorial-body" id="tutorialBody">
                 <h3>THE IDEA</h3>
                 This demo simulates a <strong>mainframe banking batch processing system</strong> built with GNU COBOL.
                 In real banks, transactions are not applied one by one — they are collected into
@@ -450,6 +457,101 @@ Ready.</pre></div>
    Banking realism: balance rules, overdraft limits, weighted
    transaction types, locale-aware descriptions, transfer legs
    ══════════════════════════════════════════════════════════════ */
+
+// ─── I18N ──────────────────────────────────────────────
+let currentLang='en';
+const I18N={
+  en:{
+    headerTitle:'MAINFRAME BANKING TRANSACTION SYSTEM',
+    headerSub:'// GNU COBOL BATCH PROCESSOR \u2014 DEMO',
+    btnHowItWorks:'? How It Works',backLink:'\u2190 Portfolio',
+    panelTxn:'\u25A6 TRANSACTION LEDGER',panelAcct:'\u25A6 ACCOUNTS LEDGER',
+    panelLog:'\u25B6 SYSTEM ACTION LOG',panelResults:'\u25B6 QUERY RESULTS',
+    btn1Txn:'+ 1 Random Transaction',btn10Txn:'+ 10 Random Transactions',
+    btnSort:'Sort Batch',btnUpdate:'Update Accounts & DB',
+    btnNewAcct:'+ New Account',btnDeleteAcct:'Delete Account',btnCheckTxn:'Check Transactions',
+    records:'records',
+    modalCreateTitle:'CREATE NEW ACCOUNT',
+    labelOwner:'Owner Name:',labelType:'Account Type:',labelCurrency:'Currency:',
+    placeholderOwner:'Full name',
+    btnCreate:'CREATE',btnCancel:'CANCEL',btnClose:'CLOSE',
+    tutorialTitle:'HOW IT WORKS',
+    initMsg1:'System initialized successfully.',
+    initMsg2a:'Loaded',initMsg2b:'accounts (4 checking, 4 savings, 2 credit).',
+    initMsg3a:'Loaded',initMsg3b:'committed transactions.',
+    initMsg4a:'Across',initMsg4b:'historical batches.',
+    initMsg5:'Ready for operations.',
+    resultsReady:'System ready.\nSelect an account and click "Check Transactions" to query.',
+    acctSelected:'Account Selected:',acctOwner:'Owner:',acctType:'Type:',
+    acctCurrency:'Currency:',acctBalance:'Balance:',acctStatus:'Status:',
+    acctClickCheck:'Click "Check Transactions" to view history.',
+    enterOwner:'Please enter an owner name.',
+    acctCreated:'Account created successfully.',acctNumber:'Account #:',
+    closeConfirm:'Close account',
+    cantCloseCredit:'Cannot close account with outstanding balance. Please pay off credit balance first.',
+    acctClosed:'has been closed.',
+    acctClosedPast:'Past transactions remain in the ledger.\nThe account is marked CLOSED \u2014 no new transactions accepted.',
+    acctAlreadyClosed:'Account is already closed.',
+    selectFirst:'Select an account first.',
+    noSorted:'No sorted transactions to commit.',
+    mustSort:'Batch must be sorted before posting. Please sort first.',
+    noPending:'No pending transactions to sort.',
+    batchCommitted:'Batch committed:',txnPosted:'transactions posted.',
+    alertSkipped:'ALERT:',alertTxnSkipped:'transaction(s) skipped \u2014 account not found:',
+    updatedBalances:'Updated Account Balances:',
+    txnHistory:'Transaction History',
+    perAcctSummary:'Per-Account Summary:',
+    batchLabel:'Batch #',committed:'committed',
+    noTxnBatch:'No transactions in this batch.',
+    cantCloseMsg:'Outstanding balance:',cantClosePayOff:'Please pay off the credit balance before closing.',
+  },
+  fr:{
+    headerTitle:'SYST\u00C8ME BANCAIRE MAINFRAME',
+    headerSub:'// PROCESSEUR BATCH GNU COBOL \u2014 D\u00C9MO',
+    btnHowItWorks:'? Comment \u00E7a marche',backLink:'\u2190 Portfolio',
+    panelTxn:'\u25A6 JOURNAL DES TRANSACTIONS',panelAcct:'\u25A6 REGISTRE DES COMPTES',
+    panelLog:'\u25B6 JOURNAL SYST\u00C8ME',panelResults:'\u25B6 R\u00C9SULTATS DE REQU\u00CATE',
+    btn1Txn:'+ 1 Transaction al\u00E9atoire',btn10Txn:'+ 10 Transactions al\u00E9atoires',
+    btnSort:'Trier le lot',btnUpdate:'Mettre \u00E0 jour comptes & BD',
+    btnNewAcct:'+ Nouveau compte',btnDeleteAcct:'Supprimer le compte',btnCheckTxn:'V\u00E9rifier les transactions',
+    records:'enregistrements',
+    modalCreateTitle:'CR\u00C9ER UN NOUVEAU COMPTE',
+    labelOwner:'Nom du titulaire :',labelType:'Type de compte :',labelCurrency:'Devise :',
+    placeholderOwner:'Nom complet',
+    btnCreate:'CR\u00C9ER',btnCancel:'ANNULER',btnClose:'FERMER',
+    tutorialTitle:'COMMENT \u00C7A MARCHE',
+    tutorialBodyFr:true,
+    initMsg1:'Syst\u00E8me initialis\u00E9 avec succ\u00E8s.',
+    initMsg2a:'Charg\u00E9',initMsg2b:'comptes (4 courants, 4 \u00E9pargne, 2 cr\u00E9dit).',
+    initMsg3a:'Charg\u00E9',initMsg3b:'transactions valid\u00E9es.',
+    initMsg4a:'Sur',initMsg4b:'lots historiques.',
+    initMsg5:'Pr\u00EAt pour les op\u00E9rations.',
+    resultsReady:'Syst\u00E8me pr\u00EAt.\nS\u00E9lectionnez un compte et cliquez sur \u00AB V\u00E9rifier les transactions \u00BB pour requ\u00EAter.',
+    acctSelected:'Compte s\u00E9lectionn\u00E9 :',acctOwner:'Titulaire :',acctType:'Type :',
+    acctCurrency:'Devise :',acctBalance:'Solde :',acctStatus:'Statut :',
+    acctClickCheck:'Cliquez sur \u00AB V\u00E9rifier les transactions \u00BB pour voir l\'historique.',
+    enterOwner:'Veuillez saisir un nom de titulaire.',
+    acctCreated:'Compte cr\u00E9\u00E9 avec succ\u00E8s.',acctNumber:'Num\u00E9ro de compte :',
+    closeConfirm:'Fermer le compte',
+    cantCloseCredit:'Impossible de fermer un compte avec solde impay\u00E9. Veuillez rembourser le solde cr\u00E9dit.',
+    acctClosed:'a \u00E9t\u00E9 ferm\u00E9.',
+    acctClosedPast:'Les transactions pass\u00E9es restent dans le journal.\nLe compte est marqu\u00E9 FERM\u00C9 \u2014 aucune nouvelle transaction accept\u00E9e.',
+    acctAlreadyClosed:'Le compte est d\u00E9j\u00E0 ferm\u00E9.',
+    selectFirst:'S\u00E9lectionnez d\'abord un compte.',
+    noSorted:'Aucune transaction tri\u00E9e \u00E0 valider.',
+    mustSort:'Le lot doit \u00EAtre tri\u00E9 avant publication. Veuillez d\'abord trier.',
+    noPending:'Aucune transaction en attente \u00E0 trier.',
+    batchCommitted:'Lot valid\u00E9 :',txnPosted:'transactions publi\u00E9es.',
+    alertSkipped:'ALERTE :',alertTxnSkipped:'transaction(s) ignor\u00E9e(s) \u2014 compte introuvable :',
+    updatedBalances:'Soldes des comptes mis \u00E0 jour :',
+    txnHistory:'Historique des transactions',
+    perAcctSummary:'R\u00E9sum\u00E9 par compte :',
+    batchLabel:'LOT #',committed:'valid\u00E9(es)',
+    noTxnBatch:'Aucune transaction dans ce lot.',
+    cantCloseMsg:'Solde impay\u00E9 :',cantClosePayOff:'Veuillez rembourser le solde cr\u00E9dit avant de fermer.',
+  }
+};
+function tr(key){return I18N[currentLang][key]||I18N.en[key]||key}
 
 // ─── Constants ──────────────────────────────────────────
 const FX = { USD:1, EUR:0.92, GBP:0.79, LBP:89500, JPY:149.5 };
@@ -734,7 +836,7 @@ function renderTxns() {
     for (const t of pending) html += txnRow(t, 'pending');
 
     tbody.innerHTML = html;
-    document.getElementById('txn-count').textContent = `${committed.length + alerts.length + sorted.length + pending.length} records`;
+    document.getElementById('txn-count').textContent = `${committed.length + alerts.length + sorted.length + pending.length} ${tr('records')}`;
     const ledger = document.getElementById('txn-ledger');
     ledger.scrollTop = ledger.scrollHeight;
 }
@@ -753,7 +855,7 @@ function renderAccts() {
         const bc = a.bal >= 0 ? 'amt-pos' : 'amt-neg';
         return `<tr class="${cls}" onclick="selectAcct('${a.n}')"><td>${a.n}</td><td>${a.owner}</td><td>${a.type}</td><td>${a.cur}</td><td class="${bc}">${fmtAmt(a.bal, a.cur)}</td><td>${a.status}</td></tr>`;
     }).join('');
-    document.getElementById('acct-count').textContent = `${accounts.length} records`;
+    document.getElementById('acct-count').textContent = `${accounts.length} ${tr('records')}`;
 }
 
 function updateStatus() {
@@ -798,7 +900,7 @@ function showBatchDetails(num) {
     const batchCommitted = committed.filter(t => t.batch === num);
     const batchAlerts = alerts.filter(t => t.batch === num);
     const batchTxns = [...batchCommitted, ...batchAlerts];
-    if (batchTxns.length === 0) { setResults('No transactions in this batch.'); return; }
+    if (batchTxns.length === 0) { setResults(tr('noTxnBatch')); return; }
 
     const deltas = {};
     for (const t of batchCommitted) {
@@ -807,10 +909,10 @@ function showBatchDetails(num) {
         deltas[t.acct].count++;
     }
 
-    let result = `Batch #${num} — ${batchCommitted.length} committed`;
+    let result = `${tr('batchLabel')}${num} — ${batchCommitted.length} ${tr('committed')}`;
     if (batchAlerts.length > 0) result += `, <span class="err">${batchAlerts.length} alert(s)</span>`;
     result += '\n' + '─'.repeat(70) + '\n\n';
-    result += 'Per-Account Summary:\n';
+    result += tr('perAcctSummary') + '\n';
     result += 'ACCOUNT #     TXNS   NET CHANGE       CUR\n';
     result += '─'.repeat(50) + '\n';
     for (const [acct, d] of Object.entries(deltas).sort((a,b) => a[0].localeCompare(b[0]))) {
@@ -854,7 +956,7 @@ function addRandom(n) {
 }
 
 function sortBatch() {
-    if (pending.length === 0) { setLog('<span class="err">No pending transactions to sort.</span>'); return; }
+    if (pending.length === 0) { setLog(`<span class="err">${tr('noPending')}</span>`); return; }
     sorted = [...pending].sort((a,b) => a.acct.localeCompare(b.acct) || a.ts.localeCompare(b.ts));
     pending = [];
     render();
@@ -863,11 +965,11 @@ function sortBatch() {
 
 function updateBalances() {
     if (sorted.length === 0 && pending.length > 0) {
-        setLog('<span class="err">ERROR: Batch must be sorted before posting. Please sort first.</span>');
-        alert('Batch must be sorted before posting. Please sort first.');
+        setLog(`<span class="err">ERROR: ${tr('mustSort')}</span>`);
+        alert(tr('mustSort'));
         return;
     }
-    if (sorted.length === 0) { setLog('No sorted transactions to commit.'); return; }
+    if (sorted.length === 0) { setLog(tr('noSorted')); return; }
 
     const balBefore = {};
     accounts.forEach(a => balBefore[a.n] = a.bal);
@@ -904,10 +1006,10 @@ function updateBalances() {
         });
     }, 50);
 
-    let resultHtml = `Batch committed: ${count} transactions posted.\n`;
+    let resultHtml = `${tr('batchCommitted')} ${count} ${tr('txnPosted')}\n`;
     if (alertTxns.length > 0)
-        resultHtml += `<span class="err">ALERT: ${alertTxns.length} transaction(s) skipped — account not found: ${alertTxns.map(t => t.acct).join(', ')}</span>\n`;
-    resultHtml += `\nUpdated Account Balances:\n${'─'.repeat(68)}\n`;
+        resultHtml += `<span class="err">${tr('alertSkipped')} ${alertTxns.length} ${tr('alertTxnSkipped')} ${alertTxns.map(t => t.acct).join(', ')}</span>\n`;
+    resultHtml += `\n${tr('updatedBalances')}\n${'─'.repeat(68)}\n`;
     resultHtml += `${'ACCOUNT #'.padEnd(10)}  ${'BEFORE'.padStart(14)}     ${'AFTER'.padStart(14)}  ${'CUR'}  CHANGE\n`;
     resultHtml += '─'.repeat(68) + '\n';
     for (const a of [...accounts].sort((x,y) => x.n.localeCompare(y.n))) {
@@ -939,7 +1041,7 @@ function selectAcct(n) {
     selectedBatchNum = null;
     renderAccts(); renderTxns();
     const a = accounts.find(x => x.n === n);
-    if (a) setResults(`Account Selected: ${a.n}\nOwner:    ${a.owner}\nType:     ${a.type}\nCurrency: ${a.cur}\nBalance:  ${fmtAmt(a.bal, a.cur)}\nStatus:   ${a.status}\n\nClick "Check Transactions" to view history.`);
+    if (a) setResults(`${tr('acctSelected')} ${a.n}\n${tr('acctOwner')}    ${a.owner}\n${tr('acctType')}     ${a.type}\n${tr('acctCurrency')} ${a.cur}\n${tr('acctBalance')}  ${fmtAmt(a.bal, a.cur)}\n${tr('acctStatus')}   ${a.status}\n\n${tr('acctClickCheck')}`);
 }
 
 function createAccount() { document.getElementById('modal-overlay').classList.remove('hidden'); }
@@ -947,7 +1049,7 @@ function closeModal() { document.getElementById('modal-overlay').classList.add('
 
 function submitCreate() {
     const owner = document.getElementById('new-owner').value.trim();
-    if (!owner) { alert('Please enter an owner name.'); return; }
+    if (!owner) { alert(tr('enterOwner')); return; }
     const type = document.getElementById('new-type').value;
     const cur = document.getElementById('new-cur').value;
     const maxN = accounts.reduce((m,a) => Math.max(m, parseInt(a.n)), 0);
@@ -957,22 +1059,22 @@ function submitCreate() {
     document.getElementById('new-owner').value = '';
     render();
     setLog(hl(`PROCEDURE DIVISION.\nWRITE-NEW-ACCOUNT.\n    MOVE '${owner}' TO ACCT-OWNER-NAME\n    MOVE '${type}' TO ACCT-TYPE\n    MOVE '${cur}' TO ACCT-CURRENCY\n    MOVE ZERO TO ACCT-BALANCE\n    WRITE ACCOUNT-RECORD\n\n    * Record written to indexed ACCOUNTS file\n    * New account number: ${newN}`));
-    setResults(`Account created successfully.\n\nAccount #: ${newN}\nOwner:     ${owner}\nType:      ${type}\nCurrency:  ${cur}\nBalance:   0.00`);
+    setResults(`${tr('acctCreated')}\n\n${tr('acctNumber')} ${newN}\n${tr('acctOwner')}     ${owner}\n${tr('acctType')}      ${type}\n${tr('acctCurrency')}  ${cur}\n${tr('acctBalance')}   0.00`);
 }
 
 function deleteAccount() {
-    if (!selectedAcct) { setLog('<span class="err">Select an account first.</span>'); return; }
+    if (!selectedAcct) { setLog(`<span class="err">${tr('selectFirst')}</span>`); return; }
     const a = accounts.find(x => x.n === selectedAcct);
-    if (!a || a.status === 'CLOSED') { setLog('<span class="err">Account is already closed.</span>'); return; }
+    if (!a || a.status === 'CLOSED') { setLog(`<span class="err">${tr('acctAlreadyClosed')}</span>`); return; }
 
     // CREDIT with outstanding debt: block deletion
     if (a.type === 'CREDIT' && a.bal < 0) {
-        setLog('<span class="err">ERROR: Cannot close account with outstanding balance. Please pay off credit balance first.</span>');
-        setResults(`Cannot close CREDIT account ${a.n}.\n\nOutstanding balance: ${fmtAmt(a.bal, a.cur)} ${a.cur}\nPlease pay off the credit balance before closing.`);
+        setLog(`<span class="err">ERROR: ${tr('cantCloseCredit')}</span>`);
+        setResults(`${tr('cantCloseCredit')} ${a.n}.\n\n${tr('cantCloseMsg')} ${fmtAmt(a.bal, a.cur)} ${a.cur}\n${tr('cantClosePayOff')}`);
         return;
     }
 
-    if (!confirm(`Close account ${selectedAcct}?`)) return;
+    if (!confirm(`${tr('closeConfirm')} ${selectedAcct}?`)) return;
 
     let closureLog = '';
     // Drain non-zero balance with a closure transaction
@@ -988,17 +1090,17 @@ function deleteAccount() {
     a.status = 'CLOSED';
     render();
     setLog(hl(`PROCEDURE DIVISION.\nCLOSE-ACCOUNT.\n    MOVE ${selectedAcct} TO ACCT-NUMBER\n    READ ACCOUNT-FILE (by key)\n    IF ACCT-BALANCE NOT = ZERO\n        PERFORM WRITE-CLOSURE-TXN\n    END-IF\n    MOVE 'CLOSED' TO ACCT-STATUS\n    MOVE ZERO TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD${closureLog}\n\n    * Account ${selectedAcct} marked CLOSED\n    * Past transactions preserved in ledger`));
-    setResults(`Account ${selectedAcct} has been closed.\n\nPast transactions remain in the ledger.\nThe account is marked CLOSED — no new transactions accepted.`);
+    setResults(`${tr('acctSelected')} ${selectedAcct} ${tr('acctClosed')}\n\n${tr('acctClosedPast')}`);
 }
 
 function checkTransactions() {
-    if (!selectedAcct) { setLog('<span class="err">Select an account first.</span>'); return; }
+    if (!selectedAcct) { setLog(`<span class="err">${tr('selectFirst')}</span>`); return; }
     const a = accounts.find(x => x.n === selectedAcct);
     const txns = committed.filter(t => t.acct === selectedAcct);
     let result = '';
-    if (a) result += `Account: ${a.n}\nOwner:   ${a.owner}\nType:    ${a.type}\nCurrency:${a.cur}  Balance: ${fmtAmt(a.bal, a.cur)}\nStatus:  ${a.status}\n\n`;
+    if (a) result += `${tr('acctSelected')} ${a.n}\n${tr('acctOwner')}   ${a.owner}\n${tr('acctType')}    ${a.type}\n${tr('acctCurrency')}${a.cur}  ${tr('acctBalance')} ${fmtAmt(a.bal, a.cur)}\n${tr('acctStatus')}  ${a.status}\n\n`;
     result += `-- SQL Equivalent:\nSELECT * FROM TRANSACTIONS\n WHERE ACCOUNT_NUMBER = '${selectedAcct}'\n ORDER BY TIMESTAMP ASC;\n\n`;
-    result += `Transaction History (${txns.length} records):\n${'─'.repeat(78)}\n`;
+    result += `${tr('txnHistory')} (${txns.length} ${tr('records')}):\n${'─'.repeat(78)}\n`;
     result += `${'TXN ID'.padEnd(10)} | ${'TIMESTAMP'.padEnd(19)} | ${'TYPE'.padEnd(10)} | ${'AMOUNT'.padStart(14)} | ${'BAL AFTER'.padStart(14)}\n`;
     result += '─'.repeat(78) + '\n';
     for (const t of txns) result += `${t.id} | ${fmtTs(t.ts).padEnd(19)} | ${t.type.padEnd(10)} | ${fmtAmt(t.amt,t.cur).padStart(14)} | ${fmtAmt(t.runBal,t.cur).padStart(14)}\n`;
@@ -1006,16 +1108,111 @@ function checkTransactions() {
     setLog(hl(`PROCEDURE DIVISION.\nQUERY-ACCOUNT-RECORD.\n    MOVE ${selectedAcct} TO ACCT-NUMBER\n    READ ACCOUNT-FILE (indexed, by key)\n\nQUERY-TRANSACTIONS.\n    OPEN INPUT TRANS-FILE\n    PERFORM UNTIL WS-EOF = 1\n        READ TRANS-FILE NEXT\n        IF TXN-ACCOUNT-NUM = ${selectedAcct}\n            DISPLAY TXN record\n        END-IF\n    END-PERFORM\n\n    -- Equivalent SQL:\n    SELECT * FROM TRANSACTIONS\n     WHERE ACCOUNT_NUMBER = '${selectedAcct}'\n     ORDER BY TIMESTAMP ASC;`));
 }
 
+// ─── Language Toggle ────────────────────────────────────
+function setLang(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.title = lang === 'fr' ? 'Système Bancaire Mainframe — Démo' : 'Mainframe Banking System — Demo';
+
+    // Toggle buttons
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+
+    // Static elements
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (I18N[lang][key] !== undefined) el.textContent = I18N[lang][key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (I18N[lang][key] !== undefined) el.placeholder = I18N[lang][key];
+    });
+
+    // Tutorial body — swap between EN (original HTML) and FR (from translations)
+    const tutBody = document.getElementById('tutorialBody');
+    if (tutBody) {
+        if (!window._tutorialBodyEn) window._tutorialBodyEn = tutBody.innerHTML;
+        if (lang === 'fr' && I18N.fr.tutorialBodyFr) {
+            tutBody.innerHTML = I18N.fr.tutorialBodyFr === true ? window._tutorialBodyFr || tutBody.innerHTML : I18N.fr.tutorialBodyFr;
+        } else if (window._tutorialBodyEn) {
+            tutBody.innerHTML = window._tutorialBodyEn;
+        }
+    }
+
+    // Update init log
+    setLog(`${tr('initMsg1')}
+${tr('initMsg2a')} ${accounts.length} ${tr('initMsg2b')}
+${tr('initMsg3a')} ${committed.length} ${tr('initMsg3b')}
+${tr('initMsg4a')} ${batchBounds.length} ${tr('initMsg4b')}
+
+${tr('initMsg5')}`);
+    setResults(tr('resultsReady'));
+
+    // Re-render counts
+    document.getElementById('txn-count').textContent = `${committed.length + alerts.length + sorted.length + pending.length} ${tr('records')}`;
+    document.getElementById('acct-count').textContent = `${accounts.length} ${tr('records')}`;
+}
+
 // ─── Init ───────────────────────────────────────────────
 seed();
 render();
-setLog(`System initialized successfully.
-Loaded ${accounts.length} accounts (4 checking, 4 savings, 2 credit).
-Loaded ${committed.length} committed transactions.
-Across ${batchBounds.length} historical batches.
 
-Ready for operations.`);
-setResults('System ready.\nSelect an account and click "Check Transactions" to query.');
+// Store the EN tutorial body before first setLang call
+window._tutorialBodyEn = document.getElementById('tutorialBody').innerHTML;
+
+// Build the FR tutorial body
+window._tutorialBodyFr = `<h3>L'IDÉE</h3>
+                Cette démo simule un <strong>système bancaire de traitement batch mainframe</strong> construit avec GNU COBOL.
+                Dans les vraies banques, les transactions ne sont pas appliquées une par une — elles sont collectées en
+                <strong>lots</strong>, triées, puis postées en masse avec un algorithme efficace appelé
+                <em>appareillage</em> (parcours synchronisé de deux fichiers triés).
+                <br><br>
+                Le système est composé de <strong>7 programmes COBOL</strong> compilés en binaires natifs,
+                une <strong>couche web Flask</strong> qui les appelle via subprocess, et une <strong>interface de type terminal</strong>.
+                Cette page de démonstration fonctionne entièrement dans le navigateur sans backend — elle simule
+                la même logique côté client.
+
+                <h3>CYCLE DE VIE D'UN LOT</h3>
+                Chaque transaction passe par trois phases, chacune identifiée par une couleur dans le registre :
+                <div class="step"><div class="step-num">1</div><div><span class="tag tag-red">EN ATTENTE</span> — Transaction brute ajoutée à un fichier tampon non trié (<code>pending.dat</code>). Aucun solde de compte n'est touché.</div></div>
+                <div class="step"><div class="step-num">2</div><div><span class="tag tag-orange">TRIÉ</span> — Le verbe COBOL <code>SORT</code> réordonne le lot par numéro de compte, puis par horodatage. C'est ce qui rend la fusion efficace.</div></div>
+                <div class="step"><div class="step-num">3</div><div><span class="tag tag-green">VALIDÉ</span> — Le lot trié est parcouru en parallèle avec le fichier indexé des comptes. Chaque solde est mis à jour, et la transaction est écrite dans le journal permanent.</div></div>
+
+                <h3>L'ALGORITHME : APPAREILLAGE</h3>
+                <code>UPDATE-BALANCES</code> lit le fichier de transactions triées séquentiellement.
+                Pour chaque transaction, il effectue une lecture indexée sur le fichier des comptes,
+                ajoute le montant au solde, réécrit l'enregistrement du compte, et ajoute
+                un enregistrement validé au journal — le tout en un seul passage à <strong>O(N+M)</strong>.
+                C'est le même schéma que les mainframes utilisent pour traiter des millions d'enregistrements chaque nuit.
+
+                <h3>COMMENT UTILISER CETTE DÉMO</h3>
+                <div class="step"><div class="step-num">1</div><div><strong>Ajouter des transactions</strong> — Cliquez sur <span class="tag tag-red">+ 1 Transaction aléatoire</span> ou <span class="tag tag-red">+ 10</span>. De nouvelles lignes apparaissent en rouge en bas du registre.</div></div>
+                <div class="step"><div class="step-num">2</div><div><strong>Trier le lot</strong> — Cliquez sur <span class="tag tag-orange">Trier le lot</span>. Les lignes rouges deviennent orange et sont réordonnées par numéro de compte.</div></div>
+                <div class="step"><div class="step-num">3</div><div><strong>Poster vers les comptes</strong> — Cliquez sur <span class="tag tag-green">Mettre à jour comptes & BD</span>. Les lignes orange deviennent vertes, les soldes sont mis à jour, et le séparateur de lot apparaît.</div></div>
+                <div class="step"><div class="step-num">4</div><div><strong>Inspecter un lot</strong> — Cliquez sur n'importe quel séparateur <span class="tag tag-red">BATCH #N</span> dans le registre pour voir les deltas par compte.</div></div>
+                <div class="step"><div class="step-num">5</div><div><strong>Gérer les comptes</strong> — Cliquez sur une ligne du registre des comptes pour la sélectionner, puis utilisez <span class="tag tag-blue">+ Nouveau compte</span>, <span class="tag tag-red">Supprimer le compte</span>, ou <strong>Vérifier les transactions</strong> pour l'historique complet.</div></div>
+
+                <h3>GESTION DES ERREURS</h3>
+                Si une transaction fait référence à un compte qui n'existe pas ou est <strong>fermé</strong>,
+                le système la rejette. <code>UPDATE-BALANCES</code> journalise un avertissement et marque la transaction comme
+                <span class="tag tag-yellow" style="color:#ffcc00;border-color:#ffcc00;">ALERTE</span> (jaune)
+                dans le registre — la transaction est ignorée, non validée.
+
+                <h3>ORGANISATION DES FICHIERS</h3>
+                Cinq fichiers de données, chacun reflétant un type de dataset VSAM mainframe :
+                <div class="step"><div class="step-num">1</div><div><code>accounts.dat</code> — <strong>INDEXÉ</strong> (KSDS), enregistrements de 120 octets.</div></div>
+                <div class="step"><div class="step-num">2</div><div><code>transactions.dat</code> — <strong>SÉQUENTIEL</strong> (ESDS), enregistrements de 150 octets. Journal permanent.</div></div>
+                <div class="step"><div class="step-num">3</div><div><code>pending.dat</code> — <strong>SÉQUENTIEL</strong> (ESDS), tampon non trié.</div></div>
+                <div class="step"><div class="step-num">4</div><div><code>sorted-staging.dat</code> — <strong>SÉQUENTIEL</strong> (ESDS), sortie du SORT COBOL.</div></div>
+                <div class="step"><div class="step-num">5</div><div><code>batch-state.dat</code> — <strong>SÉQUENTIEL</strong>, enregistrement unique de contrôle.</div></div>
+                Toutes les valeurs monétaires utilisent le <strong>décimal condensé COMP-3</strong> — le même format utilisé sur les mainframes IBM.
+
+                <h3>PILE TECHNIQUE</h3>
+                <strong>COBOL</strong> (GNU COBOL 3.2) — 7 programmes, 4 copybooks, fichiers indexés ISAM, COMP-3<br>
+                <strong>Python/Flask</strong> — Couche web fine appelant les binaires COBOL via subprocess<br>
+                <strong>JavaScript</strong> — Interface de type terminal avec mises à jour en temps réel<br>
+                <strong>Fichiers de données</strong> — Indexé + séquentiel`;
+
+setLang('en');
 
 function openTutorial() { document.getElementById('tutorial-overlay').classList.remove('hidden'); }
 function closeTutorial() { document.getElementById('tutorial-overlay').classList.add('hidden'); }

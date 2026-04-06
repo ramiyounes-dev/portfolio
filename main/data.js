@@ -48,6 +48,20 @@ const SITE_DATA = {
       githubLabel: 'View on GitHub',
       items: [
         {
+          title: 'French Payroll & Employer Tax System',
+          description: 'A complete French payroll computation system (cotisations sociales, PCG accounting entries) built with GNU COBOL for batch processing and .NET 8 (ASP.NET Core API + Blazor Server dashboard). Computes bulletins de paie for 80 employees across 4 departments — including all salarial/patronal contributions, tranches PMSS, prélèvement à la source, and balanced journal entries per Plan Comptable Général.',
+          tech: [
+            { icon: 'fas fa-code', text: 'COBOL' },
+            { icon: 'fas fa-code', text: 'C# / .NET 8' },
+            { icon: 'fas fa-columns', text: 'Blazor Server' },
+            { icon: 'fas fa-cloud', text: 'REST API' },
+            { icon: 'fas fa-database', text: 'Flat Files / COMP-3' }
+          ],
+          github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/french-payroll',
+          link: './projects/french-payroll/showcase/',
+          linkLabel: 'View Demo'
+        },
+        {
           title: 'Mainframe Banking System',
           description: 'A mainframe-style batch processing system built with GNU COBOL. Simulates a real banking workload — account management, transaction batching, sorted-file merge (appareillage), and packed decimal arithmetic — with a terminal-inspired web UI that visualizes the full batch lifecycle.',
           tech: [
@@ -138,6 +152,20 @@ const SITE_DATA = {
       heading: 'Projets',
       githubLabel: 'Voir sur GitHub',
       items: [
+        {
+          title: 'Système de Paie & Charges Patronales',
+          description: 'Un système complet de calcul de paie française (cotisations sociales, écritures comptables PCG) construit avec GNU COBOL pour le traitement batch et .NET 8 (API ASP.NET Core + tableau de bord Blazor Server). Calcule les bulletins de paie pour 80 employés répartis sur 4 départements — incluant toutes les cotisations salariales/patronales, tranches PMSS, prélèvement à la source, et écritures de journal équilibrées selon le Plan Comptable Général.',
+          tech: [
+            { icon: 'fas fa-code', text: 'COBOL' },
+            { icon: 'fas fa-code', text: 'C# / .NET 8' },
+            { icon: 'fas fa-columns', text: 'Blazor Server' },
+            { icon: 'fas fa-cloud', text: 'API REST' },
+            { icon: 'fas fa-database', text: 'Fichiers plats / COMP-3' }
+          ],
+          github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/french-payroll',
+          link: './projects/french-payroll/showcase/',
+          linkLabel: 'Voir la démo'
+        },
         {
           title: 'Système Bancaire Mainframe',
           description: 'Un système de traitement batch de style mainframe développé en GNU COBOL. Simule une charge bancaire réelle — gestion de comptes, lots de transactions, fusion de fichiers triés (appareillage) et arithmétique en décimal condensé — avec une interface web inspirée du terminal qui visualise le cycle batch complet.',
