@@ -1,0 +1,110 @@
+@page "/rapport"
+@rendermode InteractiveServer
+@inject PayrollApiClient Api
+
+<PageTitle>Masse salariale - Paie France</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Rapport masse salariale</MudText>
+
+<MudSwitch T="bool" @bind-Value="_annualView" Label="Projection annuelle (x12 + taxes)"
+           Color="Color.Primary" Class="mb-4" />
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" Class="mt-4" />
+}
+else if (_rapport != null && _rapport.Count > 0)
+{
+    <MudPaper Class="pa-4" Elevation="2">
+        <MudSimpleTable Dense="true" Hover="true" Striped="true"
+                        Style="font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
+            <thead>
+                <tr>
+                    <th style="font-family:Inter,sans-serif;">Departement</th>
+                    <th style="text-align:right;">Effectif</th>
+                    <th style="text-align:right;">Brut total</th>
+                    <th style="text-align:right;">Cot. salariales</th>
+                    <th style="text-align:right; color:#C62828;">Cot. patronales</th>
+                    <th style="text-align:right; color:#2E7D32;">Net total</th>
+                    <th style="text-align:right;">PAS retenu</th>
+                    <th style="text-align:right; font-weight:600;">Cout employeur</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in _rapport)
+                {
+                    var isTotal = r.Departement.Trim() == "TOTAL";
+                    var rowStyle = isTotal ? "font-weight:700; background-color:#E3F2FD;" : "";
+                    var m = _annualView ? 12m : 1m;
+
+                    // Annual taxes applied to grand total only
+                    decimal taxeApp = 0;
+                    decimal contribDialogue = 0;
+                    if (_annualView && isTotal)
+                    {
+                        // Taxe d'apprentissage: 0.68% on annual brut
+                        taxeApp = r.BrutTotal * 12m * 0.0068m;
+                        // Contribution dialogue social: 0.016% on annual brut
+                        contribDialogue = r.BrutTotal * 12m * 0.00016m;
+                    }
+
+                    var coutEmp = r.CoutEmployeur * m + taxeApp + contribDialogue;
+
+                    <tr style="@rowStyle">
+                        <td style="font-family:Inter,sans-serif;">
+                            @(isTotal ? "TOTAL GENERAL" : r.Departement.Trim())
+                        </td>
+                        <td style="text-align:right;">@r.Effectif</td>
+                        <td style="text-align:right;">@Fmt(r.BrutTotal * m)</td>
+                        <td style="text-align:right;">@Fmt(r.CotSalTotal * m)</td>
+                        <td style="text-align:right; color:#C62828;">@Fmt(r.CotPatTotal * m)</td>
+                        <td style="text-align:right; color:#2E7D32;">@Fmt(r.NetTotal * m)</td>
+                        <td style="text-align:right;">@Fmt(r.PasTotal * m)</td>
+                        <td style="text-align:right;">@Fmt(coutEmp)</td>
+                    </tr>
+
+                    @if (_annualView && isTotal && (taxeApp > 0 || contribDialogue > 0))
+                    {
+                        <tr style="font-style:italic; color:#666;">
+                            <td style="font-family:Inter,sans-serif;" colspan="7">
+                                dont Taxe apprentissage (0.68%)
+                            </td>
+                            <td style="text-align:right;">@Fmt(taxeApp)</td>
+                        </tr>
+                        <tr style="font-style:italic; color:#666;">
+                            <td style="font-family:Inter,sans-serif;" colspan="7">
+                                dont Contribution dialogue social (0.016%)
+                            </td>
+                            <td style="text-align:right;">@Fmt(contribDialogue)</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+
+    <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true">
+        Cout employeur = Brut + Cotisations patronales.
+        @if (_annualView)
+        {
+            <span>La projection annuelle inclut la taxe d'apprentissage et la contribution au dialogue social.</span>
+        }
+    </MudAlert>
+}
+
+@code {
+    private bool _loading;
+    private bool _annualView;
+    private List<RapportMasse>? _rapport;
+    private static readonly CultureInfo _fr = CultureInfo.GetCultureInfo("fr-FR");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _loading = true;
+        try { _rapport = await Api.GetRapportMasseAsync(); }
+        catch { _rapport = null; }
+        finally { _loading = false; }
+    }
+
+    private static string Fmt(decimal v) => v.ToString("N2", _fr) + " EUR";
+}

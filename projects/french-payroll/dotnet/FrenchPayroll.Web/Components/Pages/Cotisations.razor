@@ -1,0 +1,111 @@
+@page "/cotisations"
+@rendermode InteractiveServer
+@inject PayrollApiClient Api
+
+<PageTitle>Cotisations & charges - Paie France</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Cotisations & charges</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudTextField T="int" @bind-Value="_periode" Label="Periode (AAAAMM)" Variant="Variant.Outlined" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" OnClick="LoadData">Charger</MudButton>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudSelect T="string" @bind-Value="_viewMode" Label="Affichage" Variant="Variant.Outlined" Class="mt-0">
+            <MudSelectItem Value="@("patronales")">Cotisations patronales</MudSelectItem>
+            <MudSelectItem Value="@("salariales")">Cotisations salariales</MudSelectItem>
+            <MudSelectItem Value="@("les deux")">Les deux</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" Class="mt-4" />
+}
+else if (_cotisations != null && _cotisations.Count > 0)
+{
+    <MudTable Items="@_cotisations" Dense="true" Hover="true" Striped="true" Class="mt-4" T="CotisationPatronale">
+        <HeaderContent>
+            <MudTh>Matricule</MudTh>
+            <MudTh>Nom</MudTh>
+            <MudTh>Departement</MudTh>
+            <MudTh>Classification</MudTh>
+            <MudTh Style="text-align:right;">Brut</MudTh>
+            @if (_viewMode is "patronales" or "les deux")
+            {
+                <MudTh Style="text-align:right;">Maladie pat.</MudTh>
+                <MudTh Style="text-align:right;">Vieill. pat.</MudTh>
+                <MudTh Style="text-align:right;">Alloc. fam.</MudTh>
+                <MudTh Style="text-align:right;">AT/MP</MudTh>
+                <MudTh Style="text-align:right;">Retraite pat.</MudTh>
+                <MudTh Style="text-align:right;">Chomage pat.</MudTh>
+                <MudTh Style="text-align:right; color:#C62828;">Total patronal</MudTh>
+            }
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="font-family:'JetBrains Mono',monospace;">@context.Matricule</MudTd>
+            <MudTd>@context.Nom.Trim() @context.Prenom.Trim()</MudTd>
+            <MudTd>@context.Departement.Trim()</MudTd>
+            <MudTd>@context.Classification.Trim()</MudTd>
+            <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(context.Brut)</MudTd>
+            @if (_viewMode is "patronales" or "les deux")
+            {
+                <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(context.MaladiePat)</MudTd>
+                <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(context.VieillPlafPat + context.VieillDeplafPat)</MudTd>
+                <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(context.AllocFamPat)</MudTd>
+                <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(context.AtmpPat)</MudTd>
+                <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(context.RetrT1Pat + context.RetrT2Pat)</MudTd>
+                <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(context.ChomagePat)</MudTd>
+                <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace; color:#C62828;">@Fmt(context.TotalPat)</MudTd>
+            }
+        </RowTemplate>
+    </MudTable>
+
+    @* Department totals *@
+    <MudPaper Class="pa-4 mt-4" Elevation="2">
+        <MudText Typo="Typo.h6" Class="mb-2">Totaux par departement</MudText>
+        <MudSimpleTable Dense="true" Hover="true" Striped="true">
+            <thead>
+                <tr>
+                    <th>Departement</th>
+                    <th style="text-align:right;">Effectif</th>
+                    <th style="text-align:right; font-family:'JetBrains Mono',monospace;">Total brut</th>
+                    <th style="text-align:right; font-family:'JetBrains Mono',monospace; color:#C62828;">Total patronal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in _cotisations.GroupBy(c => c.Departement.Trim()))
+                {
+                    <tr>
+                        <td>@g.Key</td>
+                        <td style="text-align:right;">@g.Count()</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono',monospace;">@Fmt(g.Sum(c => c.Brut))</td>
+                        <td style="text-align:right; font-family:'JetBrains Mono',monospace; color:#C62828;">@Fmt(g.Sum(c => c.TotalPat))</td>
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </MudPaper>
+}
+
+@code {
+    private int _periode = int.Parse(DateTime.Now.ToString("yyyyMM"));
+    private string _viewMode = "patronales";
+    private bool _loading;
+    private List<CotisationPatronale>? _cotisations;
+    private static readonly CultureInfo _fr = CultureInfo.GetCultureInfo("fr-FR");
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try { _cotisations = await Api.GetCotisationsAsync(_periode); }
+        catch { _cotisations = null; }
+        finally { _loading = false; }
+    }
+
+    private static string Fmt(decimal v) => v.ToString("N2", _fr);
+}

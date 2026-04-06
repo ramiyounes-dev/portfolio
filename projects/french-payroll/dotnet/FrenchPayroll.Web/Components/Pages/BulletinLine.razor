@@ -1,0 +1,21 @@
+@{
+    var style = "text-align:right; font-family:'JetBrains Mono',monospace;";
+    if (!string.IsNullOrEmpty(Color)) style += $" color:{Color};";
+    if (IsNegative) style += " color:#C62828;";
+    var labelStyle = Bold ? "font-weight:600;" : "";
+}
+
+<div style="display:flex; justify-content:space-between; padding: 2px 0; @labelStyle">
+    <span>@Label</span>
+    <span style="@style">@Amount.ToString("N2", _fr) EUR</span>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public decimal Amount { get; set; }
+    [Parameter] public bool Bold { get; set; }
+    [Parameter] public bool IsNegative { get; set; }
+    [Parameter] public string? Color { get; set; }
+
+    private static readonly CultureInfo _fr = CultureInfo.GetCultureInfo("fr-FR");
+}

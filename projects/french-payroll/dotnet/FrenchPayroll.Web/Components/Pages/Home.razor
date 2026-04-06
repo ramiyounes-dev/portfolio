@@ -1,0 +1,137 @@
+@page "/"
+@rendermode InteractiveServer
+@inject PayrollApiClient Api
+
+<PageTitle>Tableau de bord - Paie France</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Tableau de bord</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudTextField T="string" @bind-Value="_periodeStr" Label="Periode (AAAAMM)"
+                      Variant="Variant.Outlined" Immediate="true"
+                      Placeholder="202604" Style="max-width: 200px;" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2"
+                   OnClick="LoadData">Charger</MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" Class="mt-4" />
+}
+else if (_rapport != null && _rapport.Count > 0)
+{
+    var total = _rapport.FirstOrDefault(r => r.Departement.Trim() == "TOTAL");
+
+    <MudGrid Class="mt-4">
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">Masse salariale brute</MudText>
+                <MudText Typo="Typo.h5" Style="font-family: 'JetBrains Mono', monospace;">
+                    @FormatEuro(total?.BrutTotal ?? 0)
+                </MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Total net a payer</MudText>
+                <MudText Typo="Typo.h5" Style="font-family: 'JetBrains Mono', monospace; color: #2E7D32;">
+                    @FormatEuro(total?.NetTotal ?? 0)
+                </MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2" Color="Color.Error">Charges patronales</MudText>
+                <MudText Typo="Typo.h5" Style="font-family: 'JetBrains Mono', monospace; color: #C62828;">
+                    @FormatEuro(total?.CotPatTotal ?? 0)
+                </MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.subtitle2">Bulletins generes</MudText>
+                <MudText Typo="Typo.h5" Style="font-family: 'JetBrains Mono', monospace;">
+                    @(total?.Effectif ?? 0)
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Class="mt-6">
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-2">Cotisations salariales vs patronales</MudText>
+                <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                    <thead>
+                        <tr>
+                            <th>Departement</th>
+                            <th style="text-align:right; font-family:'JetBrains Mono',monospace;">Cot. salariales</th>
+                            <th style="text-align:right; font-family:'JetBrains Mono',monospace;">Cot. patronales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in _rapport.Where(r => r.Departement.Trim() != "TOTAL"))
+                        {
+                            <tr>
+                                <td>@r.Departement.Trim()</td>
+                                <td style="text-align:right; font-family:'JetBrains Mono',monospace;">@FormatEuro(r.CotSalTotal)</td>
+                                <td style="text-align:right; font-family:'JetBrains Mono',monospace; color:#C62828;">@FormatEuro(r.CotPatTotal)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-2">Net a payer par departement</MudText>
+                <MudSimpleTable Dense="true" Hover="true" Striped="true">
+                    <thead>
+                        <tr>
+                            <th>Departement</th>
+                            <th style="text-align:right;">Effectif</th>
+                            <th style="text-align:right; font-family:'JetBrains Mono',monospace;">Net a payer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in _rapport.Where(r => r.Departement.Trim() != "TOTAL"))
+                        {
+                            <tr>
+                                <td>@r.Departement.Trim()</td>
+                                <td style="text-align:right;">@r.Effectif</td>
+                                <td style="text-align:right; font-family:'JetBrains Mono',monospace; color:#2E7D32;">@FormatEuro(r.NetTotal)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </MudSimpleTable>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+else if (!_loading)
+{
+    <MudAlert Severity="Severity.Info" Class="mt-4">
+        Saisissez une periode et cliquez sur Charger pour afficher les donnees.
+    </MudAlert>
+}
+
+@code {
+    private string _periodeStr = DateTime.Now.ToString("yyyyMM");
+    private bool _loading;
+    private List<RapportMasse>? _rapport;
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try { _rapport = await Api.GetRapportMasseAsync(); }
+        catch { _rapport = null; }
+        finally { _loading = false; }
+    }
+
+    private static string FormatEuro(decimal amount)
+        => amount.ToString("N2", CultureInfo.GetCultureInfo("fr-FR")) + " EUR";
+}

@@ -1,0 +1,139 @@
+@page "/run"
+@rendermode InteractiveServer
+@inject PayrollApiClient Api
+
+<PageTitle>Lancer la paie - Paie France</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Lancer la paie</MudText>
+
+<MudPaper Class="pa-6" Elevation="2" Style="max-width: 600px;">
+    <MudText Typo="Typo.body1" Class="mb-4">
+        Cette action lance le traitement COBOL de la paie pour la periode selectionnee.
+        Les programmes CALC-PAIE, CALC-JOURNAL, GENERATE-BULLETIN-TXT et REPORT-MASSE-SALARIALE
+        seront executes en sequence.
+    </MudText>
+
+    <MudTextField T="int" @bind-Value="_periode" Label="Periode (AAAAMM)"
+                  Variant="Variant.Outlined" Class="mb-4" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+               OnClick="LaunchPayroll" Disabled="_running"
+               StartIcon="@Icons.Material.Filled.PlayArrow">
+        Lancer le traitement
+    </MudButton>
+</MudPaper>
+
+@if (_running || _job != null)
+{
+    <MudPaper Class="pa-4 mt-4" Elevation="2" Style="max-width: 800px;">
+        <MudText Typo="Typo.h6" Class="mb-2">
+            Statut du traitement
+            @if (_job != null)
+            {
+                <MudChip T="string" Size="Size.Small" Class="ml-2"
+                         Color="@GetStatusColor(_job.Status)">
+                    @_job.Status.ToUpper()
+                </MudChip>
+            }
+        </MudText>
+
+        <MudPaper Class="pa-3" Style="background-color:#1B2A4A; color:#E0E0E0; font-family:'JetBrains Mono',monospace; font-size:0.8rem; max-height:400px; overflow-y:auto;">
+            @if (_job?.OutputLines != null)
+            {
+                @foreach (var line in _job.OutputLines)
+                {
+                    <div style="@GetLineStyle(line)">@line</div>
+                }
+            }
+            @if (_running)
+            {
+                <div style="color:#64B5F6;">En cours...</div>
+            }
+        </MudPaper>
+
+        @if (_job?.Status == "done")
+        {
+            <MudAlert Severity="Severity.Success" Class="mt-3">
+                Traitement termine avec succes — @_job.RecordsProcessed enregistrements traites.
+            </MudAlert>
+            <MudGrid Class="mt-2">
+                <MudItem>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               Href="@($"/bulletins/{_periode}")">
+                        Voir les bulletins
+                    </MudButton>
+                </MudItem>
+                <MudItem>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Href="/journal">
+                        Voir le journal
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        }
+        else if (_job?.Status == "error")
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-3">
+                Le traitement a echoue avec @_job.Errors erreur(s).
+            </MudAlert>
+        }
+    </MudPaper>
+}
+
+@code {
+    private int _periode = int.Parse(DateTime.Now.ToString("yyyyMM"));
+    private bool _running;
+    private string? _jobId;
+    private PayrollJobStatus? _job;
+
+    private async Task LaunchPayroll()
+    {
+        _running = true;
+        _job = null;
+        StateHasChanged();
+
+        try
+        {
+            var response = await Api.RunPayrollAsync(_periode);
+            if (response == null) return;
+            _jobId = response.JobId;
+
+            // Poll for status
+            while (_running)
+            {
+                await Task.Delay(2000);
+                _job = await Api.GetJobStatusAsync(_jobId);
+                StateHasChanged();
+
+                if (_job?.Status is "done" or "error")
+                {
+                    _running = false;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _job = new PayrollJobStatus
+            {
+                Status = "error",
+                OutputLines = [$"Erreur de connexion : {ex.Message}"]
+            };
+            _running = false;
+        }
+    }
+
+    private static Color GetStatusColor(string status) => status switch
+    {
+        "done" => Color.Success,
+        "error" => Color.Error,
+        "running" => Color.Info,
+        _ => Color.Default
+    };
+
+    private static string GetLineStyle(string line)
+    {
+        if (line.Contains("|ERROR|") || line.Contains("STDERR")) return "color:#EF5350;";
+        if (line.Contains("|DONE|")) return "color:#66BB6A;";
+        if (line.Contains("|START|")) return "color:#64B5F6;";
+        return "";
+    }
+}

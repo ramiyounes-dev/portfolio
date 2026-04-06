@@ -1,0 +1,157 @@
+@page "/bulletins"
+@page "/bulletins/{Periode:int}"
+@rendermode InteractiveServer
+@inject PayrollApiClient Api
+
+<PageTitle>Bulletins de paie - Paie France</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Bulletins de paie</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudTextField T="int" @bind-Value="_periode" Label="Periode (AAAAMM)"
+                      Variant="Variant.Outlined" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2"
+                   OnClick="LoadBulletins">Charger</MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" Class="mt-4" />
+}
+else if (_selectedBulletin != null)
+{
+    <MudButton Variant="Variant.Text" OnClick="() => _selectedBulletin = null"
+               Class="mt-4 mb-2" StartIcon="@Icons.Material.Filled.ArrowBack">
+        Retour a la liste
+    </MudButton>
+    <MudPaper Class="pa-6" Elevation="2" Style="max-width: 800px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+        @{ var b = _selectedBulletin; }
+
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4">BULLETIN DE PAIE</MudText>
+        <MudDivider Class="mb-3" />
+
+        <MudText><strong>Employeur :</strong> METALLURGIQUE FRANCAISE SAS</MudText>
+        <MudText><strong>SIRET :</strong> 123 456 789 00012 &nbsp; <strong>NAF :</strong> 2550A</MudText>
+        <MudText><strong>Convention :</strong> CCN Metallurgie (IDCC 3248)</MudText>
+        <MudDivider Class="my-3" />
+
+        <MudText><strong>Matricule :</strong> @b.Matricule &nbsp; @b.Nom @b.Prenom</MudText>
+        <MudText><strong>Departement :</strong> @b.Departement.Trim() &nbsp; <strong>Classification :</strong> @b.Classification.Trim()</MudText>
+        <MudText><strong>Periode :</strong> @b.Periode</MudText>
+        <MudDivider Class="my-3" />
+
+        <MudText Typo="Typo.subtitle1" Class="mb-2"><strong>SALAIRE DE BASE</strong></MudText>
+        @if (b.ForfaitMensuel != 0)
+        {
+            <BulletinLine Label="Forfait mensuel" Amount="b.ForfaitMensuel" />
+        }
+        else
+        {
+            <BulletinLine Label="@($"Salaire base ({b.HeuresBase:F2}h x {b.TauxHoraire:F2})")" Amount="b.SalaireBase" />
+        }
+
+        @if (b.MontantHs25 != 0 || b.PrimeAnciennete != 0 || b.PrimeExcept != 0 || b.AbsenceMontant != 0)
+        {
+            <MudText Typo="Typo.subtitle1" Class="mt-3 mb-2"><strong>ELEMENTS VARIABLES</strong></MudText>
+            @if (b.MontantHs25 != 0) { <BulletinLine Label="@($"HS 25% ({b.HeuresSup25:F2}h)")" Amount="b.MontantHs25" /> }
+            @if (b.MontantHs50 != 0) { <BulletinLine Label="@($"HS 50% ({b.HeuresSup50:F2}h)")" Amount="b.MontantHs50" /> }
+            @if (b.PrimeAnciennete != 0) { <BulletinLine Label="Prime anciennete" Amount="b.PrimeAnciennete" /> }
+            @if (b.PrimeExcept != 0) { <BulletinLine Label="Prime exceptionnelle" Amount="b.PrimeExcept" /> }
+            @if (b.AbsenceMontant != 0) { <BulletinLine Label="@($"Absence ({b.AbsenceHeures:F2}h)")" Amount="-b.AbsenceMontant" IsNegative="true" /> }
+        }
+
+        <MudDivider Class="my-2" />
+        <BulletinLine Label="BRUT TOTAL" Amount="b.Brut" Bold="true" />
+        <MudDivider Class="my-3" />
+
+        <MudText Typo="Typo.subtitle1" Class="mb-2"><strong>COTISATIONS SALARIALES</strong></MudText>
+        <BulletinLine Label="Maladie (0.00%)" Amount="b.CotMaladieSal" />
+        <BulletinLine Label="Vieillesse plafonnee (6.90%)" Amount="b.CotVieillPlaf" />
+        <BulletinLine Label="Vieillesse deplafonnee (0.40%)" Amount="b.CotVieillDeplaf" />
+        <BulletinLine Label="CSG deductible (6.80%)" Amount="b.CsgDeductible" />
+        <BulletinLine Label="CSG/CRDS non deductible (2.90%)" Amount="b.CsgNonDeduct" />
+        <BulletinLine Label="Mutuelle (0.50%)" Amount="b.CotMutuelleSal" />
+        <BulletinLine Label="Retraite T1 AGIRC-ARRCO (3.15%)" Amount="b.CotRetrT1Sal" />
+        @if (b.CotRetrT2Sal != 0) { <BulletinLine Label="Retraite T2 AGIRC-ARRCO (8.64%)" Amount="b.CotRetrT2Sal" /> }
+        <BulletinLine Label="Prevoyance (0.50%)" Amount="b.CotPrevoySal" />
+        <BulletinLine Label="CEG T1 (0.86%)" Amount="b.CotCegT1Sal" />
+        @if (b.CotCegT2Sal != 0) { <BulletinLine Label="CEG T2 (1.08%)" Amount="b.CotCegT2Sal" /> }
+        @if (b.ExonerHs != 0) { <BulletinLine Label="Exoneration HS (loi TEPA)" Amount="-b.ExonerHs" IsNegative="true" /> }
+        <MudDivider Class="my-2" />
+        <BulletinLine Label="TOTAL COTISATIONS" Amount="b.TotalCotSal" Bold="true" />
+        <MudDivider Class="my-3" />
+
+        <BulletinLine Label="NET IMPOSABLE" Amount="b.NetImposable" Bold="true" />
+        <BulletinLine Label="@($"Prelevement a la source (taux {b.TauxPas:F2}%)")" Amount="-b.MontantPas" IsNegative="true" />
+        <MudDivider Class="my-2" />
+        <BulletinLine Label="NET A PAYER AVANT PAS" Amount="b.NetAvantPas" Bold="true" />
+        <BulletinLine Label="NET A PAYER" Amount="b.NetAPayer" Bold="true" Color="#2E7D32" />
+    </MudPaper>
+}
+else if (_bulletins != null)
+{
+    <MudTextField @bind-Value="_searchString" Placeholder="Rechercher (matricule, nom...)"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                  Class="mt-4 mb-2" Style="max-width: 400px;" />
+
+    <MudTable Items="@_bulletins" Dense="true" Hover="true" Striped="true"
+              Filter="FilterFunc" OnRowClick="OnRowClick" T="BulletinDePaie"
+              RowStyle="cursor: pointer;">
+        <HeaderContent>
+            <MudTh>Matricule</MudTh>
+            <MudTh>Nom</MudTh>
+            <MudTh>Departement</MudTh>
+            <MudTh Style="text-align:right;">Brut</MudTh>
+            <MudTh Style="text-align:right;">Net imposable</MudTh>
+            <MudTh Style="text-align:right;">PAS retenu</MudTh>
+            <MudTh Style="text-align:right;">Net a payer</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd Style="font-family:'JetBrains Mono',monospace;">@context.Matricule</MudTd>
+            <MudTd>@context.Nom.Trim() @context.Prenom.Trim()</MudTd>
+            <MudTd>@context.Departement.Trim()</MudTd>
+            <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@context.Brut.ToString("N2", _fr)</MudTd>
+            <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace;">@context.NetImposable.ToString("N2", _fr)</MudTd>
+            <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace; color:#C62828;">@context.MontantPas.ToString("N2", _fr)</MudTd>
+            <MudTd Style="text-align:right; font-family:'JetBrains Mono',monospace; color:#2E7D32;">@context.NetAPayer.ToString("N2", _fr)</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    [Parameter] public int Periode { get; set; }
+
+    private int _periode;
+    private bool _loading;
+    private List<BulletinDePaie>? _bulletins;
+    private BulletinDePaie? _selectedBulletin;
+    private string _searchString = "";
+    private static readonly CultureInfo _fr = CultureInfo.GetCultureInfo("fr-FR");
+
+    protected override async Task OnInitializedAsync()
+    {
+        _periode = Periode != 0 ? Periode : int.Parse(DateTime.Now.ToString("yyyyMM"));
+        await LoadBulletins();
+    }
+
+    private async Task LoadBulletins()
+    {
+        _loading = true;
+        _selectedBulletin = null;
+        try { _bulletins = await Api.GetBulletinsAsync(_periode); }
+        catch { _bulletins = null; }
+        finally { _loading = false; }
+    }
+
+    private bool FilterFunc(BulletinDePaie b) =>
+        string.IsNullOrWhiteSpace(_searchString) ||
+        b.Matricule.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+        b.Nom.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+        b.Prenom.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+        b.Departement.Contains(_searchString, StringComparison.OrdinalIgnoreCase);
+
+    private void OnRowClick(TableRowClickEventArgs<BulletinDePaie> args)
+        => _selectedBulletin = args.Item;
+}

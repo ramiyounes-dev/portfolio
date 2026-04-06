@@ -1,0 +1,95 @@
+@page "/journal"
+@rendermode InteractiveServer
+@inject PayrollApiClient Api
+
+<PageTitle>Journal PCG - Paie France</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Journal comptable PCG</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudTextField T="int" @bind-Value="_periode" Label="Periode (AAAAMM)" Variant="Variant.Outlined" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-2" OnClick="LoadData">Charger</MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" Class="mt-4" />
+}
+else if (_response != null)
+{
+    <MudPaper Class="pa-4 mt-4" Elevation="2">
+        @if (_response.IsBalanced)
+        {
+            <MudAlert Severity="Severity.Success" Dense="true" Class="mb-3">
+                Journal equilibre — Total debit = Total credit
+            </MudAlert>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mb-3">
+                ATTENTION : Journal desequilibre — Debit: @Fmt(_response.TotalDebit) / Credit: @Fmt(_response.TotalCredit)
+            </MudAlert>
+        }
+
+        <MudTable Items="@_response.Entries" Dense="true" Hover="true" Striped="true"
+                  T="JournalEntry" GroupBy="_groupDef" GroupHeaderStyle="background-color:#E3F2FD;"
+                  Style="font-family:'JetBrains Mono',monospace; font-size:0.85rem;">
+            <HeaderContent>
+                <MudTh>Date</MudTh>
+                <MudTh>N. piece</MudTh>
+                <MudTh>Compte debit</MudTh>
+                <MudTh>Compte credit</MudTh>
+                <MudTh Style="text-align:right;">Montant</MudTh>
+                <MudTh>Libelle</MudTh>
+                <MudTh>Type</MudTh>
+            </HeaderContent>
+            <GroupHeaderTemplate>
+                <MudTh colspan="7" Style="font-weight:600;">
+                    @(context.Key?.ToString()?.Trim() == "TOTAL" ? "ECRITURES DE TOTALISATION" : $"Employe : {context.Key}")
+                </MudTh>
+            </GroupHeaderTemplate>
+            <RowTemplate>
+                <MudTd>@FormatDate(context.Date)</MudTd>
+                <MudTd>@context.NumeroPiece.Trim()</MudTd>
+                <MudTd>@context.CompteDebit.Trim()</MudTd>
+                <MudTd>@context.CompteCredit.Trim()</MudTd>
+                <MudTd Style="text-align:right;">@Fmt(context.Montant)</MudTd>
+                <MudTd Style="font-family:Inter,sans-serif;">@context.Libelle.Trim()</MudTd>
+                <MudTd>@context.TypeEcriture.Trim()</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+}
+
+@code {
+    private int _periode = int.Parse(DateTime.Now.ToString("yyyyMM"));
+    private bool _loading;
+    private JournalResponse? _response;
+    private static readonly CultureInfo _fr = CultureInfo.GetCultureInfo("fr-FR");
+
+    private readonly TableGroupDefinition<JournalEntry> _groupDef = new()
+    {
+        GroupName = "Matricule",
+        Selector = e => e.Matricule.Trim()
+    };
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        try { _response = await Api.GetJournalAsync(_periode); }
+        catch { _response = null; }
+        finally { _loading = false; }
+    }
+
+    private static string Fmt(decimal v) => v.ToString("N2", _fr);
+
+    private static string FormatDate(string d)
+    {
+        if (d.Length == 8) return $"{d[6..8]}/{d[4..6]}/{d[..4]}";
+        return d;
+    }
+}

@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "COBOL: Build All",
+      "type": "shell",
+      "command": "bash",
+      "args": ["cobol/build.sh"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Seed: Generate Data & Run COBOL",
+      "type": "shell",
+      "command": "bash",
+      "args": ["scripts/seed.sh"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": ".NET: Build Solution",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build", "dotnet/FrenchPayroll.sln"],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": ".NET: Run API (port 5050)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["run", "--project", "dotnet/FrenchPayroll.Api"],
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": ".NET: Run Dashboard (port 5060)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["run", "--project", "dotnet/FrenchPayroll.Web"],
+      "group": "test",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

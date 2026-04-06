@@ -1,0 +1,78 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit"
+                       Edge="Edge.Start" OnClick="ToggleDrawer" />
+        <MudText Typo="Typo.h6" Class="ml-3">Paie France</MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.body2" Class="mr-4" Style="font-family: 'JetBrains Mono', monospace;">
+            METALLURGIQUE FRANCAISE SAS
+        </MudText>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="2">
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All"
+                        Icon="@Icons.Material.Filled.Dashboard">
+                Tableau de bord
+            </MudNavLink>
+            <MudNavLink Href="/bulletins" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.Receipt">
+                Bulletins de paie
+            </MudNavLink>
+            <MudNavLink Href="/cotisations" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.AccountBalance">
+                Cotisations & charges
+            </MudNavLink>
+            <MudNavLink Href="/journal" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.MenuBook">
+                Journal PCG
+            </MudNavLink>
+            <MudNavLink Href="/rapport" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.BarChart">
+                Masse salariale
+            </MudNavLink>
+            <MudNavLink Href="/run" Match="NavLinkMatch.Prefix"
+                        Icon="@Icons.Material.Filled.PlayCircle">
+                Lancer la paie
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="pa-4">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+
+    private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#1B2A4A",
+            Secondary = "#2E7D32",
+            Error = "#C62828",
+            Background = "#F5F5F5",
+            Surface = "#FFFFFF",
+            AppbarBackground = "#1B2A4A",
+            DrawerBackground = "#FAFAFA",
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = ["Inter", "Roboto", "Helvetica", "Arial", "sans-serif"],
+            }
+        }
+    };
+}
