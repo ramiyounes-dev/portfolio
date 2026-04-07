@@ -329,8 +329,8 @@ const I18N={
     thTotalPat:'Total pat.',thCSG:'CSG/CRDS',thPrevoy:'Prévoy.',thCEG:'CEG',
     thTotalSal:'Total sal.',thTotalBrut:'Total brut',thTotalCharges:'Total charges',
     // Journal
-    journalBalanced:'\u2713 Journal équilibré — Débit:',journalUnbalanced:'\u2717 DÉSÉQUILIBRE — Débit:',
-    journalEquals:'= Crédit:',journalNotEquals:'\u2260 Crédit:',
+    journalBalanced:'\u2713 Compte 421 équilibré — Crédits:',journalUnbalanced:'\u2717 DÉSÉQUILIBRE 421 — Crédits:',
+    journalEquals:'= Débits:',journalNotEquals:'\u2260 Débits:',
     thDebit:'Débit',thCredit:'Crédit',thMontant:'Montant',thLibelle:'Libellé',thType:'Type',
     journalMore:'employés supplémentaires','journalEntries':'écritures au total',
     journalEmployee:'Employé',
@@ -393,8 +393,8 @@ const I18N={
     thATMP:'Work Inj.',thRetraite:'Retirement',thChomage:'Unemploy.',
     thTotalPat:'Total empl.',thCSG:'CSG/CRDS',thPrevoy:'Disab.',thCEG:'CEG',
     thTotalSal:'Total emp.',thTotalBrut:'Total Gross',thTotalCharges:'Total Charges',
-    journalBalanced:'\u2713 Journal Balanced — Debit:',journalUnbalanced:'\u2717 IMBALANCE — Debit:',
-    journalEquals:'= Credit:',journalNotEquals:'\u2260 Credit:',
+    journalBalanced:'\u2713 Account 421 Balanced — Credits:',journalUnbalanced:'\u2717 IMBALANCE 421 — Credits:',
+    journalEquals:'= Debits:',journalNotEquals:'\u2260 Debits:',
     thDebit:'Debit',thCredit:'Credit',thMontant:'Amount',thLibelle:'Description',thType:'Type',
     journalMore:'more employees','journalEntries':'entries total',
     journalEmployee:'Employee',
@@ -924,15 +924,15 @@ function pcgTip(code){return PCG[currentLang][code]||code}
 
 // Journal PCG
 function renderJournal(){
-  let totalDebit=0,totalCredit=0;
+  let total421In=0,total421Out=0;
   for(const j of journal){
-    totalDebit+=j.montant;
-    totalCredit+=j.montant;
+    if(j.credit==='421')total421In+=j.montant;
+    if(j.debit==='421')total421Out+=j.montant;
   }
-  const balanced=Math.abs(totalDebit-totalCredit)<0.5;
+  const balanced=Math.abs(total421In-total421Out)<0.5;
   document.getElementById('journalBalance').innerHTML=balanced
-    ?`<span class="balance-ok">${tr('journalBalanced')} ${fmtE(totalDebit)} ${tr('journalEquals')} ${fmtE(totalCredit)}</span>`
-    :`<span class="balance-err">${tr('journalUnbalanced')} ${fmtE(totalDebit)} ${tr('journalNotEquals')} ${fmtE(totalCredit)}</span>`;
+    ?`<span class="balance-ok">${tr('journalBalanced')} ${fmtE(total421In)} ${tr('journalEquals')} ${fmtE(total421Out)}</span>`
+    :`<span class="balance-err">${tr('journalUnbalanced')} ${fmtE(total421In)} ${tr('journalNotEquals')} ${fmtE(total421Out)}</span>`;
 
   // Group by employee, show first 20 employees then totals summary
   const grouped=new Map();
