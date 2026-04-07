@@ -83,6 +83,7 @@
 
        01  WS-EOF                     PIC 9       VALUE 0.
        01  WS-UPDATE-COUNT            PIC 9(10)   VALUE 0.
+       01  WS-CONVERT-COUNT           PIC 9(10)   VALUE 0.
        01  WS-CURRENT-BATCH           PIC 9(6).
        01  WS-LAST-TXN-ID             PIC 9(10).
        01  WS-DISPLAY-AMT             PIC -(13)9.99.
@@ -94,8 +95,19 @@
            05  WS-DATE-HUNDREDTHS     PIC 9(2).
        01  WS-TIMESTAMP               PIC 9(14).
 
+      *    Currency conversion fields
+       01  WS-TXN-RATE                PIC 9(7)V9(6).
+       01  WS-ACCT-RATE               PIC 9(7)V9(6).
+       01  WS-CONVERTED-AMT           PIC S9(13)V99 COMP-3.
+       01  WS-DISPLAY-ORIG            PIC -(13)9.99.
+       01  WS-CUR-IDX                 PIC 9(2).
+       01  WS-RATE-FOUND              PIC 9       VALUE 0.
+
+       COPY "CURRENCY-TABLE.cpy".
+
        PROCEDURE DIVISION.
        MAIN-PARA.
+           MOVE CURRENCY-INIT-DATA TO CURRENCY-ENTRIES
            ACCEPT WS-DATA-DIR FROM ENVIRONMENT "DATA_DIR"
            STRING WS-DATA-DIR DELIMITED SPACES
                   "/sorted-staging.dat" DELIMITED SIZE
@@ -118,7 +130,8 @@
            PERFORM APPLY-TRANSACTIONS
            PERFORM ADVANCE-BATCH-STATE
            DISPLAY "UPDATE-COMPLETE|" WS-UPDATE-COUNT
-               " transactions committed to accounts"
+               " transactions committed to accounts ("
+               WS-CONVERT-COUNT " currency conversions)"
            STOP RUN.
 
        VALIDATE-BATCH-SORTED.
@@ -201,8 +214,13 @@
                PERFORM LOG-CLOSED-ACCOUNT
            END-IF
            IF WS-ACCT-STATUS = "00" AND NOT ACCT-STATUS-CLOSED
-      *        Apply the transaction amount to balance
-               ADD SR-TXN-AMOUNT TO ACCT-BALANCE
+      *        Convert currency if transaction and account differ
+               IF SR-TXN-CURRENCY NOT = ACCT-CURRENCY
+                   PERFORM CONVERT-CURRENCY
+                   ADD WS-CONVERTED-AMT TO ACCT-BALANCE
+               ELSE
+                   ADD SR-TXN-AMOUNT TO ACCT-BALANCE
+               END-IF
                MOVE ACCT-BALANCE TO WS-NEW-BALANCE
                REWRITE ACCOUNT-RECORD
                IF WS-ACCT-STATUS NOT = "00"
@@ -237,6 +255,41 @@
                    "COMMIT  " "|"
                    CR-TXN-BATCH-NUM "|"
                    WS-DISPLAY-BAL
+           END-IF.
+
+       CONVERT-CURRENCY.
+      *    Convert txn amount from txn currency to account currency
+      *    Formula: amount * (txn_rate_to_usd / acct_rate_to_usd)
+           MOVE ZERO TO WS-TXN-RATE
+           MOVE ZERO TO WS-ACCT-RATE
+           PERFORM VARYING WS-CUR-IDX FROM 1 BY 1
+               UNTIL WS-CUR-IDX > CURRENCY-COUNT
+               IF CUR-CODE(WS-CUR-IDX) = SR-TXN-CURRENCY
+                   MOVE CUR-RATE-TO-USD(WS-CUR-IDX)
+                       TO WS-TXN-RATE
+               END-IF
+               IF CUR-CODE(WS-CUR-IDX) = ACCT-CURRENCY
+                   MOVE CUR-RATE-TO-USD(WS-CUR-IDX)
+                       TO WS-ACCT-RATE
+               END-IF
+           END-PERFORM
+
+           IF WS-TXN-RATE = ZERO OR WS-ACCT-RATE = ZERO
+               DISPLAY "WARN|Unknown currency pair "
+                   SR-TXN-CURRENCY "/" ACCT-CURRENCY
+                   " for txn " SR-TXN-ID
+                   " - applying unconverted"
+               MOVE SR-TXN-AMOUNT TO WS-CONVERTED-AMT
+           ELSE
+               COMPUTE WS-CONVERTED-AMT ROUNDED =
+                   SR-TXN-AMOUNT * (WS-TXN-RATE / WS-ACCT-RATE)
+               ADD 1 TO WS-CONVERT-COUNT
+               MOVE SR-TXN-AMOUNT TO WS-DISPLAY-ORIG
+               MOVE WS-CONVERTED-AMT TO WS-DISPLAY-AMT
+               DISPLAY "FX|"
+                   SR-TXN-ID "|"
+                   WS-DISPLAY-ORIG " " SR-TXN-CURRENCY " -> "
+                   WS-DISPLAY-AMT " " ACCT-CURRENCY
            END-IF.
 
        LOG-MISSING-ACCOUNT.
