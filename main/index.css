@@ -70,12 +70,7 @@ body {
 
 @media (pointer: fine) {
   #cursor-glow { display: block; }
-  /* Hide the default cursor — only the glow is visible */
-  * { cursor: none !important; }
-  /* Restore pointer shape on clickable elements so UX isn't broken */
-  a, button, [role="button"], input, label, select, textarea {
-    cursor: none !important;
-  }
+  html, html * { cursor: none !important; }
 }
 
 /* ============================
@@ -96,9 +91,6 @@ body {
    NAV
    ============================ */
 nav {
-  background: rgba(8, 8, 14, 0.88);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   padding: 0.85rem clamp(1rem, 4vw, 2rem);
   position: fixed;
   width: 100%;
@@ -107,7 +99,20 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Blur lives on a pseudo-element so the nav itself does NOT become a
+   compositing-layer root — which is what made the browser re-evaluate
+   (and briefly show) the native cursor when crossing its boundary.   */
+nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 8, 14, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(var(--accent-rgb), 0.08);
+  z-index: -1;
 }
 
 .logo {
@@ -169,7 +174,6 @@ nav {
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 16px;
-  cursor: pointer;
   letter-spacing: 0.5px;
   transition: background 0.2s, color 0.2s;
   font-family: 'Inter', sans-serif;
@@ -188,7 +192,6 @@ nav {
   gap: 5px;
   background: none;
   border: none;
-  cursor: pointer;
   padding: 4px;
 }
 
@@ -500,7 +503,6 @@ section h2::after {
   gap: 6px;
   border: 1px solid rgba(var(--accent-rgb), 0.15);
   transition: background 0.2s, border-color 0.2s, transform 0.15s;
-  cursor: default;
 }
 
 .tech-stack li:hover,
@@ -756,7 +758,6 @@ i {
   border-radius: 50%;
   color: var(--accent);
   font-size: 0.9rem;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;

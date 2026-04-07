@@ -393,24 +393,26 @@ scrollTopBtn.addEventListener('click', () => {
    CURSOR GLOW (desktop — header & footer only)
    ============================ */
 const cursorGlow = get('cursor-glow');
-if (cursorGlow) {
-  const glowZones = () => [
-    document.getElementById('home'),
-    document.querySelector('.site-footer')
-  ].filter(Boolean);
+if (cursorGlow && matchMedia('(pointer:fine)').matches) {
 
-  document.addEventListener('mousemove', e => {
+  /* ── 1. Hide the native cursor everywhere ──────────────────────── */
+  document.documentElement.style.setProperty('cursor', 'none', 'important');
+
+  /* ── 2. Track the glow on every pointer event ──────────────────── */
+  function trackCursor(e) {
     cursorGlow.style.left = e.clientX + 'px';
     cursorGlow.style.top  = e.clientY + 'px';
-
-    // const inZone = glowZones().some(el => {
-    //   const r = el.getBoundingClientRect();
-    //   return e.clientY >= r.top && e.clientY <= r.bottom
-    //       && e.clientX >= r.left && e.clientX <= r.right;
-    // });
-
-    // cursorGlow.style.opacity = inZone ? '1' : '0';
     cursorGlow.style.opacity = '1';
+  }
+
+  ['mousemove', 'mousedown', 'mouseup', 'mouseenter', 'mouseover',
+   'pointerdown', 'pointermove', 'pointerup', 'pointerenter',
+   'click', 'dblclick', 'contextmenu'
+  ].forEach(evt => document.addEventListener(evt, trackCursor, { passive: true }));
+
+  /* ── 3. Hide glow when pointer leaves the viewport ─────────────── */
+  document.addEventListener('mouseleave', () => {
+    cursorGlow.style.opacity = '0';
   }, { passive: true });
 }
 
