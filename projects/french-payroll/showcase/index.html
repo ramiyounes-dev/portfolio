@@ -894,12 +894,40 @@ function renderCotisations(){
   document.getElementById('cotDeptTable').innerHTML=h;
 }
 
+// PCG account code labels (hover tooltips)
+const PCG={fr:{
+  '421':'Personnel — Rémunérations dues',
+  '431':'Sécurité sociale (URSSAF)',
+  '437':'Autres organismes sociaux (retraite, prévoyance)',
+  '4421':'Prélèvements à la source (PAS)',
+  '512':'Banque — Compte courant',
+  '6411':'Salaires, appointements',
+  '6413':'Primes et gratifications',
+  '6451':'Cotisations patronales URSSAF',
+  '6452':'Cotisations patronales retraite complémentaire',
+  '6453':'Cotisations patronales prévoyance',
+  '6454':'Cotisations patronales accidents du travail',
+},en:{
+  '421':'Staff — Remuneration payable',
+  '431':'Social security (URSSAF)',
+  '437':'Other social bodies (pension, provident)',
+  '4421':'Withholding tax (PAS)',
+  '512':'Bank — Current account',
+  '6411':'Salaries and wages',
+  '6413':'Bonuses and gratuities',
+  '6451':'Employer contributions URSSAF',
+  '6452':'Employer contributions supplementary pension',
+  '6453':'Employer contributions provident fund',
+  '6454':'Employer contributions occupational accidents',
+}};
+function pcgTip(code){return PCG[currentLang][code]||code}
+
 // Journal PCG
 function renderJournal(){
   let totalDebit=0,totalCredit=0;
   for(const j of journal){
-    if(j.debit.startsWith('6'))totalDebit+=j.montant;
-    else totalCredit+=j.montant;
+    totalDebit+=j.montant;
+    totalCredit+=j.montant;
   }
   const balanced=Math.abs(totalDebit-totalCredit)<0.5;
   document.getElementById('journalBalance').innerHTML=balanced
@@ -919,7 +947,7 @@ function renderJournal(){
     if(count>=20){h+=`<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:12px">... ${grouped.size-20} ${tr('journalMore')} (${journal.length} ${tr('journalEntries')})</td></tr>`;break}
     h+=`<tr><td colspan="6" style="background:var(--bg3);color:var(--blue);font-weight:600;padding:6px 10px">${tr('journalEmployee')} : ${mat}</td></tr>`;
     for(const j of entries){
-      h+=`<tr><td class="mono" style="text-align:left">${j.mat}</td><td class="mono" style="text-align:left">${j.debit}</td><td class="mono" style="text-align:left">${j.credit}</td><td class="mono">${fmt(j.montant)}</td><td>${j.lib}</td><td class="mono" style="text-align:left">${j.type}</td></tr>`;
+      h+=`<tr><td class="mono" style="text-align:left">${j.mat}</td><td class="mono" style="text-align:left;cursor:help;text-decoration:underline dotted" title="${pcgTip(j.debit)}">${j.debit}</td><td class="mono" style="text-align:left;cursor:help;text-decoration:underline dotted" title="${pcgTip(j.credit)}">${j.credit}</td><td class="mono">${fmt(j.montant)}</td><td>${j.lib}</td><td class="mono" style="text-align:left">${j.type}</td></tr>`;
     }
     count++;
   }
