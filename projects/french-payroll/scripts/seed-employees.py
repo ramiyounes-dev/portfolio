@@ -14,9 +14,6 @@ import random
 from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 
-# Seed for reproducibility
-random.seed(42)
-
 # --- Output paths ---
 DATA_DIR = os.environ.get("DATA_DIR", os.path.join(os.path.dirname(__file__), "..", "data"))
 EMPLOYEE_FILE = os.path.join(DATA_DIR, "EMPLOYEES.dat")

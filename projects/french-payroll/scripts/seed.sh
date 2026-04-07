@@ -8,25 +8,21 @@ DATA_DIR="$PROJECT_DIR/data"
 COBOL_DIR="$PROJECT_DIR/cobol"
 BIN_DIR="$COBOL_DIR/bin"
 
+PERIODES=("${@:-202603 202604}")
+if [ $# -eq 0 ]; then
+  PERIODES=(202603 202604)
+fi
+
 echo "================================================================"
 echo "  French Payroll — Seed Data Generation"
+echo "  Periods: ${PERIODES[*]}"
 echo "================================================================"
 echo ""
 
-# --- Step 1: Generate employee and variable data ---
-echo ">>> Step 1: Generating employee and variable data..."
-export DATA_DIR
-python3 "$SCRIPT_DIR/seed-employees.py"
-
-# Python writes to EMPLOYEES.dat (sequential), rename for loader
-mv "$DATA_DIR/EMPLOYEES.dat" "$DATA_DIR/EMPLOYEES-SEQ.dat"
-echo ""
-
-# --- Step 2: Compile COBOL programs ---
-echo ">>> Step 2: Compiling COBOL programs..."
+# --- Step 1: Compile COBOL programs (once) ---
+echo ">>> Step 1: Compiling COBOL programs..."
 bash "$COBOL_DIR/build.sh"
 
-# Also compile the loader
 echo -n "  Compiling LOAD-EMPLOYEES... "
 cobc -x -o "$BIN_DIR/LOAD-EMPLOYEES" \
     -I "$COBOL_DIR/copybooks" \
@@ -34,47 +30,72 @@ cobc -x -o "$BIN_DIR/LOAD-EMPLOYEES" \
 echo "OK"
 echo ""
 
-# --- Step 3: Build indexed employee file ---
-echo ">>> Step 3: Building indexed EMPLOYEES.dat..."
-export EMPLOYEE_SEQ_FILE="$DATA_DIR/EMPLOYEES-SEQ.dat"
-export EMPLOYEE_FILE="$DATA_DIR/EMPLOYEES.dat"
-cd "$COBOL_DIR"
-"$BIN_DIR/LOAD-EMPLOYEES"
-echo ""
+# --- Run payroll batch for each period ---
+run_period() {
+  local PERIODE=$1
+  echo "================================================================"
+  echo "  Processing period: $PERIODE"
+  echo "================================================================"
+  echo ""
 
-# --- Step 4: Run CALC-PAIE ---
-echo ">>> Step 4: Running payroll computation (CALC-PAIE)..."
-export VARIABLES_FILE="$DATA_DIR/VARIABLES-PAIE.dat"
-export BULLETINS_FILE="$DATA_DIR/BULLETINS.dat"
-export COTISATIONS_FILE="$DATA_DIR/COTISATIONS-PATRONALES.dat"
-"$BIN_DIR/CALC-PAIE"
-echo ""
+  # Generate employee and variable data
+  echo ">>> Generating employee and variable data..."
+  export DATA_DIR PERIODE
+  python3 "$SCRIPT_DIR/seed-employees.py"
+  mv "$DATA_DIR/EMPLOYEES.dat" "$DATA_DIR/EMPLOYEES-SEQ.dat"
+  echo ""
 
-# --- Step 5: Run CALC-JOURNAL ---
-echo ">>> Step 5: Generating PCG journal entries (CALC-JOURNAL)..."
-export JOURNAL_FILE="$DATA_DIR/JOURNAL-PCG.dat"
-"$BIN_DIR/CALC-JOURNAL"
-echo ""
+  # Build indexed employee file
+  echo ">>> Building indexed EMPLOYEES.dat..."
+  export EMPLOYEE_SEQ_FILE="$DATA_DIR/EMPLOYEES-SEQ.dat"
+  export EMPLOYEE_FILE="$DATA_DIR/EMPLOYEES.dat"
+  cd "$COBOL_DIR"
+  "$BIN_DIR/LOAD-EMPLOYEES"
+  echo ""
 
-# --- Step 6: Run SORT-EMPLOYEES ---
-echo ">>> Step 6: Sorting employees (SORT-EMPLOYEES)..."
-export SORTED_FILE="$DATA_DIR/EMPLOYEES-SORTED.dat"
-"$BIN_DIR/SORT-EMPLOYEES"
-echo ""
+  # Run CALC-PAIE
+  echo ">>> Running payroll computation (CALC-PAIE)..."
+  export VARIABLES_FILE="$DATA_DIR/VARIABLES-PAIE.dat"
+  export BULLETINS_FILE="$DATA_DIR/BULLETINS.dat"
+  export COTISATIONS_FILE="$DATA_DIR/COTISATIONS-PATRONALES.dat"
+  "$BIN_DIR/CALC-PAIE"
+  echo ""
 
-# --- Step 7: Generate bulletin text ---
-echo ">>> Step 7: Generating text bulletins (GENERATE-BULLETIN-TXT)..."
-export BULLETIN_TXT_FILE="$DATA_DIR/BULLETINS-TXT.dat"
-"$BIN_DIR/GENERATE-BULLETIN-TXT"
-echo ""
+  # Run CALC-JOURNAL
+  echo ">>> Generating PCG journal entries (CALC-JOURNAL)..."
+  export JOURNAL_FILE="$DATA_DIR/JOURNAL-PCG.dat"
+  "$BIN_DIR/CALC-JOURNAL"
+  echo ""
 
-# --- Step 8: Generate masse salariale report ---
-echo ">>> Step 8: Generating payroll mass report (REPORT-MASSE-SALARIALE)..."
-export RAPPORT_FILE="$DATA_DIR/RAPPORT-MASSE.dat"
-"$BIN_DIR/REPORT-MASSE-SALARIALE"
-echo ""
+  # Run SORT-EMPLOYEES
+  echo ">>> Sorting employees (SORT-EMPLOYEES)..."
+  export SORTED_FILE="$DATA_DIR/EMPLOYEES-SORTED.dat"
+  "$BIN_DIR/SORT-EMPLOYEES"
+  echo ""
 
-# --- Step 9: Verify output files ---
+  # Generate bulletin text
+  echo ">>> Generating text bulletins (GENERATE-BULLETIN-TXT)..."
+  export BULLETIN_TXT_FILE="$DATA_DIR/BULLETINS-TXT.dat"
+  "$BIN_DIR/GENERATE-BULLETIN-TXT"
+  echo ""
+
+  # Generate masse salariale report
+  echo ">>> Generating payroll mass report (REPORT-MASSE-SALARIALE)..."
+  export RAPPORT_FILE="$DATA_DIR/RAPPORT-MASSE.dat"
+  "$BIN_DIR/REPORT-MASSE-SALARIALE"
+  echo ""
+
+  # Export payroll data to JSON for showcase
+  echo ">>> Exporting payroll data to JSON..."
+  dotnet run --project "$PROJECT_DIR/dotnet/FrenchPayroll.Export" -- "$DATA_DIR" "$PROJECT_DIR/showcase/data"
+  echo ""
+}
+
+for P in "${PERIODES[@]}"; do
+  run_period "$P"
+done
+
+# --- Verification ---
 echo "================================================================"
 echo "  Verification"
 echo "================================================================"
@@ -90,6 +111,17 @@ for FILE in EMPLOYEES.dat EMPLOYEES-SEQ.dat EMPLOYEES-SORTED.dat \
         printf "  %-30s %10s bytes  OK\n" "$FILE" "$SIZE"
     else
         printf "  %-30s  MISSING OR EMPTY\n" "$FILE"
+        ALL_OK=false
+    fi
+done
+
+for P in "${PERIODES[@]}"; do
+    JPATH="$PROJECT_DIR/showcase/data/payroll-${P}.json"
+    if [ -f "$JPATH" ] && [ -s "$JPATH" ]; then
+        SIZE=$(wc -c < "$JPATH" | tr -d ' ')
+        printf "  %-30s %10s bytes  OK\n" "payroll-${P}.json" "$SIZE"
+    else
+        printf "  %-30s  MISSING OR EMPTY\n" "payroll-${P}.json"
         ALL_OK=false
     fi
 done

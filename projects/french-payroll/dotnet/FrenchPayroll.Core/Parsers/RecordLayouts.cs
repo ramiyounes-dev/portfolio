@@ -51,7 +51,7 @@ public static class RecordLayouts
     // PAIE-RECORD.cpy — 500 bytes (with COMP-3 packing actual ~365)
     // We compute actual byte offsets from the copybook structure.
     // ================================================================
-    public const int PaieRecordLength = 500;
+    public const int PaieRecordLength = 365;
 
     public static readonly FieldDef[] PaieFields =
     [
@@ -151,7 +151,7 @@ public static class RecordLayouts
     // ================================================================
     // COTISATION-RECORD.cpy — 300 bytes
     // ================================================================
-    public const int CotisationRecordLength = 300;
+    public const int CotisationRecordLength = 249;
 
     public static readonly FieldDef[] CotisationFields =
     [

@@ -42,7 +42,7 @@ a:hover{text-decoration:underline}
 .tab.active{color:var(--blue);border-bottom-color:var(--blue)}
 
 /* Layout */
-.main{display:flex;height:calc(100vh - 82px)}
+.main{display:flex;height:calc(100vh - 106px)}
 .content{flex:1;overflow-y:auto;padding:16px 20px}
 .panel{display:none}.panel.active{display:block}
 
@@ -127,6 +127,10 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
   </div>
   <a class="back" id="backLink" href="../../../">&#8592; Portfolio</a>
 </div>
+<div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 20px;font-family:var(--mono);font-size:10px;color:var(--text2);display:flex;align-items:center;gap:6px">
+  <span style="color:var(--green)">&#9679;</span>
+  <span data-i18n="attribution">Données calculées par COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE) — parsées par .NET 8 (décodeur COMP-3)</span>
+</div>
 
 <div class="tabs" id="tabs">
   <div class="tab active" data-tab="dashboard" data-i18n="tabDashboard">Tableau de bord</div>
@@ -202,9 +206,9 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
         </p>
         <div class="action-bar">
           <span style="font-family:var(--mono);font-size:12px;color:var(--text2)" data-i18n="periodLabel">Période :</span>
-          <select id="runPeriode" onchange="switchPeriod(this.value)" style="font-family:var(--mono);font-size:12px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);width:160px;cursor:pointer">
-            <option value="202604" selected>202604 — Avril 2026</option>
+          <select id="runPeriode" onchange="loadPeriod(this.value)" style="font-family:var(--mono);font-size:12px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)">
             <option value="202603">202603 — Mars 2026</option>
+            <option value="202604" selected>202604 — Avril 2026</option>
           </select>
           <button class="btn btn-green" id="btnRun" onclick="runPayroll()" data-i18n="btnRun">▶ Lancer le traitement</button>
         </div>
@@ -221,16 +225,15 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
     <button class="close-btn" onclick="closeModal()">&times;</button>
     <h2 data-i18n="modalTitle">Comment ça marche</h2>
     <div id="modalBody">
-    <p>Ce système simule un <strong>traitement de paie batch</strong> en COBOL avec une couche de présentation .NET / Blazor. Toute la logique de calcul est reproduite fidèlement côté client pour cette démonstration.</p>
+    <p>Ce système exécute un <strong>traitement de paie batch</strong> en COBOL. Les données affichées ici sont calculées par les programmes COBOL et parsées par .NET 8 — aucun calcul n'est effectué côté client.</p>
 
-    <h3>Architecture réelle</h3>
-    <p>En production, le flux est :</p>
+    <h3>Architecture</h3>
+    <p>Le flux de données est :</p>
     <ul>
-      <li><strong>GNU COBOL</strong> lit les fichiers employés et variables mensuelles</li>
-      <li>Calcule le brut, toutes les cotisations (salariales et patronales), le PAS, le net</li>
-      <li>Produit des fichiers plats en <code>COMP-3</code> (décimal condensé)</li>
-      <li><strong>ASP.NET Core API</strong> parse les fichiers COBOL et sert du JSON</li>
-      <li><strong>Blazor Server</strong> affiche le tableau de bord</li>
+      <li><strong>GNU COBOL</strong> lit les fichiers employés et calcule brut, cotisations (salariales et patronales), PAS, net</li>
+      <li>Produit des fichiers plats en <code>COMP-3</code> (décimal condensé) — .dat</li>
+      <li><strong>.NET 8</strong> parse les fichiers COBOL (décodage COMP-3) et exporte en JSON</li>
+      <li><strong>Ce tableau de bord</strong> affiche les données JSON statiques</li>
     </ul>
 
     <h3>Structure du bulletin de paie</h3>
@@ -348,6 +351,8 @@ const I18N={
     runBulletinTxt:'Bulletins texte',runRapportMasse:'Rapport masse salariale',
     runDone:'TRAITEMENT TERMINÉ — 0 ERREURS',
     runSuccess:'\u2713 Traitement terminé avec succès —',runEmployees:'employés traités',
+    // Attribution
+    attribution:'Données calculées par COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE) — parsées par .NET 8 (décodeur COMP-3)',
     // Modal
     modalTitle:'Comment ça marche',
     modalBodyFr:true,
@@ -410,16 +415,16 @@ const I18N={
     runBulletinTxt:'Text pay slips',runRapportMasse:'Payroll summary report',
     runDone:'PROCESSING COMPLETE — 0 ERRORS',
     runSuccess:'\u2713 Processing completed successfully —',runEmployees:'employees processed',
+    attribution:'Data computed by COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE) — parsed by .NET 8 (COMP-3 decoder)',
     modalTitle:'How It Works',
-    modalBodyEn:`<p>This system simulates a <strong>COBOL batch payroll processor</strong> with a .NET / Blazor presentation layer. All computation logic is faithfully reproduced client-side for this demo.</p>
-    <h3>Production Architecture</h3>
-    <p>In production, the flow is:</p>
+    modalBodyEn:`<p>This system runs a <strong>COBOL batch payroll processor</strong>. All data displayed here is computed by the COBOL programs and parsed by .NET 8 — no computation happens client-side.</p>
+    <h3>Architecture</h3>
+    <p>The data flow is:</p>
     <ul>
-      <li><strong>GNU COBOL</strong> reads employee files and monthly variables</li>
-      <li>Computes gross pay, all contributions (employee and employer), withholding tax, net pay</li>
-      <li>Produces flat files in <code>COMP-3</code> (packed decimal)</li>
-      <li><strong>ASP.NET Core API</strong> parses COBOL files and serves JSON</li>
-      <li><strong>Blazor Server</strong> renders the dashboard</li>
+      <li><strong>GNU COBOL</strong> reads employee files and computes gross pay, all contributions (employee and employer), withholding tax, net pay</li>
+      <li>Produces flat files in <code>COMP-3</code> (packed decimal) — .dat</li>
+      <li><strong>.NET 8</strong> parses COBOL files (COMP-3 decoding) and exports to JSON</li>
+      <li><strong>This dashboard</strong> displays the static JSON data</li>
     </ul>
     <h3>Pay Slip Structure</h3>
     <p>Compliant with the <strong>decree of February 25, 2016</strong>, each pay slip follows this order:</p>
@@ -460,275 +465,56 @@ const I18N={
 function tr(key){return I18N[currentLang][key]||I18N.fr[key]||key}
 
 /* ================================================================
-   CONSTANTS — French payroll rates 2024
-   All rates have legal citations in the COBOL source
-   ================================================================ */
-const PMSS = 3864.00;
-const SMIC = 1766.92;
-
-// Cotisations salariales
-const TX_VIEILL_PLAF_SAL = 6.90;
-const TX_VIEILL_DEPLAF_SAL = 0.40;
-const TX_CSG_DEDUCT = 6.80;
-const TX_CSG_NON_DED = 2.90;
-const TX_ASSIETTE_CSG = 98.25;
-const TX_MUTUELLE_SAL = 0.50;
-const TX_RETR_T1_SAL = 3.15;
-const TX_RETR_T2_SAL = 8.64;
-const TX_PREVOY_SAL = 0.50;
-const TX_CEG_T1_SAL = 0.86;
-const TX_CEG_T2_SAL = 1.08;
-
-// Cotisations patronales
-const TX_MALADIE_PAT_NC = 7.00;
-const TX_MALADIE_PAT_C = 13.00;
-const TX_VIEILL_PLAF_PAT = 8.55;
-const TX_VIEILL_DEPLAF_PAT = 1.90;
-const TX_ALLOC_FAM_REDUIT = 3.45;
-const TX_ALLOC_FAM_NORMAL = 5.25;
-const TX_ATMP = 2.22;
-const TX_FNAL = 0.50;
-const TX_RETR_T1_PAT = 4.72;
-const TX_RETR_T2_PAT = 12.95;
-const TX_CEG_T1_PAT = 1.29;
-const TX_CEG_T2_PAT = 1.62;
-const TX_PREVOY_PAT = 1.50;
-const TX_CHOMAGE_PAT = 4.05;
-const TX_AGS = 0.15;
-const SEUIL_ALLOC_FAM = 3.5 * SMIC;
-const PLAFOND_CHOMAGE = 4 * PMSS;
-
-// PAS barème neutre 2024
-const PAS_BRACKETS = [
-  [1592, 0],[1944, 2.5],[2592, 10],[3584, 15],[4897, 20],[6893, 25],[9085, 35],[12112, 38],[Infinity, 43]
-];
-
-/* ================================================================
-   SEED DATA — 80 employees
+   DATA — loaded from COBOL batch → .NET COMP-3 parser → JSON
    ================================================================ */
 const DEPTS = ['COMMERCIAL','TECHNIQUE','RH','DIRECTION'];
-const DEPT_COUNTS = {COMMERCIAL:{nc:17,c:4,cd:1},TECHNIQUE:{nc:20,c:7,cd:1},RH:{nc:10,c:4,cd:1},DIRECTION:{nc:8,c:5,cd:2}};
-
-const NOMS = ['MARTIN','BERNARD','THOMAS','PETIT','ROBERT','RICHARD','DURAND','DUBOIS','MOREAU','LAURENT','SIMON','MICHEL','LEFEVRE','LEROY','ROUX','DAVID','BERTRAND','MOREL','FOURNIER','GIRARD','BONNET','DUPONT','LAMBERT','FONTAINE','ROUSSEAU','VINCENT','MULLER','FAURE','ANDRE','MERCIER','BLANC','GUERIN','BOYER','GARNIER','CHEVALIER','FRANCOIS','LEGRAND','GAUTHIER','GARCIA','PERRIN','ROBIN','CLEMENT','MORIN','NICOLAS','HENRY','ROUSSEL','MATHIEU','GAUTIER','MASSON','MARCHAND','DUVAL','DENIS','DUMONT','MARIE','LEMAIRE','NOEL','MEYER','DUFOUR','MEUNIER','BRUN','BLANCHARD','GIRAUD','JOLY','RIVIERE','LUCAS','BRUNET','GAILLARD','BARBIER','ARNAUD','MARTINEZ','GERARD','ROCHE','RENARD','SCHMITT','ROY','LEROUX','COLIN','VIDAL','CARON','PICARD'];
-const PRENOMS = ['Jean','Pierre','Michel','Philippe','Alain','Patrick','Jacques','Christophe','Nicolas','Laurent','Frédéric','Éric','Stéphane','Olivier','David','Franck','Bruno','Pascal','Didier','Thierry','Marie','Nathalie','Isabelle','Catherine','Sylvie','Sandrine','Valérie','Sophie','Véronique','Christine','Anne','Céline','Émilie','Julie','Claire','Marion','Laure','Delphine','Camille','Antoine','Thomas','Alexandre','Maxime','Julien','Romain','Sébastien','Guillaume','Vincent','Hélène','Aurélien','Fabrice','Yannick','Rachid','Karim','Fatima','Amina','Mohamed','Samir','Leïla','Aïcha','Paolo','Marco','Elena','Carla','Andreï','Svetlana','Luc','Benoît','Estelle','Mathilde','Hugo','Lucas','Manon','Charlotte','Arthur','Louis','Emma','Léa','Paul','Gabriel'];
-
 let employees = [], bulletins = [], cotisations = [], journal = [], rapport = [];
-const PERIODES = ['202603','202604'];
-const PERIODE_LABELS = {'202603':'Mars 2026','202604':'Avril 2026'};
-const PERIODE_SEEDS = {'202603':37,'202604':42};
-const dataByPeriod = {};
 let currentPeriode = '202604';
-let rng = 42;
-function rand(){rng=(rng*1103515245+12345)&0x7fffffff;return rng/0x7fffffff}
-function randInt(a,b){return Math.floor(a+rand()*(b-a+1))}
-function randDec(a,b){return Math.round((a+rand()*(b-a))*100)/100}
+
 function r2(v){return Math.round(v*100)/100}
-function pct(base,rate){return r2(base*rate/100)}
 
-// Department salary adjustments — Direction pays more, RH mid-range
-const DEPT_SALARY_MULT = {COMMERCIAL:1.0,TECHNIQUE:1.05,RH:1.0,DIRECTION:1.15};
+/* Map .NET camelCase JSON → renderer field names */
+function mapPayrollData(data){
+  currentPeriode = String(data.periode);
+  employees = data.employees;
 
-function seedPeriod(periode){
-  rng=PERIODE_SEEDS[periode];
-  employees=[];let id=1;const usedNames=new Set();
-  for(const dept of DEPTS){
-    const dc=DEPT_COUNTS[dept];
-    const mult=DEPT_SALARY_MULT[dept];
-    for(const[cls,cnt]of[['NON-CADRE',dc.nc],['CADRE',dc.c],['CADRE-DIR',dc.cd]]){
-      for(let i=0;i<cnt;i++){
-        let nom,prenom;
-        do{nom=NOMS[randInt(0,NOMS.length-1)];prenom=PRENOMS[randInt(0,PRENOMS.length-1)]}while(usedNames.has(nom+prenom));
-        usedNames.add(nom+prenom);
+  bulletins = data.bulletins.map(b=>({
+    matricule:b.matricule, nom:b.nom, prenom:b.prenom,
+    dept:b.departement, cls:b.classification,
+    salaireBase:b.salaireBase, heures:b.heuresBase, tauxH:b.tauxHoraire, forfait:b.forfaitMensuel,
+    hs25h:b.heuresSup25, hs25m:b.montantHs25, hs50h:b.heuresSup50, hs50m:b.montantHs50,
+    primeAnc:b.primeAnciennete, primeExcept:b.primeExcept,
+    absH:b.absenceHeures, absMontant:b.absenceMontant,
+    brut:b.brut, t1:b.tranche1, t2:b.tranche2,
+    csMaladie:b.cotMaladieSal, csVieillPlaf:b.cotVieillPlaf, csVieillDeplaf:b.cotVieillDeplaf,
+    csCsgDed:b.csgDeductible, csCsgNonDed:b.csgNonDeduct,
+    csMutuelle:b.cotMutuelleSal, csRetrT1:b.cotRetrT1Sal, csRetrT2:b.cotRetrT2Sal,
+    csPrevoy:b.cotPrevoySal, csCegT1:b.cotCegT1Sal, csCegT2:b.cotCegT2Sal,
+    exonerHS:b.exonerHs, totalCotSal:b.totalCotSal,
+    netImposable:b.netImposable, tauxPas:b.tauxPas, montantPas:b.montantPas,
+    netAvantPas:b.netAvantPas, netAPayer:b.netAPayer
+  }));
 
-        // Ancienneté: cadres dirigeants tend to have more seniority
-        const anc=cls==='CADRE-DIR'?randInt(8,25):cls==='CADRE'?randInt(2,20):randInt(0,18);
+  cotisations = data.cotisations.map(c=>({
+    matricule:c.matricule, nom:c.nom, prenom:c.prenom,
+    dept:c.departement, cls:c.classification, brut:c.brut,
+    cpMaladie:c.maladiePat, cpVieillPlaf:c.vieillPlafPat, cpVieillDeplaf:c.vieillDeplafPat,
+    cpAllocFam:c.allocFamPat, cpAtmp:c.atmpPat, cpFnal:c.fnalPat,
+    cpRetrT1:c.retrT1Pat, cpRetrT2:c.retrT2Pat, cpCegT1:c.cegT1Pat, cpCegT2:c.cegT2Pat,
+    cpPrevoy:c.prevoyPat, cpChomage:c.chomagePat, cpAgs:c.agsPat, cpTotal:c.totalPat
+  }));
 
-        let brut,tauxH=0,forfait=0;
-        if(cls==='NON-CADRE'){brut=r2(randDec(1900,3200)*mult);tauxH=r2(brut/151.67)}
-        else if(cls==='CADRE'){brut=r2(randDec(3500,6500)*mult);forfait=brut}
-        else{brut=r2(randDec(7500,14000)*mult);forfait=brut}
+  journal = data.journal.filter(j=>!j.isTotal).map(j=>({
+    mat:j.matricule, debit:j.compteDebit, credit:j.compteCredit,
+    montant:j.montant, lib:j.libelle, type:j.typeEcriture
+  }));
 
-        // HS: only non-cadres, ~30%
-        const hasHS=cls==='NON-CADRE'&&rand()<0.30;
-        // Absence: only non-cadres and cadres (not cadres dirigeants),
-        // never on same employee as HS — if you're doing overtime you're not absent
-        const hasAbs=!hasHS&&cls!=='CADRE-DIR'&&rand()<0.12;
-        // Prime exceptionnelle: ~5 employees across the company
-        const hasPrime=rand()<0.0625;
-        // Cap absence at 20% of monthly hours to keep brut reasonable
-        const maxAbsH=cls==='NON-CADRE'?r2(151.67*0.20):r2(22*0.20*7); // ~30h NC or ~30h cadre
-
-        employees.push({
-          matricule:'E'+String(id++).padStart(7,'0'),nom,prenom,
-          dept,cls,tauxH,forfait,brut,anc,
-          heures:cls==='NON-CADRE'?151.67:0,
-          hsSeed:hasHS?randDec(2,15):0,
-          primeSeed:hasPrime?randDec(500,2000):0,
-          absSeed:hasAbs?randDec(7,Math.min(35,maxAbsH)):0
-        });
-      }
-    }
-  }
-  computePayroll();
-  dataByPeriod[periode]={employees:[...employees],bulletins:[...bulletins],cotisations:[...cotisations],journal:[...journal],rapport:[...rapport]};
-}
-
-function loadPeriod(periode){
-  const d=dataByPeriod[periode];
-  employees=d.employees;bulletins=d.bulletins;cotisations=d.cotisations;journal=d.journal;rapport=d.rapport;
-  currentPeriode=periode;
-}
-
-function switchPeriod(periode){
-  loadPeriod(periode);
-  renderDashboard();renderBulletins();renderCotisations();renderJournal();renderRapport();
-}
-
-/* ================================================================
-   PAYROLL COMPUTATION — mirrors CALC-PAIE.cbl exactly
-   ================================================================ */
-function computePayroll(){
-  bulletins=[];cotisations=[];journal=[];rapport=[];
-
-  for(const e of employees){
-    // Salaire de base
-    let salaireBase=e.cls==='NON-CADRE'?r2(e.tauxH*e.heures):e.forfait;
-
-    // Heures supplémentaires
-    let hs25h=0,hs50h=0,hs25m=0,hs50m=0;
-    if(e.cls==='NON-CADRE'&&e.hsSeed>0){
-      if(e.hsSeed>8){hs25h=8;hs50h=r2(e.hsSeed-8)}else{hs25h=e.hsSeed}
-      hs25m=r2(hs25h*e.tauxH*1.25);
-      hs50m=r2(hs50h*e.tauxH*1.50);
-    }
-    const totalHS=r2(hs25m+hs50m);
-
-    // Prime ancienneté — convention métallurgie: starts at 3 years
-    let txAnc=e.anc>=3?Math.min(e.anc,15):0;
-    let primeAnc=txAnc>0?pct(salaireBase,txAnc):0;
-
-    // Absence — deduction based on hourly rate (NC) or daily rate (cadres)
-    // Cadres: daily rate = forfait / 21.67 working days, absH represents hours (÷7 for days)
-    let absMontant=0;
-    if(e.absSeed>0){
-      if(e.cls==='NON-CADRE'){
-        absMontant=r2(e.absSeed*e.tauxH);
-      }else{
-        const dailyRate=r2(e.forfait/21.67);
-        const absDays=r2(e.absSeed/7); // convert hours to days
-        absMontant=r2(dailyRate*absDays);
-      }
-    }
-
-    // Brut — ensure it stays positive (defensive)
-    let brut=r2(salaireBase+totalHS+primeAnc+e.primeSeed-absMontant);
-    if(brut<SMIC){absMontant=0;brut=r2(salaireBase+totalHS+primeAnc+e.primeSeed)}
-
-    // Tranches
-    let t1=Math.min(brut,PMSS),t2=Math.max(0,r2(brut-PMSS));
-    let baseCho=Math.min(brut,PLAFOND_CHOMAGE);
-
-    // --- Cotisations salariales ---
-    let csMaladie=0;
-    let csVieillPlaf=pct(t1,TX_VIEILL_PLAF_SAL);
-    let csVieillDeplaf=pct(brut,TX_VIEILL_DEPLAF_SAL);
-    let assietteCsg=pct(brut,TX_ASSIETTE_CSG);
-    let csCsgDed=pct(assietteCsg,TX_CSG_DEDUCT);
-    let csCsgNonDed=pct(assietteCsg,TX_CSG_NON_DED);
-    let csMutuelle=pct(brut,TX_MUTUELLE_SAL);
-    let csRetrT1=pct(t1,TX_RETR_T1_SAL);
-    let csRetrT2=pct(t2,TX_RETR_T2_SAL);
-    let csPrevoy=pct(t1,TX_PREVOY_SAL);
-    let csCegT1=pct(t1,TX_CEG_T1_SAL);
-    let csCegT2=pct(t2,TX_CEG_T2_SAL);
-
-    // Exonération HS (loi TEPA)
-    let exonerHS=totalHS>0?pct(totalHS,TX_VIEILL_PLAF_SAL+TX_VIEILL_DEPLAF_SAL+TX_RETR_T1_SAL+TX_CEG_T1_SAL):0;
-
-    let totalCotSal=r2(csMaladie+csVieillPlaf+csVieillDeplaf+csCsgDed+csCsgNonDed+csMutuelle+csRetrT1+csRetrT2+csPrevoy+csCegT1+csCegT2-exonerHS);
-
-    // Net imposable
-    let netImposable=r2(brut-totalCotSal+csCsgNonDed);
-
-    // PAS
-    let tauxPas=0;
-    for(const[lim,tx]of PAS_BRACKETS){if(netImposable<=lim){tauxPas=tx;break}}
-    let montantPas=pct(netImposable,tauxPas);
-    let netAvantPas=r2(brut-totalCotSal);
-    let netAPayer=r2(netAvantPas-montantPas);
-
-    bulletins.push({
-      matricule:e.matricule,nom:e.nom,prenom:e.prenom,dept:e.dept,cls:e.cls,
-      salaireBase,heures:e.heures,tauxH:e.tauxH,forfait:e.forfait,
-      hs25h,hs25m,hs50h,hs50m,primeAnc,primeExcept:e.primeSeed,
-      absH:e.absSeed,absMontant,brut,t1,t2,
-      csMaladie,csVieillPlaf,csVieillDeplaf,csCsgDed,csCsgNonDed,
-      csMutuelle,csRetrT1,csRetrT2,csPrevoy,csCegT1,csCegT2,
-      exonerHS,totalCotSal,netImposable,tauxPas,montantPas,netAvantPas,netAPayer
-    });
-
-    // --- Cotisations patronales ---
-    let cpMaladie=e.cls==='NON-CADRE'?pct(brut,TX_MALADIE_PAT_NC):pct(brut,TX_MALADIE_PAT_C);
-    let cpVieillPlaf=pct(t1,TX_VIEILL_PLAF_PAT);
-    let cpVieillDeplaf=pct(brut,TX_VIEILL_DEPLAF_PAT);
-    let cpAllocFam=brut<=SEUIL_ALLOC_FAM?pct(brut,TX_ALLOC_FAM_REDUIT):pct(brut,TX_ALLOC_FAM_NORMAL);
-    let cpAtmp=pct(brut,TX_ATMP);
-    let cpFnal=pct(brut,TX_FNAL);
-    let cpRetrT1=pct(t1,TX_RETR_T1_PAT);
-    let cpRetrT2=pct(t2,TX_RETR_T2_PAT);
-    let cpCegT1=pct(t1,TX_CEG_T1_PAT);
-    let cpCegT2=pct(t2,TX_CEG_T2_PAT);
-    let cpPrevoy=(e.cls==='CADRE'||e.cls==='CADRE-DIR')?pct(t1,TX_PREVOY_PAT):0;
-    let cpChomage=pct(baseCho,TX_CHOMAGE_PAT);
-    let cpAgs=pct(brut,TX_AGS);
-    let cpTotal=r2(cpMaladie+cpVieillPlaf+cpVieillDeplaf+cpAllocFam+cpAtmp+cpFnal+cpRetrT1+cpRetrT2+cpCegT1+cpCegT2+cpPrevoy+cpChomage+cpAgs);
-
-    cotisations.push({
-      matricule:e.matricule,nom:e.nom,prenom:e.prenom,dept:e.dept,cls:e.cls,brut,
-      cpMaladie,cpVieillPlaf,cpVieillDeplaf,cpAllocFam,cpAtmp,cpFnal,
-      cpRetrT1,cpRetrT2,cpCegT1,cpCegT2,cpPrevoy,cpChomage,cpAgs,cpTotal
-    });
-
-    // --- Journal entries ---
-    // 6411: total rémunération = base + HS - absences (everything except primes)
-    const remunerationDue=r2(salaireBase+totalHS-absMontant);
-    const primesTotal=r2(primeAnc+e.primeSeed);
-    journal.push({mat:e.matricule,debit:'6411',credit:'421',montant:remunerationDue,lib:'Rémunération due',type:'SAL'});
-    if(primesTotal>0)journal.push({mat:e.matricule,debit:'6413',credit:'421',montant:primesTotal,lib:'Primes',type:'SAL'});
-    // 421 debited: cotisations + PAS + net = brut (balanced)
-    journal.push({mat:e.matricule,debit:'421',credit:'431',montant:totalCotSal,lib:'Retenues sociales',type:'COT'});
-    if(montantPas>0)journal.push({mat:e.matricule,debit:'421',credit:'4421',montant:montantPas,lib:'Prélèvement à la source',type:'PAS'});
-    journal.push({mat:e.matricule,debit:'421',credit:'512',montant:netAPayer,lib:'Virement salaire',type:'NET'});
-
-    let cpUrssaf=r2(cpMaladie+cpVieillPlaf+cpVieillDeplaf+cpAllocFam+cpFnal+cpChomage+cpAgs);
-    journal.push({mat:e.matricule,debit:'6451',credit:'431',montant:cpUrssaf,lib:'Charges patronales URSSAF',type:'PAT'});
-    let cpRetr=r2(cpRetrT1+cpRetrT2+cpCegT1+cpCegT2);
-    journal.push({mat:e.matricule,debit:'6452',credit:'437',montant:cpRetr,lib:'Retraite complémentaire pat.',type:'PAT'});
-    journal.push({mat:e.matricule,debit:'6454',credit:'431',montant:cpAtmp,lib:'Accidents du travail',type:'PAT'});
-    if(cpPrevoy>0)journal.push({mat:e.matricule,debit:'6453',credit:'437',montant:cpPrevoy,lib:'Prévoyance patronale',type:'PAT'});
-  }
-
-  // Rapport masse salariale
-  for(const dept of DEPTS){
-    const bs=bulletins.filter(b=>b.dept===dept);
-    const cs=cotisations.filter(c=>c.dept===dept);
-    rapport.push({
-      dept,effectif:bs.length,
-      brut:r2(bs.reduce((s,b)=>s+b.brut,0)),
-      cotSal:r2(bs.reduce((s,b)=>s+b.totalCotSal,0)),
-      cotPat:r2(cs.reduce((s,c)=>s+c.cpTotal,0)),
-      net:r2(bs.reduce((s,b)=>s+b.netAPayer,0)),
-      pas:r2(bs.reduce((s,b)=>s+b.montantPas,0))
-    });
-  }
-  rapport.push({
-    dept:'TOTAL',effectif:employees.length,
-    brut:r2(rapport.reduce((s,r)=>s+r.brut,0)),
-    cotSal:r2(rapport.reduce((s,r)=>s+r.cotSal,0)),
-    cotPat:r2(rapport.reduce((s,r)=>s+r.cotPat,0)),
-    net:r2(rapport.reduce((s,r)=>s+r.net,0)),
-    pas:r2(rapport.reduce((s,r)=>s+r.pas,0))
-  });
+  rapport = data.rapport.map(r=>({
+    dept:r.isGrandTotal?'TOTAL':r.departement,
+    effectif:r.effectif, brut:r.brutTotal,
+    cotSal:r.cotSalTotal, cotPat:r.cotPatTotal,
+    net:r.netTotal, pas:r.pasTotal
+  }));
 }
 
 /* ================================================================
@@ -1057,20 +843,42 @@ function setLang(lang){
     modalBody.innerHTML=window._modalBodyFr;
   }
 
+  // Update period dropdown labels
+  const periodeLabels={
+    fr:{'202603':'202603 — Mars 2026','202604':'202604 — Avril 2026'},
+    en:{'202603':'202603 — March 2026','202604':'202604 — April 2026'}
+  };
+  document.querySelectorAll('#runPeriode option').forEach(opt=>{
+    if(periodeLabels[lang][opt.value])opt.textContent=periodeLabels[lang][opt.value];
+  });
+
   // Re-render dynamic content
   renderDashboard();renderBulletins();renderCotisations();renderJournal();renderRapport();
 }
 
 /* ================================================================
-   INIT
+   INIT — load COBOL-computed data from JSON
    ================================================================ */
 document.getElementById('tabs').addEventListener('click',e=>{
   if(e.target.classList.contains('tab'))switchTab(e.target.dataset.tab);
 });
 
-for(const p of PERIODES)seedPeriod(p);
+function loadPeriod(periode){
+  fetch('data/payroll-'+periode+'.json')
+    .then(r=>r.json())
+    .then(data=>{
+      mapPayrollData(data);
+      setLang(currentLang);
+    })
+    .catch(err=>{
+      console.error('Failed to load payroll data:',err);
+      document.querySelector('.content').innerHTML=
+        '<div style="padding:40px;color:var(--red);font-family:var(--mono)">'+
+        'Error loading payroll-'+periode+'.json — run <code>scripts/seed.sh</code> to generate data.</div>';
+    });
+}
+
 loadPeriod('202604');
-setLang('fr');
 </script>
 </body>
 </html>

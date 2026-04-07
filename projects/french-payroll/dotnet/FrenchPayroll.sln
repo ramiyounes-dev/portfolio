@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchPayroll.Api", "French
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchPayroll.Web", "FrenchPayroll.Web\FrenchPayroll.Web.csproj", "{C2ED9EBF-1B6A-44AD-8E4A-4ECBF649508C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrenchPayroll.Export", "FrenchPayroll.Export\FrenchPayroll.Export.csproj", "{A1E2F3D4-5B6C-7D8E-9F0A-1B2C3D4E5F6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{C2ED9EBF-1B6A-44AD-8E4A-4ECBF649508C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2ED9EBF-1B6A-44AD-8E4A-4ECBF649508C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2ED9EBF-1B6A-44AD-8E4A-4ECBF649508C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1E2F3D4-5B6C-7D8E-9F0A-1B2C3D4E5F6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1E2F3D4-5B6C-7D8E-9F0A-1B2C3D4E5F6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1E2F3D4-5B6C-7D8E-9F0A-1B2C3D4E5F6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1E2F3D4-5B6C-7D8E-9F0A-1B2C3D4E5F6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
