@@ -2,7 +2,7 @@
       * JOURNAL-RECORD.cpy
       * Écriture comptable PCG — fichier JOURNAL-PCG.dat
       * Organisation : SEQUENTIAL
-      * Longueur enregistrement : 150 octets
+      * Longueur enregistrement : 148 octets
       ******************************************************************
        01  JOURNAL-RECORD.
            05  JRN-DATE               PIC 9(8).

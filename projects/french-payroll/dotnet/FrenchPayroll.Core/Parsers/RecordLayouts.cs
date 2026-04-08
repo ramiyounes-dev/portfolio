@@ -204,9 +204,9 @@ public static class RecordLayouts
     };
 
     // ================================================================
-    // JOURNAL-RECORD.cpy — 150 bytes
+    // JOURNAL-RECORD.cpy — 148 bytes
     // ================================================================
-    public const int JournalRecordLength = 150;
+    public const int JournalRecordLength = 148;
 
     public static readonly FieldDef[] JournalFields =
     [

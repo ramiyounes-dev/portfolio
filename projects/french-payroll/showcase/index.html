@@ -265,6 +265,9 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
     <table>
       <tr><th>Événement</th><th>Débit</th><th>Crédit</th></tr>
       <tr><td>Salaires bruts</td><td><code>6411</code></td><td><code>421</code></td></tr>
+      <tr><td>Heures supplémentaires</td><td><code>6412</code></td><td><code>421</code></td></tr>
+      <tr><td>Primes</td><td><code>6413</code></td><td><code>421</code></td></tr>
+      <tr><td>Déduction absences</td><td><code>6411</code></td><td><code>421</code> (négatif)</td></tr>
       <tr><td>Cotisations salariales</td><td><code>421</code></td><td><code>431</code></td></tr>
       <tr><td>PAS retenu</td><td><code>421</code></td><td><code>4421</code></td></tr>
       <tr><td>Net à payer</td><td><code>421</code></td><td><code>512</code></td></tr>
@@ -453,6 +456,9 @@ const I18N={
     <table>
       <tr><th>Event</th><th>Debit</th><th>Credit</th></tr>
       <tr><td>Gross Salaries</td><td><code>6411</code></td><td><code>421</code></td></tr>
+      <tr><td>Overtime Pay</td><td><code>6412</code></td><td><code>421</code></td></tr>
+      <tr><td>Bonuses</td><td><code>6413</code></td><td><code>421</code></td></tr>
+      <tr><td>Absence Deductions</td><td><code>6411</code></td><td><code>421</code> (negative)</td></tr>
       <tr><td>Employee Contributions</td><td><code>421</code></td><td><code>431</code></td></tr>
       <tr><td>Withholding Tax</td><td><code>421</code></td><td><code>4421</code></td></tr>
       <tr><td>Net Pay</td><td><code>421</code></td><td><code>512</code></td></tr>
@@ -688,7 +694,9 @@ const PCG={fr:{
   '4421':'Prélèvements à la source (PAS)',
   '512':'Banque — Compte courant',
   '6411':'Salaires, appointements',
+  '6412':'Heures supplémentaires',
   '6413':'Primes et gratifications',
+  '645':'Charges de sécurité sociale et prévoyance',
   '6451':'Cotisations patronales URSSAF',
   '6452':'Cotisations patronales retraite complémentaire',
   '6453':'Cotisations patronales prévoyance',
@@ -700,7 +708,9 @@ const PCG={fr:{
   '4421':'Withholding tax (PAS)',
   '512':'Bank — Current account',
   '6411':'Salaries and wages',
+  '6412':'Overtime pay',
   '6413':'Bonuses and gratuities',
+  '645':'Social security and provident charges',
   '6451':'Employer contributions URSSAF',
   '6452':'Employer contributions supplementary pension',
   '6453':'Employer contributions provident fund',

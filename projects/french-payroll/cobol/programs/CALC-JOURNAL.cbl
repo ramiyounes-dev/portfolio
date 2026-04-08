@@ -69,6 +69,8 @@
        01  WS-TOT-FNAL-PAT           PIC S9(11)V99 COMP-3 VALUE 0.
        01  WS-TOT-AGS-PAT            PIC S9(11)V99 COMP-3 VALUE 0.
        01  WS-TOT-PRIME              PIC S9(11)V99 COMP-3 VALUE 0.
+       01  WS-TOT-HS                 PIC S9(11)V99 COMP-3 VALUE 0.
+       01  WS-TOT-ABSENCE            PIC S9(11)V99 COMP-3 VALUE 0.
 
        01  WS-DATE-JRN               PIC 9(8).
        01  WS-TEMP-MONTANT           PIC S9(11)V99 COMP-3.
@@ -146,6 +148,16 @@
                    PERFORM 2200-ECRITURE-PRIMES
                END-IF
 
+      *        --- Débit 6412 / Crédit 421 : Heures supplémentaires ---
+               IF PAI-MONTANT-HS-25 > 0 OR PAI-MONTANT-HS-50 > 0
+                   PERFORM 2250-ECRITURE-HS
+               END-IF
+
+      *        --- Débit 421 / Crédit 6411 : Déduction absences ---
+               IF PAI-ABSENCE-MONTANT > 0
+                   PERFORM 2270-ECRITURE-ABSENCE
+               END-IF
+
       *        --- Débit 421 / Crédit 431 : Cotisations salariales ---
                PERFORM 2300-ECRITURE-COT-SAL
 
@@ -162,6 +174,10 @@
                COMPUTE WS-TEMP-MONTANT =
                    PAI-PRIME-ANCIENNETE + PAI-PRIME-EXCEPT
                ADD WS-TEMP-MONTANT TO WS-TOT-PRIME
+               COMPUTE WS-TEMP-MONTANT =
+                   PAI-MONTANT-HS-25 + PAI-MONTANT-HS-50
+               ADD WS-TEMP-MONTANT TO WS-TOT-HS
+               ADD PAI-ABSENCE-MONTANT TO WS-TOT-ABSENCE
                ADD PAI-TOTAL-COT-SAL TO WS-TOT-COT-SAL
                ADD PAI-MONTANT-PAS TO WS-TOT-PAS
                ADD PAI-NET-A-PAYER TO WS-TOT-NET
@@ -202,6 +218,46 @@
            COMPUTE JRN-MONTANT =
                PAI-PRIME-ANCIENNETE + PAI-PRIME-EXCEPT
            MOVE "Primes"             TO JRN-LIBELLE
+           MOVE "SAL"                TO JRN-TYPE-ECRITURE
+
+           WRITE JOURNAL-RECORD
+           IF WS-FS-JRN NOT = "00"
+               ADD 1 TO WS-ERRORS
+           END-IF
+           ADD 1 TO WS-RECORDS-WRITTEN.
+
+      ******************************************************************
+       2250-ECRITURE-HS.
+      ******************************************************************
+           INITIALIZE JOURNAL-RECORD
+           MOVE WS-DATE-JRN          TO JRN-DATE
+           MOVE WS-PIECE-STR         TO JRN-NUMERO-PIECE
+           MOVE PAI-MATRICULE        TO JRN-MATRICULE
+           MOVE "6412  "             TO JRN-COMPTE-DEBIT
+           MOVE "421   "             TO JRN-COMPTE-CREDIT
+           COMPUTE JRN-MONTANT =
+               PAI-MONTANT-HS-25 + PAI-MONTANT-HS-50
+           MOVE "Heures supplementaires"
+                                     TO JRN-LIBELLE
+           MOVE "SAL"                TO JRN-TYPE-ECRITURE
+
+           WRITE JOURNAL-RECORD
+           IF WS-FS-JRN NOT = "00"
+               ADD 1 TO WS-ERRORS
+           END-IF
+           ADD 1 TO WS-RECORDS-WRITTEN.
+
+      ******************************************************************
+       2270-ECRITURE-ABSENCE.
+      ******************************************************************
+           INITIALIZE JOURNAL-RECORD
+           MOVE WS-DATE-JRN          TO JRN-DATE
+           MOVE WS-PIECE-STR         TO JRN-NUMERO-PIECE
+           MOVE PAI-MATRICULE        TO JRN-MATRICULE
+           MOVE "6411  "             TO JRN-COMPTE-DEBIT
+           MOVE "421   "             TO JRN-COMPTE-CREDIT
+           COMPUTE JRN-MONTANT = 0 - PAI-ABSENCE-MONTANT
+           MOVE "Deduction absences" TO JRN-LIBELLE
            MOVE "SAL"                TO JRN-TYPE-ECRITURE
 
            WRITE JOURNAL-RECORD
@@ -403,6 +459,38 @@
                MOVE "421   "         TO JRN-COMPTE-CREDIT
                MOVE WS-TOT-PRIME     TO JRN-MONTANT
                MOVE "TOTAL Primes"   TO JRN-LIBELLE
+               MOVE "TOT"            TO JRN-TYPE-ECRITURE
+               WRITE JOURNAL-RECORD
+               ADD 1 TO WS-RECORDS-WRITTEN
+           END-IF
+
+      *    Total heures supplementaires
+           IF WS-TOT-HS > 0
+               INITIALIZE JOURNAL-RECORD
+               MOVE WS-DATE-JRN      TO JRN-DATE
+               MOVE WS-PIECE-STR     TO JRN-NUMERO-PIECE
+               MOVE "TOTAL   "       TO JRN-MATRICULE
+               MOVE "6412  "         TO JRN-COMPTE-DEBIT
+               MOVE "421   "         TO JRN-COMPTE-CREDIT
+               MOVE WS-TOT-HS        TO JRN-MONTANT
+               MOVE "TOTAL Heures supplementaires"
+                                      TO JRN-LIBELLE
+               MOVE "TOT"            TO JRN-TYPE-ECRITURE
+               WRITE JOURNAL-RECORD
+               ADD 1 TO WS-RECORDS-WRITTEN
+           END-IF
+
+      *    Total deductions absences
+           IF WS-TOT-ABSENCE > 0
+               INITIALIZE JOURNAL-RECORD
+               MOVE WS-DATE-JRN      TO JRN-DATE
+               MOVE WS-PIECE-STR     TO JRN-NUMERO-PIECE
+               MOVE "TOTAL   "       TO JRN-MATRICULE
+               MOVE "6411  "         TO JRN-COMPTE-DEBIT
+               MOVE "421   "         TO JRN-COMPTE-CREDIT
+               COMPUTE JRN-MONTANT = 0 - WS-TOT-ABSENCE
+               MOVE "TOTAL Deductions absences"
+                                      TO JRN-LIBELLE
                MOVE "TOT"            TO JRN-TYPE-ECRITURE
                WRITE JOURNAL-RECORD
                ADD 1 TO WS-RECORDS-WRITTEN

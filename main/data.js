@@ -49,13 +49,13 @@ const SITE_DATA = {
       items: [
         {
           title: 'French Payroll & Employer Tax System',
-          description: 'A complete French payroll computation system (cotisations sociales, PCG accounting entries) built with GNU COBOL for batch processing and .NET 8 (ASP.NET Core API + Blazor Server dashboard). Computes bulletins de paie for 80 employees across 4 departments — including all salarial/patronal contributions, tranches PMSS, prélèvement à la source, and balanced journal entries per Plan Comptable Général.',
+          description: 'A complete French payroll computation system (cotisations sociales, PCG accounting entries) built with GNU COBOL for batch processing and .NET 8 for COMP-3 decoding and JSON export. Computes bulletins de paie for 80 employees across 4 departments — including all salarial/patronal contributions, tranches PMSS, prélèvement à la source, overtime and absence entries, and balanced journal entries per Plan Comptable Général.',
           tech: [
             { icon: 'fas fa-code', text: 'COBOL' },
             { icon: 'fas fa-code', text: 'C# / .NET 8' },
-            { icon: 'fas fa-columns', text: 'Blazor Server' },
-            { icon: 'fas fa-cloud', text: 'REST API' },
-            { icon: 'fas fa-database', text: 'Flat Files / COMP-3' }
+            { icon: 'fas fa-database', text: 'Flat Files / COMP-3' },
+            { icon: 'fab fa-js', text: 'JavaScript' },
+            { icon: 'fab fa-html5', text: 'HTML5 / CSS3' }
           ],
           github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/french-payroll',
           link: './projects/french-payroll/showcase/',
@@ -154,13 +154,13 @@ const SITE_DATA = {
       items: [
         {
           title: 'Système de Paie & Charges Patronales',
-          description: 'Un système complet de calcul de paie française (cotisations sociales, écritures comptables PCG) construit avec GNU COBOL pour le traitement batch et .NET 8 (API ASP.NET Core + tableau de bord Blazor Server). Calcule les bulletins de paie pour 80 employés répartis sur 4 départements — incluant toutes les cotisations salariales/patronales, tranches PMSS, prélèvement à la source, et écritures de journal équilibrées selon le Plan Comptable Général.',
+          description: 'Un système complet de calcul de paie française (cotisations sociales, écritures comptables PCG) construit avec GNU COBOL pour le traitement batch et .NET 8 pour le décodage COMP-3 et l\'export JSON. Calcule les bulletins de paie pour 80 employés répartis sur 4 départements — incluant toutes les cotisations salariales/patronales, tranches PMSS, prélèvement à la source, écritures heures supplémentaires et déductions absences, et écritures de journal équilibrées selon le Plan Comptable Général.',
           tech: [
             { icon: 'fas fa-code', text: 'COBOL' },
             { icon: 'fas fa-code', text: 'C# / .NET 8' },
-            { icon: 'fas fa-columns', text: 'Blazor Server' },
-            { icon: 'fas fa-cloud', text: 'API REST' },
-            { icon: 'fas fa-database', text: 'Fichiers plats / COMP-3' }
+            { icon: 'fas fa-database', text: 'Fichiers plats / COMP-3' },
+            { icon: 'fab fa-js', text: 'JavaScript' },
+            { icon: 'fab fa-html5', text: 'HTML5 / CSS3' }
           ],
           github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/french-payroll',
           link: './projects/french-payroll/showcase/',
