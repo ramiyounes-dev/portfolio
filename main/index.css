@@ -323,16 +323,6 @@ header#home {
   border-radius: 50%;
 }
 
-/* Two-image hover swap */
-.glow-circle {
-  position: relative;
-}
-
-.glow-image { position: absolute; top: 0; left: 0; transition: opacity 0.45s ease; }
-.glow-image--default { opacity: 1; }
-.glow-image--hover   { opacity: 0; }
-.glow-circle:hover .glow-image--default { opacity: 0; }
-.glow-circle:hover .glow-image--hover   { opacity: 1; }
 
 /* ============================
    SECTIONS
