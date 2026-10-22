@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mainframe Banking System — Demo</title>
+    <title>Mainframe Banking System | Demo</title>
     <link rel="icon" href="../../../assets/images/fs.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -285,7 +285,7 @@
         <div class="header-title">
             <span class="blink">&#9608;</span>
             <span data-i18n="headerTitle">MAINFRAME BANKING TRANSACTION SYSTEM</span>
-            <span class="header-sub" data-i18n="headerSub">// GNU COBOL BATCH PROCESSOR — DEMO</span>
+            <span class="header-sub" data-i18n="headerSub">// GNU COBOL BATCH PROCESSOR | DEMO</span>
         </div>
         <div class="header-right">
             <span id="status-badge" class="status-badge status-idle">IDLE</span>
@@ -387,66 +387,66 @@ Ready.</pre></div>
             <div class="tutorial-body" id="tutorialBody">
                 <h3>THE IDEA</h3>
                 This demo simulates a <strong>mainframe banking batch processing system</strong> built with GNU COBOL.
-                In real banks, transactions are not applied one by one — they are collected into
+                In real banks, transactions are not applied one by one: they are collected into
                 <strong>batches</strong>, sorted, then posted in bulk using an efficient algorithm called
                 <em>appareillage</em> (a lockstep walk of two sorted files).
                 <br><br>
                 The system is composed of <strong>7 COBOL programs</strong> compiled to native binaries,
                 a <strong>Flask web layer</strong> that calls them via subprocess, and a <strong>terminal-style UI</strong>.
-                This showcase page runs entirely in the browser with no backend — it simulates
+                This showcase page runs entirely in the browser with no backend. It simulates
                 the same logic client-side.
 
                 <h3>BATCH LIFECYCLE</h3>
                 Every transaction passes through three phases, each color-coded in the ledger:
-                <div class="step"><div class="step-num">1</div><div><span class="tag tag-red">PENDING</span> — Raw transaction appended to an unsorted buffer file (<code>pending.dat</code>). No account balances are touched yet.</div></div>
-                <div class="step"><div class="step-num">2</div><div><span class="tag tag-orange">SORTED</span> — The COBOL <code>SORT</code> verb reorders the batch by account number, then by timestamp. This is what makes the merge efficient.</div></div>
-                <div class="step"><div class="step-num">3</div><div><span class="tag tag-green">COMMITTED</span> — The sorted batch is walked in lockstep with the indexed accounts file. Each account balance is updated, and the transaction is written to the permanent ledger.</div></div>
+                <div class="step"><div class="step-num">1</div><div><span class="tag tag-red">PENDING</span>: Raw transaction appended to an unsorted buffer file (<code>pending.dat</code>). No account balances are touched yet.</div></div>
+                <div class="step"><div class="step-num">2</div><div><span class="tag tag-orange">SORTED</span>: The COBOL <code>SORT</code> verb reorders the batch by account number, then by timestamp. This is what makes the merge efficient.</div></div>
+                <div class="step"><div class="step-num">3</div><div><span class="tag tag-green">COMMITTED</span>: The sorted batch is walked in lockstep with the indexed accounts file. Each account balance is updated, and the transaction is written to the permanent ledger.</div></div>
 
                 <h3>THE ALGORITHM: APPAREILLAGE</h3>
                 <code>UPDATE-BALANCES</code> reads the sorted transaction file sequentially.
                 For each transaction, it does a keyed read on the indexed accounts file,
                 adds the amount to the balance, rewrites the account record, and appends
-                a committed record to the transaction log — all in a single pass at <strong>O(N+M)</strong>
+                a committed record to the transaction log, all in a single pass at <strong>O(N+M)</strong>
                 complexity. This is the same pattern mainframes use to process millions of records nightly.
 
                 <h3>HOW TO USE THIS DEMO</h3>
-                <div class="step"><div class="step-num">1</div><div><strong>Add transactions</strong> — Click <span class="tag tag-red">+ 1 Random Transaction</span> or <span class="tag tag-red">+ 10</span>. New rows appear in red at the bottom of the ledger.</div></div>
-                <div class="step"><div class="step-num">2</div><div><strong>Sort the batch</strong> — Click <span class="tag tag-orange">Sort Batch</span>. Red rows turn orange and are reordered by account number. The system log shows the COBOL SORT statement.</div></div>
-                <div class="step"><div class="step-num">3</div><div><strong>Post to accounts</strong> — Click <span class="tag tag-green">Update Accounts &amp; DB</span>. Orange rows turn green, balances update, and the batch divider appears. Changed balances are highlighted in the results panel.</div></div>
-                <div class="step"><div class="step-num">4</div><div><strong>Inspect a batch</strong> — Click any <span class="tag tag-red">BATCH #N</span> divider in the ledger to see per-account deltas and the full transaction list for that batch.</div></div>
-                <div class="step"><div class="step-num">5</div><div><strong>Manage accounts</strong> — Click a row in the accounts ledger to select it, then use <span class="tag tag-blue">+ New Account</span>, <span class="tag tag-red">Delete Account</span>, or <strong>Check Transactions</strong> for full history.</div></div>
+                <div class="step"><div class="step-num">1</div><div><strong>Add transactions</strong>: Click <span class="tag tag-red">+ 1 Random Transaction</span> or <span class="tag tag-red">+ 10</span>. New rows appear in red at the bottom of the ledger.</div></div>
+                <div class="step"><div class="step-num">2</div><div><strong>Sort the batch</strong>: Click <span class="tag tag-orange">Sort Batch</span>. Red rows turn orange and are reordered by account number. The system log shows the COBOL SORT statement.</div></div>
+                <div class="step"><div class="step-num">3</div><div><strong>Post to accounts</strong>: Click <span class="tag tag-green">Update Accounts &amp; DB</span>. Orange rows turn green, balances update, and the batch divider appears. Changed balances are highlighted in the results panel.</div></div>
+                <div class="step"><div class="step-num">4</div><div><strong>Inspect a batch</strong>: Click any <span class="tag tag-red">BATCH #N</span> divider in the ledger to see per-account deltas and the full transaction list for that batch.</div></div>
+                <div class="step"><div class="step-num">5</div><div><strong>Manage accounts</strong>: Click a row in the accounts ledger to select it, then use <span class="tag tag-blue">+ New Account</span>, <span class="tag tag-red">Delete Account</span>, or <strong>Check Transactions</strong> for full history.</div></div>
 
                 <h3>ERROR HANDLING</h3>
                 If a transaction references an account that does not exist or is <strong>closed</strong>,
                 the system rejects it. <code>ADD-TRANSACTION</code> returns an error.
                 <code>UPDATE-BALANCES</code> logs a warning and flags the transaction as
                 <span class="tag tag-yellow" style="color:#ffcc00;border-color:#ffcc00;">ALERT</span> (yellow)
-                in the ledger — the transaction is skipped, not committed.
+                in the ledger: the transaction is skipped, not committed.
                 This makes orphaned or invalid transactions immediately visible for investigation.
 
                 <h3>FILE ORGANIZATION</h3>
                 Five data files, each mirroring a mainframe VSAM dataset type:
-                <div class="step"><div class="step-num">1</div><div><code>accounts.dat</code> — <strong>INDEXED</strong> (KSDS), 120-byte records keyed on <code>ACCT-NUMBER</code>. Supports random reads by key and sequential scans.</div></div>
-                <div class="step"><div class="step-num">2</div><div><code>transactions.dat</code> — <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Append-only permanent ledger of committed transactions.</div></div>
-                <div class="step"><div class="step-num">3</div><div><code>pending.dat</code> — <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Unsorted buffer for raw transactions awaiting the SORT phase.</div></div>
-                <div class="step"><div class="step-num">4</div><div><code>sorted-staging.dat</code> — <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Output of COBOL SORT, input to the appareillage merge.</div></div>
-                <div class="step"><div class="step-num">5</div><div><code>batch-state.dat</code> — <strong>SEQUENTIAL</strong>, 80-byte single-record control file tracking batch lifecycle (IDLE → SORTED → POSTING → IDLE).</div></div>
-                All monetary values use <strong>COMP-3 packed decimal</strong> (<code>PIC S9(13)V99 COMP-3</code> = 8 bytes) — the same format used on IBM mainframes to avoid floating-point rounding.
+                <div class="step"><div class="step-num">1</div><div><code>accounts.dat</code>: <strong>INDEXED</strong> (KSDS), 120-byte records keyed on <code>ACCT-NUMBER</code>. Supports random reads by key and sequential scans.</div></div>
+                <div class="step"><div class="step-num">2</div><div><code>transactions.dat</code>: <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Append-only permanent ledger of committed transactions.</div></div>
+                <div class="step"><div class="step-num">3</div><div><code>pending.dat</code>: <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Unsorted buffer for raw transactions awaiting the SORT phase.</div></div>
+                <div class="step"><div class="step-num">4</div><div><code>sorted-staging.dat</code>: <strong>SEQUENTIAL</strong> (ESDS), 150-byte records. Output of COBOL SORT, input to the appareillage merge.</div></div>
+                <div class="step"><div class="step-num">5</div><div><code>batch-state.dat</code>: <strong>SEQUENTIAL</strong>, 80-byte single-record control file tracking batch lifecycle (IDLE to SORTED to POSTING to IDLE).</div></div>
+                All monetary values use <strong>COMP-3 packed decimal</strong> (<code>PIC S9(13)V99 COMP-3</code> = 8 bytes), the same format used on IBM mainframes to avoid floating-point rounding.
 
                 <h3>ACCESS PATTERNS</h3>
                 Each COBOL program opens only the files it needs with the minimum access mode required:
-                <div class="step"><div class="step-num">&#x25B6;</div><div><code>CREATE-ACCOUNT</code> — DYNAMIC read on accounts (READ NEXT to find max key, then WRITE new record)</div></div>
-                <div class="step"><div class="step-num">&#x25B6;</div><div><code>ADD-TRANSACTION</code> — RANDOM read on accounts (verify existence, reject if not found), EXTEND on pending</div></div>
-                <div class="step"><div class="step-num">&#x25B6;</div><div><code>SORT-BATCH</code> — Reads pending sequentially, uses COBOL <code>SORT</code> verb with SD work file, writes sorted-staging</div></div>
-                <div class="step"><div class="step-num">&#x25B6;</div><div><code>UPDATE-BALANCES</code> — Reads sorted-staging sequentially; for each transaction, does a <strong>random keyed read</strong> on accounts. If found and active: updates balance via REWRITE and appends to transactions. If missing or closed: logs warning and flags the transaction as <span class="tag tag-yellow" style="color:#ffcc00;border-color:#ffcc00;">ALERT</span></div></div>
-                <div class="step"><div class="step-num">&#x25B6;</div><div><code>QUERY-ACCOUNT</code> — RANDOM read on accounts by key, sequential scan of transactions for history</div></div>
-                <div class="step"><div class="step-num">&#x25B6;</div><div><code>DELETE-ACCOUNT</code> — RANDOM read + REWRITE on accounts (mark CLOSED), EXTEND on transactions (closure record)</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>CREATE-ACCOUNT</code>: DYNAMIC read on accounts (READ NEXT to find max key, then WRITE new record)</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>ADD-TRANSACTION</code>: RANDOM read on accounts (verify existence, reject if not found), EXTEND on pending</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>SORT-BATCH</code>: Reads pending sequentially, uses COBOL <code>SORT</code> verb with SD work file, writes sorted-staging</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>UPDATE-BALANCES</code>: Reads sorted-staging sequentially; for each transaction, does a <strong>random keyed read</strong> on accounts. If found and active: updates balance via REWRITE and appends to transactions. If missing or closed: logs warning and flags the transaction as <span class="tag tag-yellow" style="color:#ffcc00;border-color:#ffcc00;">ALERT</span></div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>QUERY-ACCOUNT</code>: RANDOM read on accounts by key, sequential scan of transactions for history</div></div>
+                <div class="step"><div class="step-num">&#x25B6;</div><div><code>DELETE-ACCOUNT</code>: RANDOM read + REWRITE on accounts (mark CLOSED), EXTEND on transactions (closure record)</div></div>
 
                 <h3>TECH STACK</h3>
-                <strong>COBOL</strong> (GNU COBOL 3.2) — 7 programs, 4 copybooks, ISAM indexed files, COMP-3 packed decimal<br>
-                <strong>Python/Flask</strong> — Thin web layer calling COBOL binaries via subprocess<br>
-                <strong>JavaScript</strong> — Terminal-style UI with real-time ledger updates<br>
-                <strong>Data files</strong> — Indexed (<code>accounts.dat</code>) + sequential (<code>transactions.dat</code>, <code>pending.dat</code>, <code>sorted-staging.dat</code>, <code>batch-state.dat</code>)
+                <strong>COBOL</strong> (GNU COBOL 3.2): 7 programs, 4 copybooks, ISAM indexed files, COMP-3 packed decimal<br>
+                <strong>Python/Flask</strong>: Thin web layer calling COBOL binaries via subprocess<br>
+                <strong>JavaScript</strong>: Terminal-style UI with real-time ledger updates<br>
+                <strong>Data files</strong>: Indexed (<code>accounts.dat</code>) + sequential (<code>transactions.dat</code>, <code>pending.dat</code>, <code>sorted-staging.dat</code>, <code>batch-state.dat</code>)
             </div>
         </div>
     </div>
@@ -464,7 +464,7 @@ let currentLang='en';
 const I18N={
   en:{
     headerTitle:'MAINFRAME BANKING TRANSACTION SYSTEM',
-    headerSub:'// GNU COBOL BATCH PROCESSOR \u2014 DEMO',
+    headerSub:'// GNU COBOL BATCH PROCESSOR | DEMO',
     btnHowItWorks:'? How It Works',backLink:'\u2190 Portfolio',
     panelTxn:'\u25A6 TRANSACTION LEDGER',panelAcct:'\u25A6 ACCOUNTS LEDGER',
     panelLog:'\u25B6 SYSTEM ACTION LOG',panelResults:'\u25B6 QUERY RESULTS',
@@ -491,14 +491,14 @@ const I18N={
     closeConfirm:'Close account',
     cantCloseCredit:'Cannot close account with outstanding balance. Please pay off credit balance first.',
     acctClosed:'has been closed.',
-    acctClosedPast:'Past transactions remain in the ledger.\nThe account is marked CLOSED \u2014 no new transactions accepted.',
+    acctClosedPast:'Past transactions remain in the ledger.\nThe account is marked CLOSED: no new transactions accepted.',
     acctAlreadyClosed:'Account is already closed.',
     selectFirst:'Select an account first.',
     noSorted:'No sorted transactions to commit.',
     mustSort:'Batch must be sorted before posting. Please sort first.',
     noPending:'No pending transactions to sort.',
     batchCommitted:'Batch committed:',txnPosted:'transactions posted.',
-    alertSkipped:'ALERT:',alertTxnSkipped:'transaction(s) skipped \u2014 account not found:',
+    alertSkipped:'ALERT:',alertTxnSkipped:'transaction(s) skipped, account not found:',
     updatedBalances:'Updated Account Balances:',
     txnHistory:'Transaction History',
     perAcctSummary:'Per-Account Summary:',
@@ -508,7 +508,7 @@ const I18N={
   },
   fr:{
     headerTitle:'SYST\u00C8ME BANCAIRE MAINFRAME',
-    headerSub:'// PROCESSEUR BATCH GNU COBOL \u2014 D\u00C9MO',
+    headerSub:'// PROCESSEUR BATCH GNU COBOL | D\u00C9MO',
     btnHowItWorks:'? Comment \u00E7a marche',backLink:'\u2190 Portfolio',
     panelTxn:'\u25A6 JOURNAL DES TRANSACTIONS',panelAcct:'\u25A6 REGISTRE DES COMPTES',
     panelLog:'\u25B6 JOURNAL SYST\u00C8ME',panelResults:'\u25B6 R\u00C9SULTATS DE REQU\u00CATE',
@@ -536,14 +536,14 @@ const I18N={
     closeConfirm:'Fermer le compte',
     cantCloseCredit:'Impossible de fermer un compte avec solde impay\u00E9. Veuillez rembourser le solde cr\u00E9dit.',
     acctClosed:'a \u00E9t\u00E9 ferm\u00E9.',
-    acctClosedPast:'Les transactions pass\u00E9es restent dans le journal.\nLe compte est marqu\u00E9 FERM\u00C9 \u2014 aucune nouvelle transaction accept\u00E9e.',
+    acctClosedPast:'Les transactions pass\u00E9es restent dans le journal.\nLe compte est marqu\u00E9 FERM\u00C9 : aucune nouvelle transaction accept\u00E9e.',
     acctAlreadyClosed:'Le compte est d\u00E9j\u00E0 ferm\u00E9.',
     selectFirst:'S\u00E9lectionnez d\'abord un compte.',
     noSorted:'Aucune transaction tri\u00E9e \u00E0 valider.',
     mustSort:'Le lot doit \u00EAtre tri\u00E9 avant publication. Veuillez d\'abord trier.',
     noPending:'Aucune transaction en attente \u00E0 trier.',
     batchCommitted:'Lot valid\u00E9 :',txnPosted:'transactions publi\u00E9es.',
-    alertSkipped:'ALERTE :',alertTxnSkipped:'transaction(s) ignor\u00E9e(s) \u2014 compte introuvable :',
+    alertSkipped:'ALERTE :',alertTxnSkipped:'transaction(s) ignor\u00E9e(s), compte introuvable :',
     updatedBalances:'Soldes des comptes mis \u00E0 jour :',
     txnHistory:'Historique des transactions',
     perAcctSummary:'R\u00E9sum\u00E9 par compte :',
@@ -910,7 +910,7 @@ function showBatchDetails(num) {
         deltas[t.acct].count++;
     }
 
-    let result = `${tr('batchLabel')}${num} — ${batchCommitted.length} ${tr('committed')}`;
+    let result = `${tr('batchLabel')}${num}: ${batchCommitted.length} ${tr('committed')}`;
     if (batchAlerts.length > 0) result += `, <span class="err">${batchAlerts.length} alert(s)</span>`;
     result += '\n' + '─'.repeat(70) + '\n\n';
     result += tr('perAcctSummary') + '\n';
@@ -1031,7 +1031,7 @@ function updateBalances() {
 
     let logExtra = '';
     if (alertTxns.length > 0) {
-        logExtra = alertTxns.map(t => `\n    * ALERT: account ${t.acct} not found — txn ${t.id} skipped`).join('');
+        logExtra = alertTxns.map(t => `\n    * ALERT: account ${t.acct} not found, txn ${t.id} skipped`).join('');
     }
     setLog(hl(`PROCEDURE DIVISION.\nAPPLY-TRANSACTIONS.\n    * Appareillage: sorted transactions vs indexed accounts\n    OPEN INPUT SORTED-FILE\n    OPEN I-O ACCOUNT-FILE\n    OPEN EXTEND TRANS-FILE\n\nPROCESS-ONE-TRANSACTION.\n    READ ACCOUNT-FILE  (by key: ACCT-NUMBER)\n    IF INVALID KEY\n        PERFORM LOG-MISSING-ACCOUNT\n    END-IF\n    ADD SR-TXN-AMOUNT TO ACCT-BALANCE\n    REWRITE ACCOUNT-RECORD\n    WRITE COMMITTED-RECORD${logExtra}\n\n    * ${count} transactions committed to accounts\n    * Batch pointer advanced\n    * Pending buffer cleared`));
 }
@@ -1083,7 +1083,7 @@ function deleteAccount() {
         const drainAmt = -a.bal;
         const id = String(nextTxn++).padStart(10,'0');
         const closureTxn = { id, ts: nowTs(), acct: a.n, type: 'WITHDRAWAL', amt: drainAmt,
-            cur: a.cur, desc: 'Account closure — balance withdrawal', runBal: 0, batch: 0 };
+            cur: a.cur, desc: 'Account closure: balance withdrawal', runBal: 0, batch: 0 };
         committed.push(closureTxn);
         closureLog = `\n    * CLOSURE withdrawal: ${fmtAmt(drainAmt, a.cur)} ${a.cur}`;
     }
@@ -1113,7 +1113,7 @@ function checkTransactions() {
 function setLang(lang) {
     currentLang = lang;
     document.documentElement.lang = lang;
-    document.title = lang === 'fr' ? 'Système Bancaire Mainframe — Démo' : 'Mainframe Banking System — Demo';
+    document.title = lang === 'fr' ? 'Système Bancaire Mainframe | Démo' : 'Mainframe Banking System | Demo';
 
     // Toggle buttons
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
@@ -1163,55 +1163,55 @@ window._tutorialBodyEn = document.getElementById('tutorialBody').innerHTML;
 // Build the FR tutorial body
 window._tutorialBodyFr = `<h3>L'IDÉE</h3>
                 Cette démo simule un <strong>système bancaire de traitement batch mainframe</strong> construit avec GNU COBOL.
-                Dans les vraies banques, les transactions ne sont pas appliquées une par une — elles sont collectées en
+                Dans les vraies banques, les transactions ne sont pas appliquées une par une : elles sont collectées en
                 <strong>lots</strong>, triées, puis postées en masse avec un algorithme efficace appelé
                 <em>appareillage</em> (parcours synchronisé de deux fichiers triés).
                 <br><br>
                 Le système est composé de <strong>7 programmes COBOL</strong> compilés en binaires natifs,
                 une <strong>couche web Flask</strong> qui les appelle via subprocess, et une <strong>interface de type terminal</strong>.
-                Cette page de démonstration fonctionne entièrement dans le navigateur sans backend — elle simule
+                Cette page de démonstration fonctionne entièrement dans le navigateur sans backend. Elle simule
                 la même logique côté client.
 
                 <h3>CYCLE DE VIE D'UN LOT</h3>
                 Chaque transaction passe par trois phases, chacune identifiée par une couleur dans le registre :
-                <div class="step"><div class="step-num">1</div><div><span class="tag tag-red">EN ATTENTE</span> — Transaction brute ajoutée à un fichier tampon non trié (<code>pending.dat</code>). Aucun solde de compte n'est touché.</div></div>
-                <div class="step"><div class="step-num">2</div><div><span class="tag tag-orange">TRIÉ</span> — Le verbe COBOL <code>SORT</code> réordonne le lot par numéro de compte, puis par horodatage. C'est ce qui rend la fusion efficace.</div></div>
-                <div class="step"><div class="step-num">3</div><div><span class="tag tag-green">VALIDÉ</span> — Le lot trié est parcouru en parallèle avec le fichier indexé des comptes. Chaque solde est mis à jour, et la transaction est écrite dans le journal permanent.</div></div>
+                <div class="step"><div class="step-num">1</div><div><span class="tag tag-red">EN ATTENTE</span> : Transaction brute ajoutée à un fichier tampon non trié (<code>pending.dat</code>). Aucun solde de compte n'est touché.</div></div>
+                <div class="step"><div class="step-num">2</div><div><span class="tag tag-orange">TRIÉ</span> : Le verbe COBOL <code>SORT</code> réordonne le lot par numéro de compte, puis par horodatage. C'est ce qui rend la fusion efficace.</div></div>
+                <div class="step"><div class="step-num">3</div><div><span class="tag tag-green">VALIDÉ</span> : Le lot trié est parcouru en parallèle avec le fichier indexé des comptes. Chaque solde est mis à jour, et la transaction est écrite dans le journal permanent.</div></div>
 
                 <h3>L'ALGORITHME : APPAREILLAGE</h3>
                 <code>UPDATE-BALANCES</code> lit le fichier de transactions triées séquentiellement.
                 Pour chaque transaction, il effectue une lecture indexée sur le fichier des comptes,
                 ajoute le montant au solde, réécrit l'enregistrement du compte, et ajoute
-                un enregistrement validé au journal — le tout en un seul passage à <strong>O(N+M)</strong>.
+                un enregistrement validé au journal, le tout en un seul passage à <strong>O(N+M)</strong>.
                 C'est le même schéma que les mainframes utilisent pour traiter des millions d'enregistrements chaque nuit.
 
                 <h3>COMMENT UTILISER CETTE DÉMO</h3>
-                <div class="step"><div class="step-num">1</div><div><strong>Ajouter des transactions</strong> — Cliquez sur <span class="tag tag-red">+ 1 Transaction aléatoire</span> ou <span class="tag tag-red">+ 10</span>. De nouvelles lignes apparaissent en rouge en bas du registre.</div></div>
-                <div class="step"><div class="step-num">2</div><div><strong>Trier le lot</strong> — Cliquez sur <span class="tag tag-orange">Trier le lot</span>. Les lignes rouges deviennent orange et sont réordonnées par numéro de compte.</div></div>
-                <div class="step"><div class="step-num">3</div><div><strong>Poster vers les comptes</strong> — Cliquez sur <span class="tag tag-green">Mettre à jour comptes & BD</span>. Les lignes orange deviennent vertes, les soldes sont mis à jour, et le séparateur de lot apparaît.</div></div>
-                <div class="step"><div class="step-num">4</div><div><strong>Inspecter un lot</strong> — Cliquez sur n'importe quel séparateur <span class="tag tag-red">BATCH #N</span> dans le registre pour voir les deltas par compte.</div></div>
-                <div class="step"><div class="step-num">5</div><div><strong>Gérer les comptes</strong> — Cliquez sur une ligne du registre des comptes pour la sélectionner, puis utilisez <span class="tag tag-blue">+ Nouveau compte</span>, <span class="tag tag-red">Supprimer le compte</span>, ou <strong>Vérifier les transactions</strong> pour l'historique complet.</div></div>
+                <div class="step"><div class="step-num">1</div><div><strong>Ajouter des transactions</strong> : Cliquez sur <span class="tag tag-red">+ 1 Transaction aléatoire</span> ou <span class="tag tag-red">+ 10</span>. De nouvelles lignes apparaissent en rouge en bas du registre.</div></div>
+                <div class="step"><div class="step-num">2</div><div><strong>Trier le lot</strong> : Cliquez sur <span class="tag tag-orange">Trier le lot</span>. Les lignes rouges deviennent orange et sont réordonnées par numéro de compte.</div></div>
+                <div class="step"><div class="step-num">3</div><div><strong>Poster vers les comptes</strong> : Cliquez sur <span class="tag tag-green">Mettre à jour comptes & BD</span>. Les lignes orange deviennent vertes, les soldes sont mis à jour, et le séparateur de lot apparaît.</div></div>
+                <div class="step"><div class="step-num">4</div><div><strong>Inspecter un lot</strong> : Cliquez sur n'importe quel séparateur <span class="tag tag-red">BATCH #N</span> dans le registre pour voir les deltas par compte.</div></div>
+                <div class="step"><div class="step-num">5</div><div><strong>Gérer les comptes</strong> : Cliquez sur une ligne du registre des comptes pour la sélectionner, puis utilisez <span class="tag tag-blue">+ Nouveau compte</span>, <span class="tag tag-red">Supprimer le compte</span>, ou <strong>Vérifier les transactions</strong> pour l'historique complet.</div></div>
 
                 <h3>GESTION DES ERREURS</h3>
                 Si une transaction fait référence à un compte qui n'existe pas ou est <strong>fermé</strong>,
                 le système la rejette. <code>UPDATE-BALANCES</code> journalise un avertissement et marque la transaction comme
                 <span class="tag tag-yellow" style="color:#ffcc00;border-color:#ffcc00;">ALERTE</span> (jaune)
-                dans le registre — la transaction est ignorée, non validée.
+                dans le registre : la transaction est ignorée, non validée.
 
                 <h3>ORGANISATION DES FICHIERS</h3>
                 Cinq fichiers de données, chacun reflétant un type de dataset VSAM mainframe :
-                <div class="step"><div class="step-num">1</div><div><code>accounts.dat</code> — <strong>INDEXÉ</strong> (KSDS), enregistrements de 120 octets.</div></div>
-                <div class="step"><div class="step-num">2</div><div><code>transactions.dat</code> — <strong>SÉQUENTIEL</strong> (ESDS), enregistrements de 150 octets. Journal permanent.</div></div>
-                <div class="step"><div class="step-num">3</div><div><code>pending.dat</code> — <strong>SÉQUENTIEL</strong> (ESDS), tampon non trié.</div></div>
-                <div class="step"><div class="step-num">4</div><div><code>sorted-staging.dat</code> — <strong>SÉQUENTIEL</strong> (ESDS), sortie du SORT COBOL.</div></div>
-                <div class="step"><div class="step-num">5</div><div><code>batch-state.dat</code> — <strong>SÉQUENTIEL</strong>, enregistrement unique de contrôle.</div></div>
-                Toutes les valeurs monétaires utilisent le <strong>décimal condensé COMP-3</strong> — le même format utilisé sur les mainframes IBM.
+                <div class="step"><div class="step-num">1</div><div><code>accounts.dat</code> : <strong>INDEXÉ</strong> (KSDS), enregistrements de 120 octets.</div></div>
+                <div class="step"><div class="step-num">2</div><div><code>transactions.dat</code> : <strong>SÉQUENTIEL</strong> (ESDS), enregistrements de 150 octets. Journal permanent.</div></div>
+                <div class="step"><div class="step-num">3</div><div><code>pending.dat</code> : <strong>SÉQUENTIEL</strong> (ESDS), tampon non trié.</div></div>
+                <div class="step"><div class="step-num">4</div><div><code>sorted-staging.dat</code> : <strong>SÉQUENTIEL</strong> (ESDS), sortie du SORT COBOL.</div></div>
+                <div class="step"><div class="step-num">5</div><div><code>batch-state.dat</code> : <strong>SÉQUENTIEL</strong>, enregistrement unique de contrôle.</div></div>
+                Toutes les valeurs monétaires utilisent le <strong>décimal condensé COMP-3</strong>, le même format utilisé sur les mainframes IBM.
 
                 <h3>PILE TECHNIQUE</h3>
-                <strong>COBOL</strong> (GNU COBOL 3.2) — 7 programmes, 4 copybooks, fichiers indexés ISAM, COMP-3<br>
-                <strong>Python/Flask</strong> — Couche web fine appelant les binaires COBOL via subprocess<br>
-                <strong>JavaScript</strong> — Interface de type terminal avec mises à jour en temps réel<br>
-                <strong>Fichiers de données</strong> — Indexé + séquentiel`;
+                <strong>COBOL</strong> (GNU COBOL 3.2) : 7 programmes, 4 copybooks, fichiers indexés ISAM, COMP-3<br>
+                <strong>Python/Flask</strong> : Couche web fine appelant les binaires COBOL via subprocess<br>
+                <strong>JavaScript</strong> : Interface de type terminal avec mises à jour en temps réel<br>
+                <strong>Fichiers de données</strong> : Indexé + séquentiel`;
 
 setLang('en');
 

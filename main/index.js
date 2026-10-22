@@ -236,7 +236,7 @@ function renderProjects(data) {
             <a href="${primary}"${external ? ' target="_blank" rel="noopener"' : ''}>${proj.title}</a>
           </h3>
           <p class="project-desc">${proj.description}</p>
-          <p class="project-stack">${proj.tech.map(t => `<span>${t.text}</span>`).join('<span class="sep" aria-hidden="true">·</span>')}</p>
+          <p class="project-stack">${proj.tech.map(t => `<span>${t.text}</span>`).join('<span class="sep" aria-hidden="true">|</span>')}</p>
           <div class="project-links">
             ${proj.link ? `<a href="${proj.link}" class="link-arrow">${proj.linkLabel}</a>` : ''}
             ${proj.github ? `<a href="${proj.github}" target="_blank" rel="noopener" class="link-arrow">${githubLabel}</a>` : ''}
@@ -326,7 +326,7 @@ function startTypewriter(lang) {
   clearTimeout(typewriterTimer);
 
   const sentences = SITE_DATA[lang].hero.sentences;
-  if (sr) sr.textContent = sentences.join(' — ');
+  if (sr) sr.textContent = sentences.join(' ');
   el.textContent = '';
 
   // Reduced motion: whole sentences swap in place, no per-letter animation

@@ -367,7 +367,7 @@ function onResetClick() {
         if (resetPending) return;
         resetPending = true;
         netSend({ type: 'reset_request' });
-        hudHint.textContent = 'Reset requested \u2014 waiting for opponent...';
+        hudHint.textContent = 'Reset requested, waiting for opponent...';
     } else {
         showResetConfirm();
     }
@@ -414,11 +414,11 @@ const tutDots = tutDotsEl.querySelectorAll('.tut-dot');
 function buildControls() {
     const rows = isTouch ? [
         ['&#9758;', '<strong>Tap a piece</strong> to select, then tap a green square to move or capture'],
-        ['&#10003;', 'Captures are <strong>mandatory</strong> \u2014 you must take the path with the most captures'],
+        ['&#10003;', 'Captures are <strong>mandatory</strong>: you must take the path with the most captures'],
         ['&#9813;', 'Reach the far row to promote to a <strong>King</strong>'],
     ] : [
         ['&#9758;', '<strong>Click a piece</strong> to select, then click a green square to move or capture'],
-        ['&#10003;', 'Captures are <strong>mandatory</strong> \u2014 you must take the path with the most captures'],
+        ['&#10003;', 'Captures are <strong>mandatory</strong>: you must take the path with the most captures'],
         ['&#9813;', 'Reach the far row to promote to a <strong>King</strong>'],
     ];
     tutControlsEl.innerHTML = rows.map(([icon, label]) =>

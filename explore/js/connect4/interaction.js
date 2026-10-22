@@ -235,7 +235,7 @@ function onResetClick() {
         if (resetPending) return;
         resetPending = true;
         netSend({ type: 'reset_request' });
-        hudHint.textContent = 'Reset requested \u2014 waiting for opponent...';
+        hudHint.textContent = 'Reset requested, waiting for opponent...';
     } else {
         showResetConfirm();
     }

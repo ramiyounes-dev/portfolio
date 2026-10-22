@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Paie France — Démonstration</title>
+<title>Paie France | Démonstration</title>
 <link rel="icon" href="../../../assets/images/fs.png" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -119,7 +119,7 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
 <div class="header">
   <h1>PAIE FRANCE</h1>
   <span id="statusBadge" class="status-badge status-idle">PRÊT</span>
-  <span class="company">MÉTALLURGIQUE FRANÇAISE SAS — SIRET 123 456 789 00012</span>
+  <span class="company">MÉTALLURGIQUE FRANÇAISE SAS (SIRET 123 456 789 00012)</span>
   <button class="btn" id="btnHowItWorks" onclick="openModal()" style="margin-left:8px;font-size:11px">? Comment ça marche</button>
   <div class="lang-toggle" id="langToggle">
     <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
@@ -129,7 +129,7 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
 </div>
 <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 20px;font-family:var(--mono);font-size:10px;color:var(--text2);display:flex;align-items:center;gap:6px">
   <span style="color:var(--green)">&#9679;</span>
-  <span data-i18n="attribution">Données calculées par COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE) — parsées par .NET 8 (décodeur COMP-3)</span>
+  <span data-i18n="attribution">Données calculées par COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE), parsées par .NET 8 (décodeur COMP-3)</span>
 </div>
 
 <div class="tabs" id="tabs">
@@ -207,8 +207,8 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
         <div class="action-bar">
           <span style="font-family:var(--mono);font-size:12px;color:var(--text2)" data-i18n="periodLabel">Période :</span>
           <select id="runPeriode" onchange="loadPeriod(this.value)" style="font-family:var(--mono);font-size:12px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)">
-            <option value="202603">202603 — Mars 2026</option>
-            <option value="202604" selected>202604 — Avril 2026</option>
+            <option value="202603">202603 (Mars 2026)</option>
+            <option value="202604" selected>202604 (Avril 2026)</option>
           </select>
           <button class="btn btn-green" id="btnRun" onclick="runPayroll()" data-i18n="btnRun">▶ Lancer le traitement</button>
         </div>
@@ -225,13 +225,13 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
     <button class="close-btn" onclick="closeModal()">&times;</button>
     <h2 data-i18n="modalTitle">Comment ça marche</h2>
     <div id="modalBody">
-    <p>Ce système exécute un <strong>traitement de paie batch</strong> en COBOL. Les données affichées ici sont calculées par les programmes COBOL et parsées par .NET 8 — aucun calcul n'est effectué côté client.</p>
+    <p>Ce système exécute un <strong>traitement de paie batch</strong> en COBOL. Les données affichées ici sont calculées par les programmes COBOL et parsées par .NET 8. Aucun calcul n'est effectué côté client.</p>
 
     <h3>Architecture</h3>
     <p>Le flux de données est :</p>
     <ul>
       <li><strong>GNU COBOL</strong> lit les fichiers employés et calcule brut, cotisations (salariales et patronales), PAS, net</li>
-      <li>Produit des fichiers plats en <code>COMP-3</code> (décimal condensé) — .dat</li>
+      <li>Produit des fichiers plats en <code>COMP-3</code> (décimal condensé), .dat</li>
       <li><strong>.NET 8</strong> parse les fichiers COBOL (décodage COMP-3) et exporte en JSON</li>
       <li><strong>Ce tableau de bord</strong> affiche les données JSON statiques</li>
     </ul>
@@ -254,7 +254,7 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
       <tr><td>Maladie</td><td>0%</td><td>7% / 13%</td><td>Art. L241-2 CSS</td></tr>
       <tr><td>Vieillesse plafonnée</td><td>6,90%</td><td>8,55%</td><td>Décret n°2012-1116</td></tr>
       <tr><td>Vieillesse déplafonnée</td><td>0,40%</td><td>1,90%</td><td>Décret n°2013-1290</td></tr>
-      <tr><td>CSG déductible</td><td>6,80%</td><td>—</td><td>Art. L136-2 CSS</td></tr>
+      <tr><td>CSG déductible</td><td>6,80%</td><td>-</td><td>Art. L136-2 CSS</td></tr>
       <tr><td>AGIRC-ARRCO T1</td><td>3,15%</td><td>4,72%</td><td>ANI 17/11/2017</td></tr>
       <tr><td>AGIRC-ARRCO T2</td><td>8,64%</td><td>12,95%</td><td>ANI 17/11/2017</td></tr>
       <tr><td>Chômage</td><td>0%</td><td>4,05%</td><td>Conv. Unédic</td></tr>
@@ -275,7 +275,7 @@ td.pos{color:var(--green)}td.neg{color:var(--red)}
     </table>
 
     <h3>Pourquoi COBOL ?</h3>
-    <p>L'arithmétique <code>COMP-3</code> (décimal condensé) garantit une précision au centime sans dérive de virgule flottante — essentiel quand on calcule des millions d'euros de cotisations. Le traitement batch correspond naturellement au cycle mensuel de la paie.</p>
+    <p>L'arithmétique <code>COMP-3</code> (décimal condensé) garantit une précision au centime sans dérive de virgule flottante, essentiel quand on calcule des millions d'euros de cotisations. Le traitement batch correspond naturellement au cycle mensuel de la paie.</p>
     </div>
   </div>
 </div>
@@ -335,7 +335,7 @@ const I18N={
     thTotalPat:'Total pat.',thCSG:'CSG/CRDS',thPrevoy:'Prévoy.',thCEG:'CEG',
     thTotalSal:'Total sal.',thTotalBrut:'Total brut',thTotalCharges:'Total charges',
     // Journal
-    journalBalanced:'\u2713 Compte 421 équilibré — Crédits:',journalUnbalanced:'\u2717 DÉSÉQUILIBRE 421 — Crédits:',
+    journalBalanced:'\u2713 Compte 421 équilibré. Crédits:',journalUnbalanced:'\u2717 DÉSÉQUILIBRE 421. Crédits:',
     journalEquals:'= Débits:',journalNotEquals:'\u2260 Débits:',
     thDebit:'Débit',thCredit:'Crédit',thMontant:'Montant',thLibelle:'Libellé',thType:'Type',
     journalMore:'employés supplémentaires','journalEntries':'écritures au total',
@@ -349,13 +349,13 @@ const I18N={
     // Run
     runDesc:'Lance le traitement COBOL de la paie. Les programmes CALC-PAIE, CALC-JOURNAL, GENERATE-BULLETIN-TXT et REPORT-MASSE-SALARIALE s\'exécutent en séquence.',
     periodLabel:'Période :',btnRun:'\u25B6 Lancer le traitement',
-    runLaunching:'Lancement du traitement — période',
+    runLaunching:'Lancement du traitement, période',
     runCalcPaie:'Calcul des bulletins de paie',runCalcJournal:'Génération écritures PCG',
     runBulletinTxt:'Bulletins texte',runRapportMasse:'Rapport masse salariale',
-    runDone:'TRAITEMENT TERMINÉ — 0 ERREURS',
-    runSuccess:'\u2713 Traitement terminé avec succès —',runEmployees:'employés traités',
+    runDone:'TRAITEMENT TERMINÉ : 0 ERREURS',
+    runSuccess:'\u2713 Traitement terminé avec succès :',runEmployees:'employés traités',
     // Attribution
-    attribution:'Données calculées par COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE) — parsées par .NET 8 (décodeur COMP-3)',
+    attribution:'Données calculées par COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE), parsées par .NET 8 (décodeur COMP-3)',
     // Modal
     modalTitle:'Comment ça marche',
     modalBodyFr:true,
@@ -401,7 +401,7 @@ const I18N={
     thATMP:'Work Inj.',thRetraite:'Retirement',thChomage:'Unemploy.',
     thTotalPat:'Total empl.',thCSG:'CSG/CRDS',thPrevoy:'Disab.',thCEG:'CEG',
     thTotalSal:'Total emp.',thTotalBrut:'Total Gross',thTotalCharges:'Total Charges',
-    journalBalanced:'\u2713 Account 421 Balanced — Credits:',journalUnbalanced:'\u2717 IMBALANCE 421 — Credits:',
+    journalBalanced:'\u2713 Account 421 Balanced. Credits:',journalUnbalanced:'\u2717 IMBALANCE 421. Credits:',
     journalEquals:'= Debits:',journalNotEquals:'\u2260 Debits:',
     thDebit:'Debit',thCredit:'Credit',thMontant:'Amount',thLibelle:'Description',thType:'Type',
     journalMore:'more employees','journalEntries':'entries total',
@@ -413,19 +413,19 @@ const I18N={
     rapportDialogue:'incl. Social Dialogue Contribution (0.016%)',
     runDesc:'Runs the COBOL payroll batch. Programs CALC-PAIE, CALC-JOURNAL, GENERATE-BULLETIN-TXT and REPORT-MASSE-SALARIALE execute in sequence.',
     periodLabel:'Period:',btnRun:'\u25B6 Run Payroll',
-    runLaunching:'Launching payroll batch — period',
+    runLaunching:'Launching payroll batch, period',
     runCalcPaie:'Computing pay slips',runCalcJournal:'Generating PCG journal entries',
     runBulletinTxt:'Text pay slips',runRapportMasse:'Payroll summary report',
-    runDone:'PROCESSING COMPLETE — 0 ERRORS',
-    runSuccess:'\u2713 Processing completed successfully —',runEmployees:'employees processed',
-    attribution:'Data computed by COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE) — parsed by .NET 8 (COMP-3 decoder)',
+    runDone:'PROCESSING COMPLETE: 0 ERRORS',
+    runSuccess:'\u2713 Processing completed successfully:',runEmployees:'employees processed',
+    attribution:'Data computed by COBOL batch (CALC-PAIE, CALC-JOURNAL, REPORT-MASSE-SALARIALE), parsed by .NET 8 (COMP-3 decoder)',
     modalTitle:'How It Works',
-    modalBodyEn:`<p>This system runs a <strong>COBOL batch payroll processor</strong>. All data displayed here is computed by the COBOL programs and parsed by .NET 8 — no computation happens client-side.</p>
+    modalBodyEn:`<p>This system runs a <strong>COBOL batch payroll processor</strong>. All data displayed here is computed by the COBOL programs and parsed by .NET 8. No computation happens client-side.</p>
     <h3>Architecture</h3>
     <p>The data flow is:</p>
     <ul>
       <li><strong>GNU COBOL</strong> reads employee files and computes gross pay, all contributions (employee and employer), withholding tax, net pay</li>
-      <li>Produces flat files in <code>COMP-3</code> (packed decimal) — .dat</li>
+      <li>Produces flat files in <code>COMP-3</code> (packed decimal), .dat</li>
       <li><strong>.NET 8</strong> parses COBOL files (COMP-3 decoding) and exports to JSON</li>
       <li><strong>This dashboard</strong> displays the static JSON data</li>
     </ul>
@@ -446,7 +446,7 @@ const I18N={
       <tr><td>Health Insurance</td><td>0%</td><td>7% / 13%</td><td>Art. L241-2 CSS</td></tr>
       <tr><td>Pension (capped)</td><td>6.90%</td><td>8.55%</td><td>Decree 2012-1116</td></tr>
       <tr><td>Pension (uncapped)</td><td>0.40%</td><td>1.90%</td><td>Decree 2013-1290</td></tr>
-      <tr><td>CSG (deductible)</td><td>6.80%</td><td>\u2014</td><td>Art. L136-2 CSS</td></tr>
+      <tr><td>CSG (deductible)</td><td>6.80%</td><td>-</td><td>Art. L136-2 CSS</td></tr>
       <tr><td>AGIRC-ARRCO T1</td><td>3.15%</td><td>4.72%</td><td>ANI 17/11/2017</td></tr>
       <tr><td>AGIRC-ARRCO T2</td><td>8.64%</td><td>12.95%</td><td>ANI 17/11/2017</td></tr>
       <tr><td>Unemployment</td><td>0%</td><td>4.05%</td><td>Unedic Agreement</td></tr>
@@ -465,7 +465,7 @@ const I18N={
       <tr><td>Employer Contributions</td><td><code>645x</code></td><td><code>431/437</code></td></tr>
     </table>
     <h3>Why COBOL?</h3>
-    <p><code>COMP-3</code> packed decimal arithmetic guarantees cent-level precision with no floating-point drift \u2014 essential when computing millions of euros in contributions. Batch processing naturally maps to the monthly payroll cycle.</p>`,
+    <p><code>COMP-3</code> packed decimal arithmetic guarantees cent-level precision with no floating-point drift, essential when computing millions of euros in contributions. Batch processing naturally maps to the monthly payroll cycle.</p>`,
   }
 };
 function tr(key){return I18N[currentLang][key]||I18N.fr[key]||key}
@@ -591,10 +591,10 @@ function showBulletin(mat){
   let h='<div class="bulletin-detail">';
   h+=`<h3>${tr('bdTitle')}</h3><div class="sep"></div>`;
   h+=`<div class="line"><span class="lbl">${tr('bdEmployeur')}</span><span>MÉTALLURGIQUE FRANÇAISE SAS</span></div>`;
-  h+=`<div class="line"><span class="lbl">${tr('bdSIRET')}</span><span>123 456 789 00012 — NAF 2550A</span></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('bdSIRET')}</span><span>123 456 789 00012, NAF 2550A</span></div>`;
   h+=`<div class="line"><span class="lbl">${tr('bdConvention')}</span><span>CCN Métallurgie (IDCC 3248)</span></div>`;
   h+='<div class="sep"></div>';
-  h+=`<div class="line"><span class="lbl">${tr('thMatricule')}</span><span>${b.matricule} — ${b.nom} ${b.prenom}</span></div>`;
+  h+=`<div class="line"><span class="lbl">${tr('thMatricule')}</span><span>${b.matricule}, ${b.nom} ${b.prenom}</span></div>`;
   h+=`<div class="line"><span class="lbl">${tr('thDepartement')}</span><span>${b.dept}</span></div>`;
   h+=`<div class="line"><span class="lbl">${tr('thClassification')}</span><span>${b.cls}</span></div>`;
   h+=`<div class="line"><span class="lbl">${tr('bdPeriode')}</span><span>${currentPeriode}</span></div>`;
@@ -688,11 +688,11 @@ function renderCotisations(){
 
 // PCG account code labels (hover tooltips)
 const PCG={fr:{
-  '421':'Personnel — Rémunérations dues',
+  '421':'Personnel : Rémunérations dues',
   '431':'Sécurité sociale (URSSAF)',
   '437':'Autres organismes sociaux (retraite, prévoyance)',
   '4421':'Prélèvements à la source (PAS)',
-  '512':'Banque — Compte courant',
+  '512':'Banque : Compte courant',
   '6411':'Salaires, appointements',
   '6412':'Heures supplémentaires',
   '6413':'Primes et gratifications',
@@ -702,11 +702,11 @@ const PCG={fr:{
   '6453':'Cotisations patronales prévoyance',
   '6454':'Cotisations patronales accidents du travail',
 },en:{
-  '421':'Staff — Remuneration payable',
+  '421':'Staff: Remuneration payable',
   '431':'Social security (URSSAF)',
   '437':'Other social bodies (pension, provident)',
   '4421':'Withholding tax (PAS)',
-  '512':'Bank — Current account',
+  '512':'Bank: Current account',
   '6411':'Salaries and wages',
   '6412':'Overtime pay',
   '6413':'Bonuses and gratuities',
@@ -826,7 +826,7 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 function setLang(lang){
   currentLang=lang;
   document.documentElement.lang=lang;
-  document.title=lang==='fr'?'Paie France — Démonstration':'French Payroll — Demo';
+  document.title=lang==='fr'?'Paie France | Démonstration':'French Payroll | Demo';
 
   // Toggle buttons
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
@@ -855,8 +855,8 @@ function setLang(lang){
 
   // Update period dropdown labels
   const periodeLabels={
-    fr:{'202603':'202603 — Mars 2026','202604':'202604 — Avril 2026'},
-    en:{'202603':'202603 — March 2026','202604':'202604 — April 2026'}
+    fr:{'202603':'202603 (Mars 2026)','202604':'202604 (Avril 2026)'},
+    en:{'202603':'202603 (March 2026)','202604':'202604 (April 2026)'}
   };
   document.querySelectorAll('#runPeriode option').forEach(opt=>{
     if(periodeLabels[lang][opt.value])opt.textContent=periodeLabels[lang][opt.value];
@@ -884,7 +884,7 @@ function loadPeriod(periode){
       console.error('Failed to load payroll data:',err);
       document.querySelector('.content').innerHTML=
         '<div style="padding:40px;color:var(--red);font-family:var(--mono)">'+
-        'Error loading payroll-'+periode+'.json — run <code>scripts/seed.sh</code> to generate data.</div>';
+        'Error loading payroll-'+periode+'.json. Run <code>scripts/seed.sh</code> to generate data.</div>';
     });
 }
 

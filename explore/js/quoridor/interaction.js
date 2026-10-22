@@ -381,7 +381,7 @@ function onResetClick() {
         if (resetPending) return;
         resetPending = true;
         netSend({ type: 'reset_request' });
-        hudHint.textContent = 'Reset requested — waiting for opponent...';
+        hudHint.textContent = 'Reset requested, waiting for opponent...';
     } else {
         showResetConfirm('Are you sure you want to reset the board?');
     }
