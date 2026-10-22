@@ -1,9 +1,11 @@
 const SITE_DATA = {
   en: {
     dir: 'ltr', lang: 'en',
-    nav: { home: 'Home', about: 'About', experience: 'Experience', projects: 'Projects' },
+    nav: { home: 'Home', about: 'About', experience: 'Experience', projects: 'Projects', menu: 'Menu', close: 'Close', theme: 'Toggle light / dark theme', skip: 'Skip to content' },
     hero: {
       greeting: "Hello, I'm", name: 'Rami',
+      role1: 'Software Developer', role2: 'Mainframe Analyst', role3: 'PhD',
+      scroll: 'scroll',
       sentences: [
         'a Software Developer Analyst..',
         'a Mainframe Developer Analyst..',
@@ -101,14 +103,16 @@ const SITE_DATA = {
         }
       ]
     },
-    footer: { copy: '© 2026 Rami Younes' }
+    footer: { copy: '© 2026 Rami Younes', cta: "Let's connect.", top: 'Back to top' }
   },
 
   fr: {
     dir: 'ltr', lang: 'fr',
-    nav: { home: 'Accueil', about: 'À propos', experience: 'Expérience', projects: 'Projets' },
+    nav: { home: 'Accueil', about: 'À propos', experience: 'Expérience', projects: 'Projets', menu: 'Menu', close: 'Fermer', theme: 'Basculer thème clair / sombre', skip: 'Aller au contenu' },
     hero: {
       greeting: 'Bonjour, je suis', name: 'Rami',
+      role1: 'Développeur Logiciel', role2: 'Analyste Mainframe', role3: 'Docteur',
+      scroll: 'défiler',
       sentences: [
         'un Analyste Développeur Logiciel..',
         'un Analyste Développeur Mainframe..',
@@ -206,6 +210,6 @@ const SITE_DATA = {
         }
       ]
     },
-    footer: { copy: '© 2026 Rami Younes' }
+    footer: { copy: '© 2026 Rami Younes', cta: 'Travaillons ensemble.', top: 'Retour en haut' }
   },
 };

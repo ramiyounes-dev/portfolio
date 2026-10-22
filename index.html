@@ -1,109 +1,156 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="dark">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
     content="Rami Younes — Software Developer and Mainframe Developer. PhD in Human-Robot Interaction." />
+  <meta name="theme-color" content="#0D0B08" />
   <title>Rami Younes | Developer</title>
   <link rel="icon" href="./assets/images/fs.png" type="image/png">
+  <script>
+    /* Runs before paint: theme (dark by default) + motion flag, so nothing flashes */
+    (function () {
+      var root = document.documentElement;
+      var theme = 'dark';
+      try { theme = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+      root.setAttribute('data-theme', theme);
+      root.classList.add('js');
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) root.classList.add('motion');
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Fraunces:ital,opsz,wght@1,9..144,300;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&family=Space+Mono:wght@400;700&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./main/index.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
-  <div id="progress-bar"></div>
-  <div id="cursor-glow"></div>
-  <div class="floating-sidebar">
-    <a href="mailto:ramiyounes.dev@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
-    <a href="https://www.linkedin.com/in/ramiyounes-dev" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-    <a href="https://github.com/ramiyounes-dev" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-    <a href="https://leetcode.com/u/ramiyounes-dev/" target="_blank" aria-label="LeetCode"><i class="fas fa-code"></i></a>
-    <div class="sidebar-line"></div>
+  <a class="skip-link" href="#about" data-i18n="nav.skip">Skip to content</a>
+
+  <div class="loader" aria-hidden="true">
+    <span class="loader-mark">RY</span>
+    <span class="loader-count">000</span>
   </div>
-  <nav id="navbar">
-    <a href="#home" class="logo">RY</a>
-    <ul class="nav-links">
-      <li><a href="#home" data-i18n="nav.home">Home</a></li>
-      <li><a href="#about" data-i18n="nav.about">About</a></li>
-      <li><a href="#experience" data-i18n="nav.experience">Experience</a></li>
-      <li><a href="#projects" data-i18n="nav.projects">Projects</a></li>
+
+  <div id="progress-bar" aria-hidden="true"></div>
+
+  <nav id="navbar" aria-label="Main">
+    <a href="#home" class="logo" aria-label="Rami Younes — home">RY<span class="logo-dot">.</span></a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#home"><span class="nav-idx" aria-hidden="true">00</span><span data-i18n="nav.home">Home</span></a></li>
+      <li><a href="#about"><span class="nav-idx" aria-hidden="true">01</span><span data-i18n="nav.about">About</span></a></li>
+      <li><a href="#experience"><span class="nav-idx" aria-hidden="true">02</span><span data-i18n="nav.experience">Experience</span></a></li>
+      <li><a href="#projects"><span class="nav-idx" aria-hidden="true">03</span><span data-i18n="nav.projects">Projects</span></a></li>
     </ul>
     <div class="nav-right">
-      <div class="lang-toggle" id="lang-toggle">
-        <button class="lang-btn active" data-lang="en">EN</button>
-        <button class="lang-btn" data-lang="fr">FR</button>
+      <div class="lang-toggle" id="lang-toggle" role="group" aria-label="Language">
+        <button class="lang-btn active" data-lang="en" aria-pressed="true">EN</button>
+        <span class="lang-sep" aria-hidden="true">/</span>
+        <button class="lang-btn" data-lang="fr" aria-pressed="false">FR</button>
       </div>
-      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
-        <span></span><span></span><span></span>
+      <button class="theme-toggle" id="theme-toggle" data-i18n-aria="nav.theme" aria-label="Toggle theme">
+        <span class="theme-dot" aria-hidden="true"></span>
+      </button>
+      <button class="menu-btn" id="hamburger" aria-controls="nav-links" aria-expanded="false">
+        <span class="menu-label" data-i18n="nav.menu">Menu</span>
+        <span class="menu-lines" aria-hidden="true"><span></span><span></span></span>
       </button>
     </div>
   </nav>
 
-  <header id="home">
-    <div class="hero">
-      <h1>
-        <span data-i18n="hero.greeting">Hello, I'm</span>
-        <span class="highlight" data-i18n="hero.name">Rami</span>
+  <header id="home" class="hero">
+    <ol class="hero-index">
+      <li><span class="hero-index-n" aria-hidden="true">(01)</span><span data-i18n="hero.role1">Software Developer</span></li>
+      <li><span class="hero-index-n" aria-hidden="true">(02)</span><span data-i18n="hero.role2">Mainframe Analyst</span></li>
+      <li><span class="hero-index-n" aria-hidden="true">(03)</span><span data-i18n="hero.role3">PhD</span></li>
+    </ol>
+
+    <div class="hero-stage">
+      <h1 class="hero-name" aria-label="Rami Younes">
+        <span class="hero-line hero-line--first" data-split aria-hidden="true">Rami</span>
+        <span class="hero-line hero-line--last" data-split aria-hidden="true">Younes</span>
       </h1>
-      <div class="typewriter-container">
-        <span id="typewriter-text"></span><span class="cursor">|</span>
-      </div>
+      <figure class="hero-portrait">
+        <div class="plate">
+          <img src="./assets/images/rami-pic.png" alt="Portrait of Rami Younes" width="500" height="500" fetchpriority="high" />
+        </div>
+        <figcaption><span>Fig. 01</span><span>R. Younes</span></figcaption>
+      </figure>
     </div>
-    <div class="glow-circle">
-      <img src="./assets/images/rami-pic.png" alt="Rami Younes" />
+
+    <div class="hero-foot">
+      <p class="hero-statement">
+        <span class="hero-greeting" data-i18n="hero.greeting">Hello, I'm</span>
+        <span class="typer" aria-hidden="true"><span id="hero-typed"></span><span class="typer-cursor"></span></span>
+        <span class="sr-only" id="hero-rotator-sr"></span>
+      </p>
+      <ul class="hero-social">
+        <li><a href="mailto:ramiyounes.dev@gmail.com" class="link-arrow">Email</a></li>
+        <li><a href="https://www.linkedin.com/in/ramiyounes-dev" target="_blank" rel="noopener" class="link-arrow">LinkedIn</a></li>
+        <li><a href="https://github.com/ramiyounes-dev" target="_blank" rel="noopener" class="link-arrow">GitHub</a></li>
+        <li><a href="https://leetcode.com/u/ramiyounes-dev/" target="_blank" rel="noopener" class="link-arrow">LeetCode</a></li>
+      </ul>
+      <a href="#about" class="hero-scroll">
+        <span data-i18n="hero.scroll">scroll</span>
+        <span class="hero-scroll-line" aria-hidden="true"></span>
+      </a>
     </div>
   </header>
 
   <main>
-    <section id="about">
-      <h2 data-i18n="about.heading">About Me</h2>
-      <p class="section-intro" data-i18n="about.intro"></p>
+    <section id="about" class="section section--about">
+      <div class="section-head" data-ghost="01">
+        <span class="section-num" data-num="1" aria-hidden="true">001</span>
+        <h2 class="section-title" data-i18n="about.heading">About Me</h2>
+      </div>
+      <div class="about-grid">
+        <p class="about-intro" data-i18n="about.intro"></p>
+        <aside class="about-aside" id="cv-container"></aside>
+      </div>
       <div id="education-container"></div>
       <div id="skills-container"></div>
-      <div id="cv-container"></div>
     </section>
 
-    <section id="experience">
-      <h2 data-i18n="experience.heading">Experience</h2>
-      <div id="experience-container"></div>
+    <section id="experience" class="section section--experience">
+      <div class="section-head" data-ghost="02">
+        <span class="section-num" data-num="2" aria-hidden="true">002</span>
+        <h2 class="section-title" data-i18n="experience.heading">Experience</h2>
+      </div>
+      <div id="experience-container" class="timeline"></div>
     </section>
 
-    <section id="projects">
-      <h2 data-i18n="projects.heading">Projects</h2>
-      <div id="projects-container"></div>
+    <section id="projects" class="section section--projects">
+      <div class="section-head" data-ghost="03">
+        <span class="section-num" data-num="3" aria-hidden="true">003</span>
+        <h2 class="section-title" data-i18n="projects.heading">Projects</h2>
+      </div>
+      <div id="projects-container" class="projects"></div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="contact-links">
-      <a href="mailto:ramiyounes.dev@gmail.com" class="contact-item" aria-label="Email">
-        <i class="fas fa-envelope"></i>
-      </a>
-      <a href="https://www.linkedin.com/in/ramiyounes-dev" class="contact-item" target="_blank" rel="noopener"
-        aria-label="LinkedIn">
-        <i class="fab fa-linkedin"></i>
-      </a>
-      <a href="https://github.com/ramiyounes-dev" class="contact-item" target="_blank" rel="noopener"
-        aria-label="GitHub">
-        <i class="fab fa-github"></i>
-      </a>
-      <a href="https://leetcode.com/u/ramiyounes-dev/" class="contact-item" target="_blank" rel="noopener"
-        aria-label="LeetCode">
-        <i class="fas fa-code"></i>
-      </a>
+  <footer class="site-footer" id="contact">
+    <span class="section-num footer-num" data-num="4" aria-hidden="true">004</span>
+    <p class="footer-headline" data-split-text data-i18n="footer.cta">Let's connect.</p>
+    <a href="mailto:ramiyounes.dev@gmail.com" class="footer-email">ramiyounes.dev@gmail.com</a>
+    <div class="footer-bottom">
+      <ul class="footer-links">
+        <li><a href="mailto:ramiyounes.dev@gmail.com" class="link-arrow">Email</a></li>
+        <li><a href="https://www.linkedin.com/in/ramiyounes-dev" target="_blank" rel="noopener" class="link-arrow">LinkedIn</a></li>
+        <li><a href="https://github.com/ramiyounes-dev" target="_blank" rel="noopener" class="link-arrow">GitHub</a></li>
+        <li><a href="https://leetcode.com/u/ramiyounes-dev/" target="_blank" rel="noopener" class="link-arrow">LeetCode</a></li>
+      </ul>
+      <p class="footer-copy" data-i18n="footer.copy">© 2026 Rami Younes</p>
+      <a href="#home" class="footer-top" id="scroll-top"><span data-i18n="footer.top">Back to top</span> <span aria-hidden="true">↑</span></a>
     </div>
-    <p class="footer-copy" data-i18n="footer.copy">© 2026 Rami Younes</p>
   </footer>
 
-  <button id="scroll-top" aria-label="Scroll to top">
-    <i class="fas fa-chevron-up"></i>
-  </button>
-
-  <script src="./main/data.js"></script>
-  <script src="./main/index.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.25/dist/lenis.min.js" defer></script>
+  <script src="./main/data.js" defer></script>
+  <script src="./main/index.js" defer></script>
 </body>
 
 </html>

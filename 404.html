@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>404 — Signal lost | Rami Younes</title>
+  <link rel="icon" href="/assets/images/fs.png" type="image/png">
+  <script>
+    (function () {
+      var theme = 'dark';
+      try { theme = localStorage.getItem('theme') || 'dark'; } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Fraunces:ital,opsz,wght@1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Space+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/main/index.css" />
+  <style>
+    .nf {
+      min-height: 100vh;
+      min-height: 100svh;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: var(--px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 40px;
+    }
+    .nf-top, .nf-foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-2);
+    }
+    .nf-top .logo { font-size: 1.15rem; }
+    .nf-code {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 27vw;
+      line-height: 0.8;
+      margin-bottom: 0.12em;
+      letter-spacing: -0.06em;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .nf-msg {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(1.4rem, 3vw, 2.4rem);
+      line-height: 1.2;
+      color: var(--text-2);
+    }
+    .nf-msg em { color: var(--text); font-style: inherit; }
+    .nf-links { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-top: 28px; font-size: 1.0625rem; }
+    .nf-links .link-arrow::after { content: '←'; order: -1; }
+  </style>
+</head>
+
+<body>
+  <main class="nf">
+    <div class="nf-top">
+      <a href="/" class="logo" aria-label="Rami Younes — home">RY<span class="logo-dot">.</span></a>
+      <span>(err) 404</span>
+    </div>
+
+    <div>
+      <p class="nf-code" aria-label="404"><span aria-hidden="true" id="nf-code">404</span></p>
+      <p class="nf-msg"><em>Signal lost.</em> This page doesn't exist.<br><em>Signal perdu.</em> Cette page n'existe pas.</p>
+      <div class="nf-links">
+        <a href="/" class="link-arrow">Back home</a>
+        <a href="/" class="link-arrow">Retour à l'accueil</a>
+      </div>
+    </div>
+
+    <div class="nf-foot">
+      <span>© 2026 Rami Younes</span>
+      <span>ramiyounes.dev@gmail.com</span>
+    </div>
+  </main>
+
+  <script>
+    /* The code decodes itself, same signal motif as the home page */
+    (function () {
+      var el = document.getElementById('nf-code');
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var final = '404', start = performance.now();
+      function frame(now) {
+        var p = Math.min(1, (now - start) / 900), settled = Math.floor(p * 3), out = '';
+        for (var i = 0; i < 3; i++) out += i < settled ? final[i] : Math.floor(Math.random() * 10);
+        el.textContent = out;
+        if (p < 1) requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+
+</html>
