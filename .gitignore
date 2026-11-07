@@ -28,3 +28,4 @@ projects/mainframe-banking/.vscode/
 projects/mainframe-banking/bin/
 projects/mainframe-banking/data/
 projects/mainframe-banking/web/__pycache__/
+.claude/
