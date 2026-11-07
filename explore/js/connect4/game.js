@@ -13,6 +13,7 @@ const state = {
     aiPlayer: 'B',
     scores: { A: 0, B: 0 },
     moveCount: 0,
+    gen: 0,            // bumps on every reset: late AI replies for an old game are ignored
     listeners: {}
 };
 
@@ -27,6 +28,7 @@ function emit(event, data) {
 
 function setGameMode(gm) {
     state.gameMode = gm;
+    state.gen++;
     if (gm === 'ai') { state.aiPlayer = 'B'; state.myRole = 'A'; }
     else if (gm === 'local') { state.myRole = null; }
     emit('gameModeChange', { gameMode: gm });
@@ -44,13 +46,14 @@ function tryDrop(col) {
 }
 
 function applyRemoteDrop(col) {
-    if (state.winner || state.draw) return;
+    if (state.winner || state.draw) return { ok: false };
     const row = board.dropDisc(col, state.currentPlayer);
-    if (row < 0) return;
+    if (row < 0) return { ok: false };
     state.moveCount++;
     emit('boardChange', null);
     emit('discDropped', { row, col, player: state.currentPlayer });
     _checkEnd();
+    return { ok: true, row, col };
 }
 
 function _checkEnd() {
@@ -71,13 +74,12 @@ function _checkEnd() {
 function _nextTurn() {
     state.currentPlayer = state.currentPlayer === 'A' ? 'B' : 'A';
     emit('turnChange', { player: state.currentPlayer });
-    if (state.gameMode === 'ai' && state.currentPlayer === state.aiPlayer)
-        emit('aiTurn', { player: state.aiPlayer });
 }
 
 function resetGame() {
     const fresh = new Connect4Board();
     board.grid = fresh.grid;
+    state.gen++;
     state.currentPlayer = state.startingPlayer;
     state.winner = null;
     state.draw = false;
@@ -90,6 +92,7 @@ function resetGame() {
 function replayMoves(moves) {
     const fresh = new Connect4Board();
     board.grid = fresh.grid;
+    state.gen++;
     state.currentPlayer = state.startingPlayer;
     state.winner = null;
     state.draw = false;

@@ -1,425 +1,236 @@
-import * as THREE from '../../modules/three.modules.js';
-import {
-    camera, renderer, colTargets, pieceMeshes,
-    showGhost, hideGhost, showLastMove, clearLastMove,
-    showWinHighlight, clearWinHighlight, highlightTurnPieces
-} from './main.js';
-import { board, state, on, emit, setGameMode, tryDrop, applyRemoteDrop, resetGame, replayMoves } from './game.js';
+/* Connect 4: gameplay and input.
+   Turn flow is explicit: a disc falls, the result is checked, then the next player (or the AI) moves.
+   The AI thinks in a worker, so the page never freezes and input stays responsive. */
+
+import * as view from './main.js';
+import { board, state, setGameMode, tryDrop, applyRemoteDrop, resetGame, replayMoves } from './game.js';
+import { Connect4Board } from './Board.js';
 import { computeAIMove } from './ai.js';
-import { net, onNet, netSend, connectToRoom } from '../network.js';
+import { createShell, NAME } from '../shared/shell.js';
+import { bindPointer, coarse } from '../shared/pointer.js';
+import { createAI } from '../shared/aiRunner.js';
+import { wait } from '../shared/anim.js';
+import { net } from '../network.js';
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-/* ── DOM refs ── */
-const hudTurn      = document.getElementById('hud-turn');
-const hudHint      = document.getElementById('hud-hint');
-const hudDiscsA    = document.getElementById('hud-discs-a');
-const hudDiscsB    = document.getElementById('hud-discs-b');
-const btnReset     = document.getElementById('btn-reset');
-const winOverlay   = document.getElementById('win-overlay');
-const winMsg       = document.getElementById('win-message');
-const winSub       = document.getElementById('win-sub');
-const btnWinReset  = document.getElementById('btn-win-reset');
-const cardA        = document.getElementById('card-a');
-const cardB        = document.getElementById('card-b');
-const scoreA       = document.getElementById('score-a');
-const scoreB       = document.getElementById('score-b');
-const youA         = document.getElementById('you-a');
-const youB         = document.getElementById('you-b');
-const modeOverlay  = document.getElementById('mode-overlay');
-const modeButtons  = document.querySelectorAll('.mode-btn');
-const lobbyPanel   = document.getElementById('lobby-panel');
-const roomInput    = document.getElementById('room-input');
-const btnJoinRoom  = document.getElementById('btn-join-room');
-const lobbyStatus  = document.getElementById('lobby-status');
-const btnChangeMode   = document.getElementById('btn-change-mode');
-const resetConfirm    = document.getElementById('reset-confirm');
-const btnConfirmYes   = document.getElementById('btn-confirm-yes');
-const btnConfirmNo    = document.getElementById('btn-confirm-no');
-const btnDropConfirm  = document.getElementById('btn-drop-confirm');
-
-const PLAYER_NAME = { A: 'Red', B: 'White' };
-const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-let pendingCol = null;
-
-/* ── HUD ── */
-
-function updateHUD() {
-    const p = state.currentPlayer;
-    hudTurn.textContent = state.draw ? 'Draw!' : `${PLAYER_NAME[p]}'s Turn`;
-    hudTurn.style.color = state.draw ? '#aaaaaa' : (p === 'A' ? '#ff6666' : '#dddddd');
-    hudDiscsA.textContent = board.discCount('A');
-    hudDiscsB.textContent = board.discCount('B');
-    updateHint();
-    updateTurnHighlight();
-    highlightTurnPieces(state.winner || state.draw ? null : p);
-}
-
-function updateHint() {
-    if (isLocked()) {
-        hudHint.textContent = state.gameMode === 'ai' ? 'AI is thinking...' : 'Waiting for opponent...';
-        return;
-    }
-    hudHint.textContent = isTouch ? 'Tap a column to drop a disc' : 'Click a column to drop a disc';
-}
-
-function updateTurnHighlight() {
-    cardA.classList.toggle('is-turn', !state.winner && !state.draw && state.currentPlayer === 'A');
-    cardB.classList.toggle('is-turn', !state.winner && !state.draw && state.currentPlayer === 'B');
-}
-
-function updateScores() {
-    scoreA.innerHTML = `${state.scores.A} <small>wins</small>`;
-    scoreB.innerHTML = `${state.scores.B} <small>wins</small>`;
-}
-
-function isLocked() {
-    if (state.gameMode === 'online') return !net.opponentConnected || state.currentPlayer !== net.myRole;
-    if (state.gameMode === 'ai') return state.currentPlayer === state.aiPlayer;
-    return false;
-}
-
-/* ── Click handling ── */
-
-function getHoveredCol(event) {
-    mouse.x =  (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    raycaster.setFromCamera(mouse, camera);
-    const hits = raycaster.intersectObjects(colTargets);
-    if (hits.length > 0) return hits[0].object.userData.col;
-    return -1;
-}
-
-function cancelPendingDrop() {
-    pendingCol = null;
-    hideGhost();
-    btnDropConfirm.classList.add('hidden');
-}
-
-function confirmDrop() {
-    if (pendingCol === null) return;
-    const col = pendingCol;
-    cancelPendingDrop();
-    dropDisc(col);
-}
-
-function dropDisc(col) {
-    const result = tryDrop(col);
-    if (result.ok) {
-        showLastMove(result.row, result.col);
-        hideGhost();
-        if (state.gameMode === 'online') {
-            netSend({ type: 'drop', col });
-            if (state.winner) netSend({ type: 'win', winner: state.winner });
-            if (state.draw) netSend({ type: 'draw' });
-        }
-    }
-    updateHUD();
-}
-
-function onClick(event) {
-    if (state.winner || state.draw || isLocked()) return;
-    const col = getHoveredCol(event);
-    if (col < 0) {
-        if (isTouch && pendingCol !== null) cancelPendingDrop();
-        return;
-    }
-    if (!board.getValidColumns().includes(col)) return;
-
-    if (isTouch) {
-        if (pendingCol === col) {
-            confirmDrop();
-            return;
-        }
-        pendingCol = col;
-        showGhost(col, state.currentPlayer);
-        btnDropConfirm.classList.remove('hidden');
-        hudHint.textContent = 'Tap again or press Drop Disc to confirm';
-        return;
-    }
-
-    dropDisc(col);
-}
-
-function onMouseMove(event) {
-    if (state.winner || state.draw || isLocked()) { hideGhost(); return; }
-    const col = getHoveredCol(event);
-    if (col >= 0 && board.getValidColumns().includes(col)) {
-        showGhost(col, state.currentPlayer);
-    } else {
-        hideGhost();
-    }
-}
-
-/* ── Game events ── */
-
-on('win', ({ winner }) => {
-    const cells = board.getWinningCells();
-    if (cells) showWinHighlight(cells);
-    hideGhost();
-    if (state.gameMode !== 'online') {
-        state.scores[winner]++;
-        updateScores();
-        state.startingPlayer = state.startingPlayer === 'A' ? 'B' : 'A';
-    }
-    setTimeout(() => {
-        winMsg.textContent = `${PLAYER_NAME[winner]} wins!`;
-        winSub.textContent = 'Four in a row!';
-        winOverlay.classList.remove('hidden');
-    }, 3000);
+const ai = createAI(new URL('./ai.worker.js', import.meta.url), p => {
+    const b = new Connect4Board(); b.grid = p.grid; return computeAIMove(b, p.player);
 });
 
-on('draw', () => {
-    winMsg.textContent = 'Draw!';
-    winSub.textContent = 'The board is full';
-    winOverlay.classList.remove('hidden');
-    hideGhost();
-});
+let falling = false;      // a disc is in the air
+let aiThinking = false;
+let cursorCol = 3;        // keyboard / touch-preview column
 
-on('reset', () => {
-    winOverlay.classList.add('hidden');
-    clearLastMove();
-    clearWinHighlight();
-    cancelPendingDrop();
-    updateHUD();
-});
-
-on('turnChange', () => { updateHUD(); });
-
-on('aiTurn', ({ player }) => {
-    hideGhost();
-    setTimeout(() => {
-        if (state.winner || state.draw) return;
-        const col = computeAIMove(board, player);
-        if (col === null) return;
-        const result = tryDrop(col);
-        if (result.ok) showLastMove(result.row, result.col);
-        updateHUD();
-    }, 400);
-});
-
-/* ── Network ── */
-
-onNet('drop', (msg) => {
-    applyRemoteDrop(msg.col);
-    for (let r = 5; r >= 0; r--) {
-        if (board.grid[r][msg.col]) { showLastMove(r, msg.col); break; }
-    }
-    updateHUD();
-});
-onNet('reset', () => { resetGame(); updateHUD(); });
-onNet('score', ({ scores, nextStarter }) => { state.scores = scores; if (nextStarter) state.startingPlayer = nextStarter; updateScores(); });
-onNet('state_sync', ({ moves }) => { replayMoves(moves); updateHUD(); });
-onNet('opponent_joined', () => {
-    lobbyStatus.textContent = 'Opponent joined!';
-    setTimeout(() => { modeOverlay.classList.add('hidden'); updateHUD(); }, 600);
-});
-onNet('opponent_left', () => { hudHint.textContent = 'Opponent disconnected...'; });
-onNet('disconnected', () => { hudHint.textContent = 'Connection lost. Refresh to reconnect.'; });
-
-/* ── Reset ── */
-
-let resetPending = false;
-
-function showResetConfirm(prompt) {
-    document.querySelector('#reset-confirm-box p').textContent = prompt || 'Are you sure you want to reset the board?';
-    resetConfirm.classList.remove('hidden');
-}
-
-function hideResetConfirm() { resetConfirm.classList.add('hidden'); resetPending = false; }
-
-function onResetClick() {
-    if (state.gameMode === 'online') {
-        if (resetPending) return;
-        resetPending = true;
-        netSend({ type: 'reset_request' });
-        hudHint.textContent = 'Reset requested, waiting for opponent...';
-    } else {
-        showResetConfirm();
-    }
-}
-
-btnConfirmYes.addEventListener('click', () => {
-    hideResetConfirm();
-    if (state.gameMode === 'online') netSend({ type: 'reset_accept' });
-    resetGame();
-});
-btnConfirmNo.addEventListener('click', () => {
-    if (state.gameMode === 'online') netSend({ type: 'reset_decline' });
-    hideResetConfirm();
-});
-
-onNet('reset_request', () => showResetConfirm('Opponent wants to reset. Accept?'));
-onNet('reset_accept', () => { resetPending = false; hudHint.textContent = ''; resetGame(); updateHUD(); });
-onNet('reset_decline', () => {
-    resetPending = false; hudHint.textContent = 'Opponent declined the reset.';
-    setTimeout(() => { if (hudHint.textContent === 'Opponent declined the reset.') updateHint(); }, 3000);
-});
-
-/* ── Tutorial ── */
-
-const btnHowToPlay  = document.getElementById('btn-how-to-play');
-const tutorialPanel = document.getElementById('tutorial-panel');
-const tutSlides     = document.querySelectorAll('.tut-slide');
-const tutPrev       = document.getElementById('tut-prev');
-const tutNext       = document.getElementById('tut-next');
-const tutBack       = document.getElementById('tut-back');
-const tutDotsEl     = document.getElementById('tut-dots');
-const tutControlsEl = document.getElementById('tut-controls-content');
-
-const TOTAL_SLIDES = tutSlides.length;
-let currentSlide = 0;
-
-for (let i = 0; i < TOTAL_SLIDES; i++) {
-    const dot = document.createElement('span');
-    dot.className = 'tut-dot' + (i === 0 ? ' active' : '');
-    tutDotsEl.appendChild(dot);
-}
-const tutDots = tutDotsEl.querySelectorAll('.tut-dot');
-
-function buildControls() {
-    const rows = isTouch ? [
-        ['&#11015;', '<strong>Tap a column</strong> to drop a disc into it'],
-        ['&#9679;', 'Discs <strong>fall to the lowest</strong> available space'],
-        ['&#10004;', 'First to get <strong>four in a row</strong> wins'],
-    ] : [
-        ['&#11015;', '<strong>Click a column</strong> to drop a disc into it'],
-        ['&#9679;', 'Discs <strong>fall to the lowest</strong> available space'],
-        ['&#10004;', 'First to get <strong>four in a row</strong> wins'],
-    ];
-    tutControlsEl.innerHTML = rows.map(([icon, label]) =>
-        `<div class="tut-ctrl-row"><div class="tut-ctrl-icon">${icon}</div><div class="tut-ctrl-label">${label}</div></div>`
-    ).join('');
-}
-buildControls();
-
-function showSlide(idx) {
-    currentSlide = idx;
-    tutSlides.forEach((s, i) => s.classList.toggle('hidden', i !== idx));
-    tutDots.forEach((d, i) => d.classList.toggle('active', i === idx));
-    tutPrev.disabled = idx === 0;
-    tutNext.disabled = idx === TOTAL_SLIDES - 1;
-}
-
-function openTutorial() {
-    document.getElementById('mode-buttons').classList.add('hidden');
-    document.getElementById('mode-sub').classList.add('hidden');
-    btnHowToPlay.classList.add('hidden');
-    tutorialPanel.classList.remove('hidden');
-    showSlide(0);
-}
-
-function closeTutorial() {
-    tutorialPanel.classList.add('hidden');
-    document.getElementById('mode-buttons').classList.remove('hidden');
-    document.getElementById('mode-sub').classList.remove('hidden');
-    btnHowToPlay.classList.remove('hidden');
-}
-
-btnHowToPlay.addEventListener('click', openTutorial);
-tutBack.addEventListener('click', closeTutorial);
-tutPrev.addEventListener('click', () => { if (currentSlide > 0) showSlide(currentSlide - 1); });
-tutNext.addEventListener('click', () => { if (currentSlide < TOTAL_SLIDES - 1) showSlide(currentSlide + 1); });
-
-let tutTouchStartX = 0;
-tutorialPanel.addEventListener('touchstart', (e) => { tutTouchStartX = e.touches[0].clientX; }, { passive: true });
-tutorialPanel.addEventListener('touchend', (e) => {
-    const dx = e.changedTouches[0].clientX - tutTouchStartX;
-    if (Math.abs(dx) > 40) {
-        if (dx < 0 && currentSlide < TOTAL_SLIDES - 1) showSlide(currentSlide + 1);
-        if (dx > 0 && currentSlide > 0) showSlide(currentSlide - 1);
-    }
-}, { passive: true });
-
-/* ── Mode selection ── */
-
-function changeMode() {
-    if (state.gameMode === 'online') import('../network.js').then(({ disconnect }) => disconnect());
-    state.startingPlayer = 'A';
-    resetGame();
-    state.scores = { A: 0, B: 0 };
-    state.myRole = null;
-    updateScores();
-    youA.classList.add('hidden');
-    youB.classList.add('hidden');
-    document.getElementById('mode-buttons').classList.remove('hidden');
-    document.getElementById('mode-sub').textContent = 'Choose a game mode';
-    document.getElementById('mode-sub').classList.remove('hidden');
-    btnHowToPlay.classList.remove('hidden');
-    tutorialPanel.classList.add('hidden');
-    lobbyPanel.classList.add('hidden');
-    lobbyStatus.textContent = '';
-    roomInput.value = '';
-    btnJoinRoom.disabled = false;
-    modeOverlay.classList.remove('hidden');
-}
-
-btnChangeMode.addEventListener('click', changeMode);
-
-modeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const mode = btn.dataset.mode;
-        if (mode === 'online') {
-            document.getElementById('mode-buttons').classList.add('hidden');
-            document.getElementById('mode-sub').textContent = 'Enter a room code to play online';
-            lobbyPanel.classList.remove('hidden');
-            roomInput.focus();
-            return;
-        }
-        setGameMode(mode);
-        modeOverlay.classList.add('hidden');
-        resetGame();
-    });
-});
-
-async function joinRoom() {
-    const code = roomInput.value.trim().toUpperCase();
-    if (!code || code.length < 2) { lobbyStatus.textContent = 'Enter a room code (2+ characters)'; return; }
-    btnJoinRoom.disabled = true;
-    lobbyStatus.textContent = 'Connecting...';
-    try {
-        const init = await connectToRoom('C4-' + code);
+const shell = createShell({
+    roomPrefix: 'C4-',
+    controls: {
+        touch: [
+            ['&#8595;', '<strong>Tap a column</strong> to drop a disc, or <strong>slide</strong> along the board and release'],
+            ['&#9679;', 'Discs <strong>fall to the lowest</strong> free space'],
+            ['&#10003;', 'First to make <strong>four in a row</strong> wins'],
+        ],
+        mouse: [
+            ['&#8595;', '<strong>Click a column</strong> to drop a disc'],
+            ['&#8596;', '<strong>&larr; &rarr;</strong> choose a column, <strong>Enter</strong> drops, or press <strong>1 to 7</strong>'],
+            ['&#10003;', 'First to make <strong>four in a row</strong> wins'],
+        ],
+    },
+    onStart(mode) { setGameMode(mode); startNewGame(); },
+    onJoin(init) {
         setGameMode('online');
         state.myRole = init.role;
-        state.scores = init.scores;
+        state.scores = init.scores || { A: 0, B: 0 };
         state.startingPlayer = init.startingPlayer || 'A';
-        if (init.role === 'A') youA.classList.remove('hidden'); else youB.classList.remove('hidden');
-        updateScores();
-        if (init.opponentConnected) {
-            lobbyStatus.textContent = `You are ${PLAYER_NAME[init.role]}. Game on!`;
-            setTimeout(() => modeOverlay.classList.add('hidden'), 600);
-        } else {
-            lobbyStatus.textContent = `You are ${PLAYER_NAME[init.role]}. Waiting for opponent...`;
-        }
-    } catch (err) {
-        lobbyStatus.textContent = err.message || 'Connection failed';
-        btnJoinRoom.disabled = false;
+        startNewGame();
+    },
+    onReset() { startNewGame(); },
+    onMenu() { setGameMode('local'); state.scores = { A: 0, B: 0 }; state.startingPlayer = 'A'; startNewGame({ silent: true }); },
+    onOpponent() { refresh(); },
+    refreshHint() { refresh(); },
+});
+
+/* ---------- Whose turn is it, and can I act? ---------- */
+function over() { return !!(state.winner || state.draw); }
+
+function isMyTurn() {
+    if (over()) return false;
+    if (state.gameMode === 'online') return net.opponentConnected && state.currentPlayer === net.myRole;
+    if (state.gameMode === 'ai') return state.currentPlayer !== state.aiPlayer;
+    return true;
+}
+
+function canAct() { return isMyTurn() && !falling && !shell.isDialogOpen(); }
+
+/* ---------- HUD ---------- */
+function refresh() {
+    const p = state.currentPlayer;
+    shell.setCounts(board.discCount('A'), board.discCount('B'));
+    shell.setScores(state.scores);
+
+    if (state.gameMode === 'ai') shell.setBadges('You', 'AI');
+    else if (state.gameMode === 'online') shell.setBadges(state.myRole === 'A' ? 'You' : '', state.myRole === 'B' ? 'You' : '');
+    else shell.setBadges('', '');
+
+    if (state.draw) { shell.setTurn(p, { over: true, label: 'Draw' }); shell.setHint(''); return; }
+    if (state.winner) { shell.setTurn(state.winner, { over: true, label: winTitle(state.winner) }); shell.setHint('Four in a row'); return; }
+
+    let label = null;
+    if (state.gameMode === 'ai') label = p === state.aiPlayer ? 'AI\'s turn' : 'Your turn';
+    if (state.gameMode === 'online') label = p === state.myRole ? 'Your turn' : `${NAME[p]}'s turn`;
+    shell.setTurn(p, { label });
+
+    if (state.gameMode === 'online' && !net.opponentConnected) shell.setHint('Waiting for your opponent to join...');
+    else if (aiThinking) shell.setHint('The AI is thinking...');
+    else if (!isMyTurn()) shell.setHint(state.gameMode === 'online' ? 'Waiting for your opponent\'s move...' : '');
+    else shell.setHint(coarse ? 'Tap a column, or slide and release to drop' : 'Click a column · ← → then Enter · keys 1 to 7');
+}
+
+function winTitle(w) {
+    if (state.gameMode === 'ai') return w === state.aiPlayer ? 'The AI wins' : 'You win!';
+    if (state.gameMode === 'online') return w === state.myRole ? 'You win!' : `${NAME[w]} wins`;
+    return `${NAME[w]} wins!`;
+}
+
+/* ---------- Playing a disc ---------- */
+async function play(col, source) {
+    if (falling || over()) return;
+    const player = state.currentPlayer;
+    const res = source === 'remote' ? applyRemoteDrop(col) : tryDrop(col);
+    if (!res.ok) return;
+
+    if (source === 'me' && state.gameMode === 'online') {
+        shell.netSend({ type: 'drop', col });
+        if (state.winner) shell.netSend({ type: 'win', winner: state.winner });
+        if (state.draw) shell.netSend({ type: 'draw' });
     }
+
+    const gen = state.gen;
+    falling = true;
+    view.setGhost(-1);
+    view.markLast(null);
+    shell.setHint('');
+    await view.drop(res.row, res.col, player);
+    falling = false;
+    if (gen !== state.gen) return;   // the game was reset mid-fall
+    view.markLast({ row: res.row, col: res.col });
+    afterMove();
 }
 
-btnJoinRoom.addEventListener('click', joinRoom);
-roomInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') joinRoom(); });
+function afterMove() {
+    if (state.winner) {
+        const cells = board.getWinningCells();
+        if (cells) view.showWin(cells);
+        if (state.gameMode !== 'online') {
+            state.scores[state.winner]++;
+            state.startingPlayer = state.startingPlayer === 'A' ? 'B' : 'A';
+        }
+        refresh();
+        const gen = state.gen;
+        wait(1300).then(() => { if (gen === state.gen) shell.showWin({ winner: state.winner, title: winTitle(state.winner), sub: 'Four in a row' }); });
+        return;
+    }
+    if (state.draw) {
+        refresh();
+        wait(700).then(() => shell.showWin({ winner: '', title: 'Draw', sub: 'The board is full' }));
+        return;
+    }
+    refresh();
+    maybeAI();
+    if (canAct() && !coarse && hoverCol >= 0) view.setGhost(hoverCol, state.currentPlayer);
+}
 
-/* ── Controls ── */
+/* ---------- AI ---------- */
+async function maybeAI() {
+    if (state.gameMode !== 'ai' || over() || state.currentPlayer !== state.aiPlayer || aiThinking) return;
+    const gen = state.gen;
+    aiThinking = true;
+    refresh();
+    const col = await ai.think({ grid: board.grid, player: state.aiPlayer });
+    aiThinking = false;
+    if (gen !== state.gen || state.gameMode !== 'ai' || state.currentPlayer !== state.aiPlayer || over()) { refresh(); return; }
+    if (col === null || col === undefined) return;
+    await play(col, 'ai');
+}
 
-btnDropConfirm.addEventListener('click', confirmDrop);
-btnReset.addEventListener('click', onResetClick);
-btnWinReset.addEventListener('click', onResetClick);
+/* ---------- New game ---------- */
+async function startNewGame({ silent = false } = {}) {
+    resetGame();                 // bumps gen: cancels a pending AI reply or a falling disc's follow-up
+    falling = false;
+    aiThinking = false;
+    view.setGhost(-1);
+    shell.hideWin();
+    refresh();
+    await view.clearAll();
+    if (silent) return;
+    refresh();
+    maybeAI();
+}
 
-if (isTouch) {
-    renderer.domElement.addEventListener('touchstart', (e) => {
-        if (e.touches.length !== 1) return;
-        const t = e.touches[0];
-        onClick({ clientX: t.clientX, clientY: t.clientY });
+/* ---------- Pointer: hover/click on desktop, tap or slide-and-release on touch ---------- */
+let hoverCol = -1;
+let pressCol = -1;
+
+function validCol(c) { return c >= 0 && board.getValidColumns().includes(c); }
+
+bindPointer(view.canvas, {
+    hover(e) {
+        hoverCol = view.colAt(e.clientX, e.clientY);
+        view.setGhost(canAct() && validCol(hoverCol) ? hoverCol : -1, state.currentPlayer);
+        view.canvas.style.cursor = canAct() && validCol(hoverCol) ? 'pointer' : 'default';
+    },
+    leave() { hoverCol = -1; view.setGhost(-1); },
+    down(e) {
+        if (!canAct()) return;
+        pressCol = view.colAt(e.clientX, e.clientY);
+        view.setGhost(validCol(pressCol) ? pressCol : -1, state.currentPlayer);
+    },
+    drag(e) {
+        if (!canAct()) return;
+        pressCol = view.colAt(e.clientX, e.clientY);
+        view.setGhost(validCol(pressCol) ? pressCol : -1, state.currentPlayer);
+    },
+    up(e) {
+        if (!canAct()) { pressCol = -1; return; }
+        const col = view.colAt(e.clientX, e.clientY);
+        pressCol = -1;
+        if (validCol(col)) { cursorCol = col; play(col, 'me'); }
+        else view.setGhost(-1);
+    },
+    cancel() { pressCol = -1; view.setGhost(-1); },
+});
+
+/* ---------- Keyboard ---------- */
+document.addEventListener('keydown', e => {
+    if (!canAct() || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.target.closest && e.target.closest('input, button, a')) {
+        if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    }
+    const valid = board.getValidColumns();
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const step = e.key === 'ArrowLeft' ? -1 : 1;
+        let c = cursorCol;
+        for (let i = 0; i < view.COLS; i++) { c = (c + step + view.COLS) % view.COLS; if (valid.includes(c)) break; }
+        cursorCol = c;
+        view.setGhost(c, state.currentPlayer);
         e.preventDefault();
-    }, { passive: false });
-} else {
-    renderer.domElement.addEventListener('click', onClick);
-    renderer.domElement.addEventListener('mousemove', onMouseMove);
-    renderer.domElement.addEventListener('mouseleave', () => hideGhost());
-}
+    } else if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+        if (valid.includes(cursorCol)) play(cursorCol, 'me');
+        e.preventDefault();
+    } else if (/^[1-7]$/.test(e.key)) {
+        const c = Number(e.key) - 1;
+        if (valid.includes(c)) { cursorCol = c; play(c, 'me'); }
+    }
+});
 
-updateHUD();
-updateScores();
+/* ---------- Network ---------- */
+shell.onNet('drop', msg => { play(msg.col, 'remote'); });
+shell.onNet('reset', () => { startNewGame(); });
+shell.onNet('score', ({ scores, nextStarter }) => { state.scores = scores; if (nextStarter) state.startingPlayer = nextStarter; refresh(); });
+shell.onNet('state_sync', ({ moves }) => {
+    replayMoves(moves);
+    view.rebuild(board.grid);
+    view.clearWin();
+    if (state.winner) { const cells = board.getWinningCells(); if (cells) view.showWin(cells); }
+    refresh();
+});
+
+refresh();

@@ -1,247 +1,249 @@
+/* Turkish Checkers (Dama): board, pieces and animations. */
+
 import * as THREE from '../../modules/three.modules.js';
-import { board, on } from './game.js';
+import { createStage, coinGeometry, roundedBox } from '../shared/stage.js';
+import { PLAYER, ACCENT, DANGER } from '../shared/theme.js';
+import { tween, ease } from '../shared/anim.js';
 
-const UNIT    = 20;
-const B_H     = 4;
-const TILE_SZ = 17;
-const Y_TILE  = B_H + 0.5;
-const Y_PIECE = B_H + 2;
+const stage = createStage({ fov: 30 });
+const { scene } = stage;
 
-function col2x(col) { return (col - 3.5) * UNIT; }
-function row2z(row) { return -(row - 3.5) * UNIT; }
+const N = 8;
+const UNIT = 20;
+const TILE = 18.6;
+const SLAB_H = 8;
+const Y_TOP = SLAB_H;                 // top of the slab
+const Y_TILE = Y_TOP + 0.6;           // tile surface
+const PIECE_R = 7.4, PIECE_H = 4.2;
+const Y_PIECE = Y_TILE + PIECE_H / 2;
 
-/* ── Scene ── */
+export const col2x = c => (c - 3.5) * UNIT;
+export const row2z = r => -(r - 3.5) * UNIT;
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0e0e1c);
+/* ---------- Board ---------- */
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x3b2f23, roughness: 0.55, metalness: 0.08 });
+const slab = new THREE.Mesh(roundedBox(THREE, N * UNIT + 22, SLAB_H, N * UNIT + 22, 5, 1.6), frameMat);
+slab.position.y = SLAB_H / 2;
+slab.castShadow = true;
+slab.receiveShadow = true;
+scene.add(slab);
 
-const _vp = window.visualViewport;
-const W = _vp ? _vp.width  : window.innerWidth;
-const H = _vp ? _vp.height : window.innerHeight;
-const camera = new THREE.PerspectiveCamera(55, W / H, 0.5, 2000);
-
-const CAM_Y = 225;
-const CAM_Z = 110;
-const BOARD_HALF = 8 * UNIT / 2 + 10;
-let cameraRole = 'A';
-
-function fitCamera() {
-    const vp = window.visualViewport;
-    const vw = vp ? vp.width  : window.innerWidth;
-    const vh = vp ? vp.height : window.innerHeight;
-    const hud = document.getElementById('hud');
-    const bar = document.getElementById('action-bar');
-    const hudH = hud ? hud.offsetHeight : 60;
-    const barH = bar ? bar.offsetHeight : 50;
-    const usableH = vh - hudH - barH;
-    const usableAspect = vw / Math.max(usableH, 1);
-    const zSign = cameraRole === 'B' ? -1 : 1;
-    camera.position.set(0, CAM_Y, CAM_Z * zSign);
-    camera.lookAt(0, 0, 0);
-    const dist = Math.sqrt(CAM_Y * CAM_Y + CAM_Z * CAM_Z);
-    const vFov = 2 * Math.atan(BOARD_HALF / dist) * (180 / Math.PI);
-    const vFovFromH = 2 * Math.atan(Math.tan(vFov * Math.PI / 360) / usableAspect) * (180 / Math.PI);
-    const fov = Math.max(vFov, vFovFromH) + 12;
-    const shiftFrac = ((hudH - barH) / 2) / vh;
-    const tiltRad = shiftFrac * fov * Math.PI / 180;
-    const right = new THREE.Vector3().crossVectors(camera.getWorldDirection(new THREE.Vector3()), camera.up).normalize();
-    const up = new THREE.Vector3().crossVectors(right, camera.getWorldDirection(new THREE.Vector3())).normalize();
-    camera.position.addScaledVector(up, -tiltRad * dist * 0.5);
-    camera.lookAt(0, 0, 0);
-    camera.fov = fov;
-    camera.aspect = vw / vh;
-    camera.updateProjectionMatrix();
-}
-fitCamera();
-
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(W, H);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-const container = document.getElementById('canvas-container');
-if (container) container.appendChild(renderer.domElement);
-else {
-    Object.assign(renderer.domElement.style, { position:'fixed',top:'0',left:'0',width:'100vw',height:'100vh',zIndex:'0' });
-    document.body.appendChild(renderer.domElement);
+const tileGeo = roundedBox(THREE, TILE, 1.2, TILE, 1.2, 0.35);
+const tileMats = { a: new THREE.MeshStandardMaterial({ roughness: 0.7 }), b: new THREE.MeshStandardMaterial({ roughness: 0.7 }) };
+const promoMatA = new THREE.MeshStandardMaterial({ roughness: 0.6 });   // Amber promotes on row 7
+const promoMatB = new THREE.MeshStandardMaterial({ roughness: 0.6 });   // Ivory promotes on row 0
+const tiles = [];
+for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const mat = r === 7 ? promoMatA : r === 0 ? promoMatB : ((r + c) % 2 ? tileMats.a : tileMats.b);
+    const t = new THREE.Mesh(tileGeo, mat);
+    t.position.set(col2x(c), Y_TOP + 0.6, row2z(r));
+    t.receiveShadow = true;
+    scene.add(t);
+    tiles.push(t);
 }
 
-/* ── Lights ── */
-const sun = new THREE.DirectionalLight(0xffeedd, 1.6);
-sun.position.set(60, 160, 70);
-sun.castShadow = true;
-sun.shadow.mapSize.set(1024, 1024);
-Object.assign(sun.shadow.camera, { near:10, far:500, left:-200, right:200, top:200, bottom:-200 });
-scene.add(sun);
-scene.add(new THREE.AmbientLight(0x7788aa, 1.0));
-scene.add(new THREE.HemisphereLight(0x9999dd, 0x332211, 0.5));
+stage.onTheme(p => {
+    frameMat.color.set(p.frame);
+    tileMats.a.color.set(p.tileA);
+    tileMats.b.color.set(p.tileB);
+    promoMatA.color.set(new THREE.Color(p.tileB).lerp(new THREE.Color(PLAYER.A.color), 0.28));
+    promoMatB.color.set(new THREE.Color(p.tileB).lerp(new THREE.Color(PLAYER.B.color), 0.18));
+});
 
-/* ── Board ── */
-(function buildBoard() {
-    const boardW = 8 * UNIT + 10;
-    const slab = new THREE.Mesh(
-        new THREE.BoxGeometry(boardW, B_H * 2, boardW),
-        new THREE.MeshStandardMaterial({ color: 0x2e1a0e, roughness: 0.95 })
-    );
-    slab.receiveShadow = true;
-    scene.add(slab);
-
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            let color;
-            if (row === 7)      color = 0x981a1a;
-            else if (row === 0) color = 0xe8cfcf;
-            else                color = (col + row) % 2 === 0 ? 0x7A5130 : 0x66411A;
-            const tile = new THREE.Mesh(
-                new THREE.BoxGeometry(TILE_SZ, 1, TILE_SZ),
-                new THREE.MeshStandardMaterial({ color, roughness: 0.8 })
-            );
-            tile.position.set(col2x(col), Y_TILE, row2z(row));
-            tile.receiveShadow = true;
-            scene.add(tile);
-        }
-    }
-})();
-
-/* ── Pieces ── */
-const PIECE_CLR = { A: 0xcc1818, B: 0xddd4c0 };
-const pieceGeo  = new THREE.CylinderGeometry(5.5, 6.5, 3.5, 24);
-const crownGeo  = new THREE.TorusGeometry(4, 0.7, 8, 24);
+/* ---------- Pieces ---------- */
+const coinGeo = coinGeometry(THREE, PIECE_R, PIECE_H);
+const ringGeo = new THREE.RingGeometry(PIECE_R * 0.58, PIECE_R * 0.66, 48);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.14, depthWrite: false });
+const crownGeo = new THREE.TorusGeometry(PIECE_R * 0.42, 0.75, 10, 36);
 crownGeo.rotateX(Math.PI / 2);
+const crownMat = new THREE.MeshStandardMaterial({ color: 0xe8b04a, roughness: 0.25, metalness: 0.85, emissive: 0x4a2c00, emissiveIntensity: 0.4 });
 
-const pieceMeshes = {};
-
-function buildPieceMesh(player, king) {
-    const group = new THREE.Group();
-    const base = new THREE.Mesh(pieceGeo, new THREE.MeshStandardMaterial({
-        color: PIECE_CLR[player], roughness: 0.3, metalness: 0.1,
-        emissive: new THREE.Color(0x000000),
-    }));
-    base.castShadow = true;
-    group.add(base);
-    if (king) {
-        const crown = new THREE.Mesh(crownGeo, new THREE.MeshStandardMaterial({
-            color: 0xffd700, roughness: 0.2, metalness: 0.6,
-        }));
-        crown.position.y = 2.8;
-        crown.castShadow = true;
-        group.add(crown);
-    }
-    return group;
+function pieceMaterial(player) {
+    return new THREE.MeshPhysicalMaterial({
+        color: PLAYER[player].color, roughness: 0.36, clearcoat: 0.5, clearcoatRoughness: 0.4,
+        emissive: PLAYER[player].emissive, emissiveIntensity: 0,
+    });
 }
 
-function syncPieces() {
-    for (const key of Object.keys(pieceMeshes)) { scene.remove(pieceMeshes[key]); delete pieceMeshes[key]; }
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const cell = board.grid[r][c];
-            if (!cell) continue;
-            const mesh = buildPieceMesh(cell.player, cell.king);
-            mesh.position.set(col2x(c), Y_PIECE, row2z(r));
-            mesh.userData = { type: 'piece', row: r, col: c, player: cell.player, king: cell.king };
-            scene.add(mesh);
-            pieceMeshes[`${r},${c}`] = mesh;
-        }
-    }
+function coin(mat) {
+    const m = new THREE.Mesh(coinGeo, mat);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = PIECE_H / 2 + 0.04;
+    m.add(ring);
+    return m;
 }
 
-/* ── Last-move square highlights ── */
-const lastMoveMeshes = [];
-const lastMoveGeo = new THREE.BoxGeometry(TILE_SZ - 1, 1, TILE_SZ - 1);
-
-export function showLastMove(from, to) {
-    clearLastMove();
-    const mat = new THREE.MeshBasicMaterial({ color: 0xff8800, transparent: true, opacity: 0.35, depthWrite: false });
-    for (const pos of [from, to]) {
-        const m = new THREE.Mesh(lastMoveGeo, mat.clone());
-        m.position.set(col2x(pos.col), Y_TILE + 0.6, row2z(pos.row));
-        m.renderOrder = 1;
-        scene.add(m);
-        lastMoveMeshes.push(m);
-    }
+function makePiece(player, king) {
+    const g = new THREE.Group();
+    const mat = pieceMaterial(player);
+    g.add(coin(mat));
+    g.userData = { player, king: false, mat };
+    if (king) crown(g, false);
+    return g;
 }
 
-export function clearLastMove() {
-    for (const m of lastMoveMeshes) scene.remove(m);
-    lastMoveMeshes.length = 0;
+/** A king is two stacked pieces with a gold ring, the traditional way. */
+function crown(g, animate = true) {
+    if (g.userData.king) return Promise.resolve();
+    g.userData.king = true;
+    const top = coin(g.userData.mat);
+    top.position.y = PIECE_H;
+    const ring = new THREE.Mesh(crownGeo, crownMat);
+    ring.position.y = PIECE_H * 1.5 + 0.2;
+    g.add(top, ring);
+    if (!animate) return Promise.resolve();
+    top.position.y = PIECE_H + 30;
+    ring.scale.setScalar(0.01);
+    return tween(420, t => { top.position.y = PIECE_H + 30 * (1 - t); ring.scale.setScalar(Math.max(0.01, t)); }, ease.outBounce);
 }
 
-/* ── Highlights ── */
-const highlightMeshes = [];
+const pieces = new Map();   // "r,c" -> group
 
-export function clearHighlights() {
-    for (const m of highlightMeshes) scene.remove(m);
-    highlightMeshes.length = 0;
-}
-
-export function showMoveHighlights(targets) {
-    clearHighlights();
-    const geo = new THREE.BoxGeometry(TILE_SZ - 1, 1, TILE_SZ - 1);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x22ff77, transparent: true, opacity: 0.6, depthWrite: false });
-    for (const { row, col } of targets) {
-        const m = new THREE.Mesh(geo, mat.clone());
-        m.position.set(col2x(col), Y_TILE + 0.9, row2z(row));
-        m.userData = { type: 'moveTarget', row, col };
-        scene.add(m);
-        highlightMeshes.push(m);
+export function rebuild(grid) {
+    for (const g of pieces.values()) scene.remove(g);
+    pieces.clear();
+    for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+        const cell = grid[r][c];
+        if (!cell) continue;
+        const g = makePiece(cell.player, cell.king);
+        g.position.set(col2x(c), Y_PIECE, row2z(r));
+        scene.add(g);
+        pieces.set(`${r},${c}`, g);
     }
 }
 
-const TURN_EMISSIVE = { A: 0x331100, B: 0x181818 };
-let activeTurnPlayer = null;
+/** Slide (or hop, for jumps and long king moves) one piece from one square to another. */
+export function hop(from, to) {
+    const g = pieces.get(`${from.row},${from.col}`);
+    if (!g) return Promise.resolve();
+    if (lifted === g) lifted = null;   // the hop takes over from the lift
+    pieces.delete(`${from.row},${from.col}`);
+    pieces.set(`${to.row},${to.col}`, g);
+    const x0 = g.position.x, z0 = g.position.z;
+    const x1 = col2x(to.col), z1 = row2z(to.row);
+    const dist = Math.hypot(x1 - x0, z1 - z0) / UNIT;
+    const lift = 6 + Math.min(dist, 4) * 2.5;
+    const y0 = g.position.y;
+    return tween(260 + Math.min(dist, 6) * 60, t => {
+        g.position.x = x0 + (x1 - x0) * t;
+        g.position.z = z0 + (z1 - z0) * t;
+        g.position.y = Y_PIECE + (y0 - Y_PIECE) * (1 - t) + Math.sin(Math.PI * t) * lift;
+    }, ease.inOutCubic);
+}
 
-export function highlightPiece(row, col, enable) {
-    const m = pieceMeshes[`${row},${col}`];
-    if (!m) return;
-    const base = m.children[0];
-    if (!base) return;
-    if (enable) {
-        base.material.emissive.set(0x444400);
-    } else {
-        const p = m.userData.player;
-        base.material.emissive.set(p === activeTurnPlayer ? TURN_EMISSIVE[p] : 0x000000);
+/** A captured piece sinks into the board and fades. */
+export function capture(pos) {
+    const g = pieces.get(`${pos.row},${pos.col}`);
+    if (!g) return Promise.resolve();
+    pieces.delete(`${pos.row},${pos.col}`);
+    const mats = [];
+    g.traverse(o => { if (o.material) { o.material = o.material.clone(); o.material.transparent = true; mats.push(o.material); } });
+    const y0 = g.position.y;
+    return tween(360, t => {
+        g.position.y = y0 - t * 5;
+        g.scale.setScalar(1 - t * 0.25);
+        mats.forEach(m => { m.opacity = (m.userData.o0 ??= m.opacity) * (1 - t); });
+    }, ease.inQuad).then(() => scene.remove(g));
+}
+
+export function promote(pos) {
+    const g = pieces.get(`${pos.row},${pos.col}`);
+    return g ? crown(g, true) : Promise.resolve();
+}
+
+/** Lift the selected piece; gently glow the ones that must capture. */
+let lifted = null;
+export function lift(pos) {
+    if (lifted) { const g = lifted; tween(160, t => { g.position.y = Y_PIECE + 3.5 * (1 - t); }); lifted = null; }
+    if (!pos) return;
+    const g = pieces.get(`${pos.row},${pos.col}`);
+    if (!g) return;
+    lifted = g;
+    tween(180, t => { g.position.y = Y_PIECE + 3.5 * t; }, ease.outBack);
+}
+
+let glowing = [];
+export function glow(list) {
+    glowing.forEach(g => { g.userData.mat.emissiveIntensity = 0; });
+    glowing = (list || []).map(p => pieces.get(`${p.row},${p.col}`)).filter(Boolean);
+}
+
+/* ---------- Markers ---------- */
+const markerGroup = new THREE.Group();
+scene.add(markerGroup);
+const dotGeo = new THREE.CircleGeometry(4.2, 32);
+const ringMarkGeo = new THREE.RingGeometry(6.2, 7.8, 40);
+const dotMat = new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.85, depthWrite: false });
+const threatMat = new THREE.MeshBasicMaterial({ color: DANGER, transparent: true, opacity: 0.9, depthWrite: false });
+
+export function showTargets(targets, isCapture) {
+    clearTargets();
+    for (const t of targets) {
+        const m = new THREE.Mesh(isCapture ? ringMarkGeo : dotGeo, dotMat);
+        m.rotation.x = -Math.PI / 2;
+        m.position.set(col2x(t.col), Y_TILE + 0.65, row2z(t.row));
+        m.renderOrder = 2;
+        markerGroup.add(m);
+    }
+}
+export function showThreats(cells) {
+    for (const t of cells) {
+        const m = new THREE.Mesh(ringMarkGeo, threatMat);
+        m.rotation.x = -Math.PI / 2;
+        m.position.set(col2x(t.col), Y_TILE + 0.66, row2z(t.row));
+        m.renderOrder = 2;
+        markerGroup.add(m);
+    }
+}
+export function clearTargets() { markerGroup.clear(); }
+
+const lastGroup = new THREE.Group();
+scene.add(lastGroup);
+const lastMat = new THREE.MeshBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.22, depthWrite: false });
+const lastGeo = new THREE.PlaneGeometry(TILE - 1, TILE - 1);
+export function markLast(cells) {
+    lastGroup.clear();
+    for (const c of cells || []) {
+        const m = new THREE.Mesh(lastGeo, lastMat);
+        m.rotation.x = -Math.PI / 2;
+        m.position.set(col2x(c.col), Y_TILE + 0.62, row2z(c.row));
+        lastGroup.add(m);
     }
 }
 
-export function highlightTurnPieces(player) {
-    activeTurnPlayer = player;
-    for (const [key, mesh] of Object.entries(pieceMeshes)) {
-        const base = mesh.children[0];
-        if (!base) continue;
-        const p = mesh.userData.player;
-        base.material.emissive.set(p === player ? TURN_EMISSIVE[p] : 0x000000);
-    }
+/* ---------- Picking ---------- */
+export function cellAt(clientX, clientY) {
+    const p = stage.pointOnPlane(clientX, clientY, Y_TILE + PIECE_H * 0.5);
+    if (!p) return null;
+    const col = Math.round(p.x / UNIT + 3.5);
+    const row = Math.round(-p.z / UNIT + 3.5);
+    if (row < 0 || row >= N || col < 0 || col >= N) return null;
+    return { row, col };
 }
 
-export function setCameraForRole(role) { cameraRole = role; fitCamera(); }
+export const canvas = stage.renderer.domElement;
 
-/* ── Resize ── */
-function onResize() {
-    const vp = window.visualViewport;
-    const w = vp ? vp.width  : window.innerWidth;
-    const h = vp ? vp.height : window.innerHeight;
-    camera.aspect = w / h;
-    renderer.setSize(w, h);
-    fitCamera();
+stage.onFrame((dt, t) => {
+    const k = 0.5 + 0.5 * Math.sin(t * 4);
+    glowing.forEach(g => { g.userData.mat.emissiveIntensity = 0.25 + 0.55 * k; });
+    dotMat.opacity = 0.65 + 0.25 * k;
+});
+
+/* ---------- Camera ---------- */
+let side = 'A';
+function frame() {
+    const h = N * UNIT / 2 + 11;
+    const corners = [];
+    for (const x of [-h, h]) for (const z of [-h, h]) corners.push(new THREE.Vector3(x, Y_TOP, z), new THREE.Vector3(x, 0, z));
+    const zs = side === 'B' ? -1 : 1;
+    stage.frame({
+        points: corners,
+        target: new THREE.Vector3(0, Y_TOP, 0),
+        dir: aspect => new THREE.Vector3(0, aspect < 0.8 ? 1.9 : 1.35, zs),
+    });
 }
-window.addEventListener('resize', onResize);
-window.addEventListener('orientationchange', () => setTimeout(onResize, 100));
-if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
-
-/* ── Events ── */
-on('boardChange', syncPieces);
-on('reset', () => { clearHighlights(); clearLastMove(); syncPieces(); });
-
-/* ── Animate ── */
-let lastTime = 0;
-function animate(time) {
-    requestAnimationFrame(animate);
-    lastTime = time;
-    renderer.render(scene, camera);
-}
-syncPieces();
-animate(0);
-requestAnimationFrame(() => fitCamera());
-
-export { scene, camera, renderer, pieceMeshes, highlightMeshes };
+export function setSide(s) { side = s; frame(); }
+frame();

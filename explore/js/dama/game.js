@@ -12,6 +12,7 @@ const state = {
     aiPlayer: 'B',
     scores: { A: 0, B: 0 },
     moveCount: 0,
+    gen: 0,            // bumps on every reset: late AI replies for an old game are ignored
     listeners: {}
 };
 
@@ -26,6 +27,7 @@ function emit(event, data) {
 
 function setGameMode(gm) {
     state.gameMode = gm;
+    state.gen++;
     if (gm === 'ai') { state.aiPlayer = 'B'; state.myRole = 'A'; }
     else if (gm === 'local') { state.myRole = null; }
     emit('gameModeChange', { gameMode: gm });
@@ -42,11 +44,12 @@ function tryMove(move) {
 }
 
 function applyRemoteMove(move) {
-    if (state.winner) return;
-    board.applyMove(move);
+    if (state.winner) return false;
+    if (!board.applyMove(move)) return false;
     state.moveCount++;
     emit('boardChange', null);
     _checkEnd();
+    return true;
 }
 
 function _checkEnd() {
@@ -68,8 +71,6 @@ function _checkEnd() {
 function _nextTurn() {
     state.currentPlayer = state.currentPlayer === 'A' ? 'B' : 'A';
     emit('turnChange', { player: state.currentPlayer });
-    if (state.gameMode === 'ai' && state.currentPlayer === state.aiPlayer)
-        emit('aiTurn', { player: state.aiPlayer });
 }
 
 function finishTurn() {
@@ -80,6 +81,7 @@ function finishTurn() {
 function resetGame() {
     const fresh = new DamaBoard();
     board.grid = fresh.grid;
+    state.gen++;
     state.currentPlayer = state.startingPlayer;
     state.winner = null;
     state.moveCount = 0;
@@ -91,6 +93,7 @@ function resetGame() {
 function replayMoves(moves) {
     const fresh = new DamaBoard();
     board.grid = fresh.grid;
+    state.gen++;
     state.currentPlayer = state.startingPlayer;
     state.winner = null;
     state.moveCount = 0;

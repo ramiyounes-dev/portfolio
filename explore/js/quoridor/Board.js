@@ -123,6 +123,17 @@ export class Board {
         return ok;
     }
 
+    /** Why a wall cannot go here, ignoring path rules: null when free. */
+    wallConflict(wx, wy, orientation) {
+        if (wx < 0 || wx > 7 || wy < 0 || wy > 7) return 'outside';
+        if (this.walls.has(`${orientation},${wx},${wy}`)) return 'overlap';
+        const cross = orientation === 'H' ? 'V' : 'H';
+        if (this.walls.has(`${cross},${wx},${wy}`)) return 'overlap';
+        if (orientation === 'H' && (this.walls.has(`H,${wx - 1},${wy}`) || this.walls.has(`H,${wx + 1},${wy}`))) return 'overlap';
+        if (orientation === 'V' && (this.walls.has(`V,${wx},${wy - 1}`) || this.walls.has(`V,${wx},${wy + 1}`))) return 'overlap';
+        return null;
+    }
+
     placeWall(wx, wy, orientation, player) {
         if (this.wallCounts[player] <= 0) return false;
         if (!this.isValidWallPlacement(wx, wy, orientation)) return false;

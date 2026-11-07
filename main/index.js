@@ -66,7 +66,10 @@ function splitChars(el) {
   // .ch:last-child should mean the last letter of the whole line
   const all = el.querySelectorAll('.ch');
   all.forEach(c => c.classList.remove('is-last'));
-  if (all.length) all[all.length - 1].classList.add('is-last');
+  // Accent the whole run of trailing dots (e.g. "connect.."), or just the last character
+  let i = all.length - 1;
+  if (i >= 0) all[i].classList.add('is-last');
+  while (i > 0 && all[i].textContent === '.' && all[i - 1].textContent === '.') all[--i].classList.add('is-last');
 }
 
 /* Decodes text through random glyphs before settling — the "signal" motif */

@@ -13,6 +13,7 @@ const state = {
     aiPlayer: 'B',
     scores: { A: 0, B: 0 },
     moveCount: 0,
+    gen: 0,            // bumps on every reset: late AI replies for an old game are ignored
     listeners: {}
 };
 
@@ -32,6 +33,7 @@ function setMode(mode) {
 
 function setGameMode(gm) {
     state.gameMode = gm;
+    state.gen++;
     if (gm === 'ai') {
         state.aiPlayer = 'B';
         state.myRole = 'A';
@@ -69,9 +71,9 @@ function tryPlaceWall(wx, wy, orientation) {
 }
 
 function applyRemoteMove(msg) {
-    if (state.winner) return;
+    if (state.winner) return false;
     if (msg.type === 'move') {
-        board.movePawn(state.currentPlayer, { x: msg.x, y: msg.y });
+        if (!board.movePawn(state.currentPlayer, { x: msg.x, y: msg.y })) return false;
         state.moveCount++;
         emit('boardChange', null);
         const winner = board.checkWin();
@@ -82,27 +84,25 @@ function applyRemoteMove(msg) {
             _nextTurn();
         }
     } else if (msg.type === 'wall') {
-        board.placeWall(msg.wx, msg.wy, msg.orientation, state.currentPlayer);
+        if (!board.placeWall(msg.wx, msg.wy, msg.orientation, state.currentPlayer)) return false;
         state.moveCount++;
         emit('boardChange', null);
         _nextTurn();
     } else if (msg.type === 'reset') {
         resetGame();
     }
+    return true;
 }
 
 function _nextTurn() {
     state.currentPlayer = state.currentPlayer === 'A' ? 'B' : 'A';
     state.mode = 'move';
     emit('turnChange', { player: state.currentPlayer });
-
-    if (state.gameMode === 'ai' && state.currentPlayer === state.aiPlayer) {
-        emit('aiTurn', { player: state.aiPlayer });
-    }
 }
 
 function resetGame() {
     const fresh = new Board();
+    state.gen++;
     board.grid = fresh.grid;
     board.walls = fresh.walls;
     board.wallOwners = fresh.wallOwners;
@@ -119,6 +119,7 @@ function resetGame() {
 
 function replayMoves(moves) {
     const fresh = new Board();
+    state.gen++;
     board.grid = fresh.grid;
     board.walls = fresh.walls;
     board.wallOwners = fresh.wallOwners;
