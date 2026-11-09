@@ -8,3 +8,11 @@ README.md
 tests/
 package.json
 tools/
+.claude/
+.playwright-mcp/
+.wrangler/
+.dev.vars
+**/bin/
+**/obj/
+**/__pycache__/
+.DS_Store
