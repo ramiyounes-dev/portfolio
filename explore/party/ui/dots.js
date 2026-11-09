@@ -33,17 +33,27 @@ export default {
         // The board is redrawn on every update: only boxes closed since the last one pop in
         const prev = root._dbBoxes;
         root._dbBoxes = [...v.boxes];
+        // The last line drawn (shared by the server, so every player, spectator and refreshed tab sees it).
+        // It draws itself in only when it is new here; after a refresh it is simply highlighted.
+        const lastKey = v.last ? `${v.last.kind}:${v.last.r}:${v.last.c}` : null;
+        const lastIsNew = root._dbLast !== undefined && lastKey !== root._dbLast;
+        root._dbLast = lastKey;
+        let glow = '';
         for (let r = 0; r < v.R; r++) for (let c = 0; c < v.C; c++) {
             const o = v.boxes[r * v.C + c];
             const fresh = prev && prev.length === v.boxes.length && !prev[r * v.C + c];
-            if (o) boxes += `<g class="db-box${fresh ? ' new' : ''}"><rect x="${P + c * U + 6}" y="${P + r * U + 6}" width="${U - 12}" height="${U - 12}" rx="10" fill="${col(o)}" opacity="0.28"/>
+            if (o) boxes += `<g class="db-box${fresh ? ' new' : ''}"><rect x="${P + c * U + 6}" y="${P + r * U + 6}" width="${U - 12}" height="${U - 12}" rx="10" fill="${col(o)}" opacity="0.28"/>${fresh ? `<rect x="${P + c * U + 6}" y="${P + r * U + 6}" width="${U - 12}" height="${U - 12}" rx="10" class="db-flash" stroke="${col(o)}"/>` : ''}
                 <text x="${P + c * U + U / 2}" y="${P + r * U + U / 2 + 14}" text-anchor="middle" class="db-init" fill="${col(o)}">${esc(nameOf(o).slice(0, 1).toUpperCase())}</text></g>`;
         }
         const edge = (kind, r, c, owner) => {
             const x1 = P + c * U, y1 = P + r * U;
             const [x2, y2] = kind === 'h' ? [x1 + U, y1] : [x1, y1 + U];
             const isLast = v.last && v.last.kind === kind && v.last.r === r && v.last.c === c;
-            if (owner) lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col(owner)}" stroke-width="${isLast ? 13 : 10}" stroke-linecap="round" class="${isLast ? 'db-last' : ''}"/>`;
+            if (owner && isLast) {
+                // A soft halo in the mover's colour under a thicker line (visible on light and dark boards)
+                glow = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col(owner)}" class="db-glow${lastIsNew ? ' new' : ''}"/>`;
+                lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col(owner)}" stroke-width="15" stroke-linecap="round" pathLength="1" class="db-last${lastIsNew ? ' new' : ''}"/>`;
+            } else if (owner) lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col(owner)}" stroke-width="10" stroke-linecap="round"/>`;
             else {
                 lines += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="db-free"/>`;
                 if (mine) {
@@ -57,7 +67,7 @@ export default {
         for (let r = 0; r <= v.R; r++) for (let c = 0; c < v.C; c++) edge('h', r, c, v.h[r * v.C + c]);
         for (let r = 0; r < v.R; r++) for (let c = 0; c <= v.C; c++) edge('v', r, c, v.v[r * (v.C + 1) + c]);
         for (let r = 0; r <= v.R; r++) for (let c = 0; c <= v.C; c++) dotsSvg += `<circle cx="${P + c * U}" cy="${P + r * U}" r="7" class="db-dot"/>`;
-        root.innerHTML = `<svg class="db-board ${mine ? 'mine' : ''}" viewBox="0 0 ${W} ${H}" role="img">${boxes}${lines}${dotsSvg}${hits}</svg>
+        root.innerHTML = `<svg class="db-board ${mine ? 'mine' : ''}" viewBox="0 0 ${W} ${H}" role="img">${boxes}${glow}${lines}${dotsSvg}${hits}</svg>
             ${mine ? `<p class="g-note">${esc(t('hint'))}</p>` : ''}`;
         root.querySelector('svg').onclick = e => {
             const h = e.target.closest('.db-hit');

@@ -3,6 +3,7 @@
    Games keep only their own rules, rendering and moves. */
 
 import { net, onNet, netSend, connectParty, disconnect } from '../network.js';
+import { turnWatcher, cueToggle, repaintCueToggles } from './turncue.js';
 import { initThemeToggle } from './theme.js';
 import { tr, getLang, setLang, translatePage } from './i18n3d.js';
 import { createSetup } from '../../party/client/setup.js';
@@ -45,7 +46,7 @@ export function createShell(opts) {
     topRight.innerHTML = '<div class="lang-switch" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="fr">FR</button></div>';
     const themeBtn = $('theme-toggle');
     themeBtn.replaceWith(topRight);
-    topRight.append(themeBtn);
+    topRight.append(cueToggle(), themeBtn);   // turn alert on / off, then the theme
     topRight.querySelector('.lang-switch').addEventListener('click', e => {
         const b = e.target.closest('button[data-lang]');
         if (!b) return;
@@ -66,8 +67,12 @@ export function createShell(opts) {
 
     /* ---------- HUD ---------- */
     let lastTurn = null;
+    const cue = turnWatcher();   // "your turn" sound + vibration (js/shared/turncue.js)
     function setTurn(player, o = {}) {
         lastTurn = [player, o];
+        // o.mine: the turn is the local player's (vs AI: the human; online: my side; same device: everyone)
+        if (o.over) cue.update('over', false);
+        else cue.update(player, o.mine ?? gameMode === 'local', tr('Your turn', lang));
         const { over = false, label = null } = o;
         el.turn.textContent = tr(label || `${NAME[player]}'s turn`, lang);
         el.turn.dataset.player = over ? '' : player;
@@ -97,6 +102,7 @@ export function createShell(opts) {
 
     function applyLang() {
         document.documentElement.lang = lang;
+        repaintCueToggles();
         topRight.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
         translatePage(document, lang);
         if (opts.title) { $('mode-title').textContent = opts.title[lang] || opts.title.en; document.querySelector('.top-title').textContent = opts.title[lang] || opts.title.en; }
@@ -138,7 +144,7 @@ export function createShell(opts) {
         Object.assign(NAME, BASE_NAME);
         if (mode === 'device' && names) { NAME.A = names[0] || BASE_NAME.A; NAME.B = names[1] || BASE_NAME.B; }
         setNames();
-        gameMode = mode === 'ai' ? 'ai' : 'local';
+        gameMode = mode === 'ai' ? 'ai' : 'local'; cue.reset();
         hide(el.mode);
         playing = true;
         opts.onStart(gameMode, { difficulty: difficulty || 'hard' });
@@ -149,7 +155,7 @@ export function createShell(opts) {
         try {
             await connectParty({ game: opts.gameId, code, create, name, target, visibility, lang });
             roomCode = code;
-            gameMode = 'online';
+            gameMode = 'online'; cue.reset();
             history.replaceState(null, '', `${location.pathname}?room=${code}`);
             renderRoom(net.room);
         } catch (err) {
@@ -218,7 +224,7 @@ export function createShell(opts) {
         if (gameMode === 'online') disconnect();
         roomCode = null;
         history.replaceState(null, '', location.pathname);
-        gameMode = 'local';
+        gameMode = 'local'; cue.reset();
         resetPending = false;
         playing = false;
         hide(el.confirm);

@@ -369,7 +369,17 @@ body.party-body {
 .db-init { font-family: var(--font-body); font-weight: 800; font-size: 42px; }
 .db-box { transform-box: fill-box; transform-origin: center; }
 .db-box.new { animation: pop 0.35s var(--ease-out); }
-.db-last { filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.6)); }
+.db-last { filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.35)); }
+/* Last move: the line draws itself in, its halo pulses twice then stays soft */
+.db-last.new { stroke-dasharray: 1; stroke-dashoffset: 1; animation: db-draw 0.32s var(--ease-out) forwards; }
+@keyframes db-draw { to { stroke-dashoffset: 0; } }
+.db-glow { stroke-width: 30; stroke-linecap: round; opacity: 0.3; }
+.db-glow.new { animation: db-glow 0.9s ease-out; }
+@keyframes db-glow { 0% { opacity: 0; } 30% { opacity: 0.6; } 60% { opacity: 0.25; } 80% { opacity: 0.5; } 100% { opacity: 0.3; } }
+/* Boxes closed by that move flash their outline once */
+.db-flash { fill: none; stroke-width: 6; opacity: 0; animation: db-flash 1s ease-out; }
+@keyframes db-flash { 0%, 100% { opacity: 0; } 25% { opacity: 1; } 60% { opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) { .db-last.new { stroke-dasharray: none; stroke-dashoffset: 0; } }
 
 /* Reversi */
 /* Reversi: a felt board in a wooden frame, slightly tilted; discs are thick two-sided counters */
@@ -900,3 +910,25 @@ html:has(> body.party-body) { font-size: clamp(14.5px, calc(11.5px + 0.24vw + 0.
   100% { transform: rotate(var(--a)) translateY(calc(-1 * var(--d) - 40px)) rotate(240deg); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .p-confetti { display: none; } }
+
+/* ---------- Battleship: placing the fleet (drag, tap, rotate) ---------- */
+.bs-grid.placing { touch-action: none; }
+.bs-dock { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 64px; align-items: center; }
+.bs-dock-ship {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 10px; min-height: 56px;
+  border: 1px solid var(--line-2); border-radius: 12px; background: var(--paper); color: var(--text);
+  font-size: 0.72rem; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.bs-dock-ship svg.ship { position: static; display: block; width: calc(var(--len) * clamp(14px, 4.4vw, 22px)); height: auto; aspect-ratio: var(--len) / 1; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3)); pointer-events: none; }
+.bs-dock-ship.sel { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25); }
+.bs-dock-ship.dragging { opacity: 0.35; }
+.bs-handle { position: relative; z-index: 4; border-radius: 6px; cursor: grab; touch-action: none; }
+.bs-handle.sel { box-shadow: 0 0 0 2px var(--accent), 0 0 12px rgba(var(--accent-rgb), 0.5); }
+.bs-handle.dragging { cursor: grabbing; }
+.bs-cell.pv-ok { background: color-mix(in srgb, #2fbf71 60%, var(--paper)); box-shadow: inset 0 0 0 2px #2fbf71; }
+.bs-cell.pv-bad { background: color-mix(in srgb, #e04848 60%, var(--paper)); box-shadow: inset 0 0 0 2px #e04848; }
+.bs-ghost { position: fixed; left: 0; top: 0; z-index: 70; pointer-events: none; opacity: 0.9; filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45)); }
+.bs-ghost svg.ship { width: 100%; height: 100%; display: block; }
+.bs-ghost.bad { opacity: 0.6; }
+.bs-ghost.bad svg .sh-hull { fill: #e04848; }
+.bs-place-actions { justify-content: center; flex-wrap: wrap; }

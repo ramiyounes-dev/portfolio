@@ -87,7 +87,7 @@ function refresh() {
     let label = null;
     if (state.gameMode === 'ai') label = p === state.aiPlayer ? 'AI\'s turn' : 'Your turn';
     if (state.gameMode === 'online') label = p === state.myRole ? 'Your turn' : `${NAME[p]}'s turn`;
-    shell.setTurn(p, { label });
+    shell.setTurn(p, { label, mine: isMyTurn() });
 
     if (flash) return shell.setHint(flash);
     if (state.gameMode === 'online' && !net.opponentConnected) return shell.setHint('Waiting for your opponent to join...');

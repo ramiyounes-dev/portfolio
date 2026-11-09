@@ -5,6 +5,7 @@ import { initialLang, saveLang, makeT } from './i18n.js';
 import { connect } from './net.js';
 import { makeCode, cleanCode, CODE_RE } from '../core/roomcode.js';
 import { initThemeToggle } from '../../js/shared/theme.js';
+import { turnWatcher, cueToggle, repaintCueToggles } from '../../js/shared/turncue.js';
 import { SLUGS } from './slugs.js';
 import { createSetup } from './setup.js';
 import { createLocalHost, BOT_NAMES } from './local.js';
@@ -59,6 +60,7 @@ export function mountGame(ui) {
             h('div', { class: 'lang-switch', role: 'group', 'aria-label': 'Language' },
                 h('button', { type: 'button', 'data-lang': 'en' }, 'EN'), h('button', { type: 'button', 'data-lang': 'fr' }, 'FR')),
             h('button', { id: 'theme-toggle', class: 'theme-toggle', type: 'button', 'data-ta': 'theme' }, h('span', { class: 'theme-dot', 'aria-hidden': 'true' }))));
+    top.querySelector('.top-right').insertBefore(cueToggle(), top.querySelector('#theme-toggle'));   // turn alert on / off
 
     const entry = h('section', { id: 's-entry', class: 'p-screen' },
         h('div', { class: 'p-hero' },
@@ -122,6 +124,7 @@ export function mountGame(ui) {
     /* ---------- Language ---------- */
     function applyStatic() {
         document.documentElement.lang = lang;
+        repaintCueToggles();
         document.title = `${title()} | ramiyounes.dev`;
         top.querySelector('.top-title').textContent = title();
         $('en-title').textContent = title();
@@ -206,6 +209,7 @@ export function mountGame(ui) {
     function onMessage(msg, ctx) {
         switch (msg.t) {
             case '_open':
+                cue.reset();   // a (re)connection: the first state is not a turn change
                 conn.send({ t: 'hello', pid: tabStore.get('party:pid:' + code), name: ctx.name || pendingName });
                 break;
             case 'welcome':
@@ -222,6 +226,7 @@ export function mountGame(ui) {
                 setColourOrder(room.players);
                 offset = room.now - Date.now();
                 render();
+                checkTurnCue();
                 break;
             case 'handoff':
                 $('ho-title').textContent = t('su.passTo', { name: msg.name });
@@ -269,6 +274,19 @@ export function mountGame(ui) {
             serverNow: () => Date.now() + offset,
             timeLeft: () => (view && view.deadline ? Math.max(0, view.deadline - (Date.now() + offset)) : null),
         };
+    }
+
+    /* ---------- "Your turn" cue (sound + light vibration, see js/shared/turncue.js) ----------
+       Fires when the turn passes to this player: not on load or reconnect, not for spectators, not again while
+       the same turn goes on (a box closed in Dots, a Blackjack hit). Same device: on every change of player. */
+    const cue = turnWatcher();
+    function checkTurnCue() {
+        if (!room || room.phase !== 'playing' || !view) { cue.update('idle', false); return; }
+        const turn = ui.turnOf ? ui.turnOf(view, api()) : view.turn;
+        const list = (Array.isArray(turn) ? turn : [turn]).filter(Boolean).map(String);
+        if (room.local && room.mode === 'device') { cue.update('d:' + list.join(','), list.length > 0, t('yourTurn')); return; }
+        const mine = list.includes(me) && (room.seated || []).includes(me);
+        cue.update(mine ? 'me' : 'x:' + list.join(','), mine, t('yourTurn'));
     }
 
     /* ---------- Screens ---------- */
