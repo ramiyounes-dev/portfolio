@@ -21,7 +21,7 @@ export function makeDuel({ id, newBoard, legal, outcome }) {
     const pidOf = (s, role) => s.players.find(p => s.roles[p] === role);
 
     return {
-        id, min: 2, max: 2, duel: true,
+        id, min: 2, max: 2, duel: true, endless: true,   // a running score, no match end: never forfeited
         settings: [{ key: 'queueMode', type: 'select', def: 'winner', options: ['winner', 'rotate'] }],
 
         setup(ctx) {

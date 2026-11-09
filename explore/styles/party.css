@@ -849,7 +849,9 @@ body.party-body {
   #s-game > .p-gamebar, #s-game > .p-scores, #s-game > .p-banner { grid-column: 1; }
   #s-game > .p-gamebar { flex-wrap: wrap; }
   #s-game > .p-scores { flex-wrap: wrap; overflow: visible; }
-  #s-game > .p-game, #s-game > .p-results { grid-column: 2; grid-row: 1 / -1; min-width: 0; }
+  #s-game > .p-game { grid-column: 2; grid-row: 1 / -1; min-width: 0; }
+  /* Match over floats over the side of the screen: it never pushes the board around */
+  #s-game > .p-results { position: fixed; z-index: 40; right: max(16px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); width: min(400px, 46vw); max-height: calc(100dvh - var(--top-h) - 24px); overflow-y: auto; }
   #s-game > .p-game { max-height: var(--fit-h); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
   .g-board, .ut-big, .db-board, .rv-board, .bs-grid, .pc-stage { max-width: min(480px, calc(var(--fit-h) - 60px)); margin-left: auto; margin-right: auto; }
   /* Memory: cards are 3:4, so the grid is as wide as the height allows for its rows */
@@ -881,3 +883,20 @@ body.party-body {
 /* Text follows the screen: every rem in the games grows a little on big screens and shrinks on small ones
    (both width and height count, so a phone on its side is treated like a small screen too) */
 html:has(> body.party-body) { font-size: clamp(14.5px, calc(11.5px + 0.24vw + 0.24vh), 18px); }
+
+/* ---------- Match over: score, celebration ---------- */
+.p-results-score { margin-top: -4px; text-align: center; font-family: var(--font-body); font-weight: 700; font-size: clamp(1.4rem, 6vw, 2rem); font-variant-numeric: tabular-nums; color: var(--accent); }
+.p-results-title { position: relative; }
+.p-results-box.won .p-results-title > span { display: inline-block; animation: p-win 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+@keyframes p-win { from { transform: scale(0.6); opacity: 0; } }
+.p-results-actions { display: flex; flex-direction: column; gap: 8px; }
+.p-results-actions .p-row { justify-content: center; flex-wrap: wrap; }
+.p-next { font-variant-numeric: tabular-nums; color: var(--text); }
+.p-confetti { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; }
+.p-confetti i { position: absolute; left: -3px; top: -5px; width: 6px; height: 10px; border-radius: 2px; background: hsl(var(--h) 80% 60%); opacity: 0;
+  animation: p-confetti 1.1s var(--t) cubic-bezier(0.15, 0.7, 0.3, 1) both; }
+@keyframes p-confetti {
+  0% { transform: rotate(var(--a)) translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: rotate(var(--a)) translateY(calc(-1 * var(--d) - 40px)) rotate(240deg); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .p-confetti { display: none; } }

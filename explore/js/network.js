@@ -28,6 +28,15 @@ const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* blocked */ } },
 };
+/* The player id of a room belongs to one tab: a second tab on the same room is a new player (it can not take
+   over the host), and a refresh keeps the tab's own id. sessionStorage does exactly that. */
+const tabStore = {
+    get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) {
+        try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { /* blocked */ }
+        try { localStorage.removeItem(k); } catch (e) { /* old shared copy from before */ }
+    },
+};
 
 /** Old-protocol message for a server move. */
 function toMsg(m) {
@@ -109,10 +118,10 @@ export function connectParty({ game, code, create = false, name: nick, target = 
             },
             onMessage(msg) {
                 switch (msg.t) {
-                    case '_open': conn.send({ t: 'hello', pid: store.get('party:pid:' + code), name }); break;
+                    case '_open': conn.send({ t: 'hello', pid: tabStore.get('party:pid:' + code), name }); break;
                     case 'welcome':
                         net.me = msg.pid;
-                        store.set('party:pid:' + code, msg.pid);
+                        tabStore.set('party:pid:' + code, msg.pid);
                         if (!settled) { settled = true; resolve({ code, pid: msg.pid }); }
                         break;
                     case 'state': net.me = msg.me; onState(msg.room, msg.view); break;
@@ -132,7 +141,7 @@ export function connectParty({ game, code, create = false, name: nick, target = 
 
 export function disconnect() {
     if (conn) { try { conn.send({ t: 'leave' }); } catch (e) { /* closed */ } const c = conn; setTimeout(() => c.close(), 100); }
-    if (net.roomCode) store.set('party:pid:' + net.roomCode, null);
+    if (net.roomCode) tabStore.set('party:pid:' + net.roomCode, null);
     conn = null;
     net.connected = false;
     net.opponentConnected = false;

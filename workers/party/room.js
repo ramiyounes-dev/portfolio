@@ -15,6 +15,7 @@ const GRACE_MS = 60_000;           // a dropped player keeps their seat this lon
 const MAX_MSG = 48_000;            // bytes per client message (drawing strokes are the largest)
 const RATE = { window: 1000, max: 45 };
 const IDLE_MS = 6 * 60 * 60 * 1000;
+const NEXT_MS = 10_000;            // duel with people waiting: the next match starts on its own after this
 
 const uid = () => crypto.randomUUID().replace(/-/g, '').slice(0, 12);
 
@@ -178,17 +179,30 @@ export class PartyRoom {
             case 'spectate':
                 p.spectator = !!msg.on;
                 if (p.spectator) r.queue = r.queue.filter(id => id !== pid);
-                else if (this.mod.duel && r.phase === 'playing' && !this.seated().includes(pid) && !r.queue.includes(pid)) r.queue.push(pid);
+                else if (this.mod.duel && r.phase !== 'lobby' && !this.seated().includes(pid) && !r.queue.includes(pid)) r.queue.push(pid);
                 if (!this.checkAutostart()) this.changed();
                 break;
             case 'start':
                 if (!isHost || r.phase !== 'lobby') return;
                 if (!this.startGame()) this.send(ws, { t: 'err', code: 'not_enough' });
                 break;
-            case 'rematch':
-                if (!isHost || r.phase !== 'results') return;
+            case 'rematch': {
+                if (r.phase !== 'results') return;
+                // Duel with nobody waiting: both players have to say yes. Otherwise the host starts it.
+                if (this.mod.duel && !this.queueReady() && this.seated().includes(pid)) {
+                    r.rematch = r.rematch || [];
+                    if (msg.off) r.rematch = r.rematch.filter(id => id !== pid);
+                    else if (!r.rematch.includes(pid)) r.rematch.push(pid);
+                    const need = this.seated().filter(id => !this.isAway(id));
+                    if (need.length >= 2 && need.every(id => r.rematch.includes(id))) {
+                        if (!this.startGame({ rematch: true })) this.send(ws, { t: 'err', code: 'not_enough' });
+                    } else this.changed();
+                    return;
+                }
+                if (!isHost) return;
                 if (!this.startGame({ rematch: true })) this.send(ws, { t: 'err', code: 'not_enough' });
                 break;
+            }
             case 'lobby':
                 if (!isHost || r.phase === 'lobby') return;
                 this.toLobby();
@@ -233,7 +247,7 @@ export class PartyRoom {
             r.players.push(p);
             conn.pid = p.id;
             if (!r.host || this.isAway(r.host)) r.host = p.id;
-            if (r.phase === 'playing') this.lateJoin(p.id);
+            if (r.phase === 'playing' || (r.phase === 'results' && this.mod.duel)) this.lateJoin(p.id);
         }
         this.send(ws, { t: 'welcome', pid: p.id, code: r.code });
         if (r.state && this.mod.sync) this.send(ws, { t: 'sync', data: this.mod.sync(r.state, p.id) });
@@ -255,6 +269,7 @@ export class PartyRoom {
         p.left = true;
         p.connected = false;
         p.lastSeen = 0;
+        this.forfeit(pid);
         r.queue = r.queue.filter(id => id !== pid);
         if (r.phase === 'lobby') r.players = r.players.filter(q => q.id !== pid);
         for (const [w, c] of this.conns) if (c.pid === pid) { c.pid = null; try { w.close(1000, 'left'); } catch (e) { /* */ } }
@@ -296,9 +311,35 @@ export class PartyRoom {
         if (!p || p.connected) return;
         if (r.phase === 'lobby') r.players = r.players.filter(q => q.id !== pid);
         r.queue = r.queue.filter(id => id !== pid);
+        this.forfeit(pid);     // a duel player gone past the grace period loses the match
         this.passHost();
         this.changed();   // re-arms timers: an away player's turns are now skipped quickly
         if (!this.conns.size && !r.players.some(q => this.present(q))) this.save();
+    }
+
+    /** A duel player who left (or stayed away past the grace period) loses the match: the other one wins it.
+        Open-ended duels (the 3D games keep a running score) are left alone. */
+    forfeit(pid) {
+        const r = this.room, mod = this.mod;
+        if (!mod.duel || mod.endless || r.phase !== 'playing' || !r.state || r.state.over) return;
+        const seats = this.seated();
+        if (!seats.includes(pid)) return;
+        const other = seats.find(id => id !== pid);
+        if (!other) return;
+        const score = id => (r.state.wins && r.state.wins[id] != null ? r.state.wins[id] : '');
+        r.state.over = {
+            ranking: [{ id: other, score: score(other), rank: 1 }, { id: pid, score: score(pid), rank: 2 }],
+            winners: [other], note: 'forfeit', noteVars: { name: (this.player(pid) || {}).name || '?' },
+        };
+        r.state.deadline = null;
+    }
+
+    /** Someone is waiting to play the next duel (queue of present, non-spectating players). */
+    queueReady() {
+        const r = this.room;
+        if (!this.mod.duel) return false;
+        const eligible = this.eligible(), seats = this.seated();
+        return r.queue.some(id => eligible.includes(id) && !seats.includes(id));
     }
 
     /* ---------------- Game lifecycle ---------------- */
@@ -348,6 +389,8 @@ export class PartyRoom {
         r.state = mod.setup({ ...this.ctx(), players: seats });
         r.phase = 'playing';
         r.results = null;
+        r.rematch = [];
+        r.nextAt = null;
         this.changed();
         return true;
     }
@@ -357,6 +400,8 @@ export class PartyRoom {
         r.phase = 'lobby';
         r.state = null;
         r.results = null;
+        r.rematch = [];
+        r.nextAt = null;
         r.players = r.players.filter(p => !p.left && this.present(p));
         for (const p of r.players) p.late = false;
         this.passHost();
@@ -370,6 +415,14 @@ export class PartyRoom {
             r.phase = 'results';
             r.results = r.state.over;
             for (const w of r.results.winners || []) r.wins[w] = (r.wins[w] || 0) + 1;
+            r.rematch = [];
+        }
+        // Results of a duel with people waiting: the next match starts by itself after a visible countdown
+        if (r.phase === 'results') {
+            if (this.queueReady()) r.nextAt = r.nextAt || Date.now() + NEXT_MS;
+            else r.nextAt = null;
+            // A rematch vote from someone no longer seated or present does not count
+            r.rematch = (r.rematch || []).filter(id => this.seated().includes(id) && !this.isAway(id));
         }
         r.seq++;
         this.arm();
@@ -401,6 +454,10 @@ export class PartyRoom {
         clearTimeout(this.timer);
         this.timer = null;
         const r = this.room;
+        if (r && r.phase === 'results' && r.nextAt) {
+            this.timer = setTimeout(() => { if (this.room && this.room.phase === 'results' && this.queueReady()) this.startGame({ rematch: true }); }, Math.max(0, r.nextAt - Date.now()));
+            return;
+        }
         if (!r || r.phase !== 'playing' || !r.state) return;
         const st = r.state;
         const waiting = this.mod.awaiting ? this.mod.awaiting(st) : [];
@@ -429,6 +486,7 @@ export class PartyRoom {
                 spectator: !!p.spectator, late: !!p.late,
             })),
             seated: this.seated(), queue: r.queue, wins: r.wins, results: r.results, now: Date.now(),
+            rematch: r.rematch || [], nextAt: r.nextAt || null,
         };
     }
 

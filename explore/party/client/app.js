@@ -31,6 +31,15 @@ const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
     set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* blocked */ } },
 };
+/* The player id of a room belongs to one tab: a second tab on the same room is a new player (it can not take
+   over the host), and a refresh keeps the tab's own id. sessionStorage does exactly that. */
+const tabStore = {
+    get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) {
+        try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) { /* blocked */ }
+        try { localStorage.removeItem(k); } catch (e) { /* old shared copy from before */ }
+    },
+};
 
 export function mountGame(ui) {
     const logic = ui.logic;
@@ -197,12 +206,12 @@ export function mountGame(ui) {
     function onMessage(msg, ctx) {
         switch (msg.t) {
             case '_open':
-                conn.send({ t: 'hello', pid: store.get('party:pid:' + code), name: ctx.name || pendingName });
+                conn.send({ t: 'hello', pid: tabStore.get('party:pid:' + code), name: ctx.name || pendingName });
                 break;
             case 'welcome':
                 me = msg.pid;
                 if (msg.local) break;
-                store.set('party:pid:' + code, me);
+                tabStore.set('party:pid:' + code, me);
                 history.replaceState(null, '', `${location.pathname}?room=${code}`);
                 entryMsg('');
                 break;
@@ -226,7 +235,7 @@ export function mountGame(ui) {
             case 'err': toast(t('err.' + msg.code) !== 'err.' + msg.code ? t('err.' + msg.code) : t(msg.code)); break;
             case 'error':
                 if (msg.code === 'taken' && ctx.create && ctx.tries < 6) { start(makeCode(), true, ctx.name, ctx.tries + 1, ctx.extra); return; }
-                if (msg.code === 'not_found' || msg.code === 'full' || msg.code === 'wrong_game') store.set('party:pid:' + code, null);
+                if (msg.code === 'not_found' || msg.code === 'full' || msg.code === 'wrong_game') tabStore.set('party:pid:' + code, null);
                 if (msg.soft && me) { toast(t('err.' + msg.code)); return; }
                 showScreen('entry');
                 if (msg.code === 'wrong_game') {
@@ -239,7 +248,7 @@ export function mountGame(ui) {
     }
 
     // Coming back to a room link we already belong to: reconnect straight away
-    if (params.get('room') && store.get('party:pid:' + cleanCode(params.get('room')))) {
+    if (params.get('room') && tabStore.get('party:pid:' + cleanCode(params.get('room')))) {
         start(cleanCode(params.get('room')), false, store.get('party:name') || '', 0);
     }
 
@@ -315,8 +324,9 @@ export function mountGame(ui) {
         handoffEl.classList.add('hidden');
         $('g-root').classList.remove('veiled');
         if (conn && conn.local) { conn.close(); conn = null; me = null; room = null; view = null; showScreen('entry'); setup.show('count'); return; }
-        if (conn) { conn.send({ t: 'leave' }); setTimeout(() => conn && conn.close(), 150); }
-        store.set('party:pid:' + code, null);
+        // Keep our own handle: conn is cleared just below, and the socket must still be closed (else it reconnects)
+        if (conn) { const c = conn; c.send({ t: 'leave' }); setTimeout(() => c.close(), 150); }
+        tabStore.set('party:pid:' + code, null);
         conn = null; me = null; room = null; view = null;
         history.replaceState(null, '', location.pathname);
         showScreen('entry');
@@ -462,7 +472,7 @@ export function mountGame(ui) {
         $('g-code').disabled = !!room.local;
         const a = api();
         const thinking = room.phase === 'playing' && room.thinking && room.thinking.length ? room.thinking : null;
-        $('g-status').textContent = !view ? '' : thinking && thinking.length === 1 ? `${nameOf(thinking[0])} · ${t('su.thinking')}`
+        $('g-status').textContent = room.phase === 'results' && room.results ? resultHead(room.results) : !view ? '' : thinking && thinking.length === 1 ? `${nameOf(thinking[0])} · ${t('su.thinking')}`
             : (ui.status ? ui.status(view, a) : defaultStatus(view));
         $('g-scores').innerHTML = view ? scoreboard() : '';
         banner();
@@ -478,38 +488,81 @@ export function mountGame(ui) {
         return v.turn === me ? t('yourTurn') : t('turnOf', { name: nameOf(v.turn) });
     }
 
+    /* ---------- Results / match over ----------
+       Shown to everyone (players and spectators) when the room is in its results phase. The fixed part is drawn
+       once per result, so the celebration plays once; the actions under it update on every state. */
+    let resKey = null;
+    function resultHead(r) {
+        const names = (r.winners || []).map(nameOf);
+        if (room.duel) return names.length === 1 ? t('matchWinner', { name: names[0] }) : t('matchDraw');
+        return !names.length ? t('draw') : names.length === 1 ? t('winner', { name: names[0] }) : t('winners', { names: names.join(', ') });
+    }
+    function resultActions() {
+        const isHost = room.local || room.host === me;
+        const btn = (r, label, cls = '') => `<button type="button" class="p-btn ${cls}" data-r="${r}">${esc(label)}</button>`;
+        const leave = room.local ? '' : btn('leave', t('leave'));
+        if (room.local) {
+            return `<div class="p-row">${btn('rematch', t('rematch'), 'primary')}${btn('lobby', t('toLobby'))}${btn('setup', t('su.newGame'))}</div>`;
+        }
+        let top = '', main = '';
+        if (room.duel && room.nextAt) {
+            // People are waiting: the next match starts by itself (the queue setting picks who plays)
+            top = `<p class="p-msg center p-next" data-countdown>${esc(t('nextIn', { n: Math.max(0, Math.ceil((room.nextAt - (Date.now() + offset)) / 1000)) }))}</p>`;
+            if (isHost) main = btn('rematch', t('startNow'), 'primary');
+        } else if (room.duel) {
+            // Same two players: both have to say yes
+            const seats = room.seated, votes = room.rematch || [];
+            const other = seats.find(id => id !== me);
+            if (seats.includes(me)) {
+                if (votes.includes(me)) { top = `<p class="p-msg center">${esc(t('waitingFor', { name: nameOf(other) }))}…</p>`; main = btn('rematch-off', t('cancel')); }
+                else { if (votes.includes(other)) top = `<p class="p-msg center ok">${esc(t('wantsRematch', { name: nameOf(other) }))}</p>`; main = btn('rematch', t('rematch'), 'primary'); }
+            } else top = `<p class="p-msg center">${esc(votes.length ? t('wantsRematch', { name: votes.map(nameOf).join(', ') }) : t('waitingPlayers'))}</p>`;
+        } else if (isHost) main = btn('rematch', t('rematch'), 'primary');
+        else top = `<p class="p-msg center">${esc(t('waitingRematch', { name: nameOf(room.host) }))}</p>`;
+        return `${top}<div class="p-row">${main}${isHost ? btn('lobby', t('toLobby')) : ''}${leave}</div>`;
+    }
     function renderResults() {
         const el = $('g-results');
-        if (room.phase !== 'results' || !room.results) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+        if (room.phase !== 'results' || !room.results) { el.classList.add('hidden'); el.innerHTML = ''; resKey = null; return; }
         const r = room.results;
-        const names = (r.winners || []).map(nameOf);
-        const head = !names.length ? t('draw') : names.length === 1 ? t('winner', { name: names[0] }) : t('winners', { names: names.join(', ') });
-        const isHost = room.local || room.host === me;
-        const rows = (r.ranking || []).map(row => `<li><span class="p-rank">${row.rank}</span><span class="p-dot" style="--hue:${hue(row.id)}"></span><span class="p-name">${esc(nameOf(row.id))}</span><span class="p-score-val">${esc(row.label ?? row.score)}</span><span class="p-wins">${room.wins[row.id] || 0} ${esc(t((room.wins[row.id] || 0) === 1 ? 'roomWin' : 'roomWins'))}</span></li>`).join('');
-        el.innerHTML = `<div class="p-results-box">
-            <span class="p-label">${esc(t('results'))}</span>
-            <h2 class="p-results-title">${esc(head)}</h2>
-            ${r.note ? `<p class="p-msg center">${esc(t(r.note, r.noteVars || {}))}</p>` : ''}
-            <div id="g-results-extra"></div>
-            <ol class="p-ranking">${rows}</ol>
-            ${room.aiReveal && Object.keys(room.aiReveal).length ? `<ul class="p-reveal">${Object.entries(room.aiReveal).map(([id, l]) => `<li><b>${esc(nameOf(id))}</b> ${esc(l[lang] || l.en)}</li>`).join('')}</ul>` : ''}
-            ${isHost ? `<div class="p-row"><button type="button" class="p-btn primary" data-r="rematch">${esc(room.duel && !room.local ? t('nextMatch') : t('rematch'))}</button><button type="button" class="p-btn" data-r="lobby">${esc(t('toLobby'))}</button>${room.local ? `<button type="button" class="p-btn" data-r="setup">${esc(t('su.newGame'))}</button>` : ''}</div>`
-                : `<p class="p-msg center">${esc(t('waitingRematch', { name: nameOf(room.host) }))}</p>`}
-        </div>`;
+        const key = JSON.stringify(r);
         const wasHidden = el.classList.contains('hidden');
-        el.classList.remove('off');
-        if (ui.results) ui.results($('g-results-extra'), r, api());
-        if (wasHidden) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
+        if (key !== resKey) {
+            resKey = key;
+            const won = (r.winners || []).length > 0;
+            const scores = (r.ranking || []).map(row => row.score);
+            const scoreLine = room.duel && scores.length === 2 && scores.every(x => typeof x === 'number') ? scores.join(' – ') : '';
+            const rows = (r.ranking || []).map(row => `<li><span class="p-rank">${row.rank}</span><span class="p-dot" style="--hue:${hue(row.id)}"></span><span class="p-name">${esc(nameOf(row.id))}</span><span class="p-score-val">${esc(row.label ?? row.score)}</span><span class="p-wins">${room.wins[row.id] || 0} ${esc(t((room.wins[row.id] || 0) === 1 ? 'roomWin' : 'roomWins'))}</span></li>`).join('');
+            const confetti = won ? `<span class="p-confetti" aria-hidden="true">${[...Array(18)].map((_, i) => `<i style="--a:${(i * 47) % 360}deg;--d:${60 + ((i * 37) % 70)}px;--h:${(i * 67) % 360};--t:${(i % 6) * 40}ms"></i>`).join('')}</span>` : '';
+            el.innerHTML = `<div class="p-results-box ${won ? 'won' : ''}">
+                <span class="p-label">${esc(t(room.duel ? 'matchOver' : 'results'))}</span>
+                <h2 class="p-results-title">${confetti}<span>${esc(resultHead(r))}</span></h2>
+                ${scoreLine ? `<p class="p-results-score">${esc(scoreLine)}</p>` : ''}
+                ${r.note ? `<p class="p-msg center">${esc(t(r.note, r.noteVars || {}))}</p>` : ''}
+                <div id="g-results-extra"></div>
+                <ol class="p-ranking">${rows}</ol>
+                ${room.aiReveal && Object.keys(room.aiReveal).length ? `<ul class="p-reveal">${Object.entries(room.aiReveal).map(([id, l]) => `<li><b>${esc(nameOf(id))}</b> ${esc(l[lang] || l.en)}</li>`).join('')}</ul>` : ''}
+                <div class="p-results-actions"></div>
+            </div>`;
+            if (ui.results) ui.results($('g-results-extra'), r, api());
+        }
+        el.querySelector('.p-results-actions').innerHTML = resultActions();
+        el.classList.remove('hidden');
+        if (wasHidden) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 250);
     }
     $('g-results').addEventListener('click', e => {
         const b = e.target.closest('button[data-r]');
-        if (b && b.dataset.r === 'setup') { leaveRoom(); return; }
-        if (b && conn) conn.send({ t: b.dataset.r });
+        if (!b) return;
+        if (b.dataset.r === 'setup' || b.dataset.r === 'leave') { leaveRoom(); return; }
+        if (b.dataset.r === 'rematch-off') { conn && conn.send({ t: 'rematch', off: true }); return; }
+        if (conn) conn.send({ t: b.dataset.r });
     });
 
     /* ---------- Timer bar ---------- */
     (function tick() {
         requestAnimationFrame(tick);
+        const cd = room && room.nextAt ? document.querySelector('#g-results [data-countdown]') : null;
+        if (cd) cd.textContent = t('nextIn', { n: Math.max(0, Math.ceil((room.nextAt - (Date.now() + offset)) / 1000)) });
         const el = $('g-timer');
         if (!room || room.phase !== 'playing' || !view || !view.deadline) { el.classList.add('off'); return; }
         const left = Math.max(0, view.deadline - (Date.now() + offset));
