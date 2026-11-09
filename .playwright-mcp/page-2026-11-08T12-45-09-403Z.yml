@@ -1,0 +1,43 @@
+- generic [active] [ref=f52e1]:
+  - banner [ref=f52e4]:
+    - link "Explore" [ref=f52e5] [cursor=pointer]:
+      - /url: ../
+      - generic [aria-hidden] [ref=f52e6]: ←
+      - text: Explore
+    - generic [ref=f52e7]: Connect 4.
+    - generic [ref=f52e8]:
+      - group "Language" [ref=f52e9]:
+        - button "EN" [pressed] [ref=f52e10]
+        - button "FR" [ref=f52e11]
+      - button "Toggle theme" [ref=f52e12] [cursor=pointer]
+  - generic:
+    - generic:
+      - generic:
+        - generic: Amber
+        - generic: 0 discs
+        - generic: 0 wins
+      - generic:
+        - generic: Amber's turn
+        - generic: Click a column · ← → then Enter · keys 1 to 7
+      - generic:
+        - generic: Ivory
+        - generic: 0 discs
+        - generic: 0 wins
+  - generic:
+    - button "Restart" [ref=f52e14] [cursor=pointer]
+    - button "Menu" [ref=f52e15] [cursor=pointer]
+    - button "How to play" [ref=f52e16] [cursor=pointer]: "?"
+  - dialog [ref=f52e17]:
+    - generic [ref=f52e18]:
+      - generic [ref=f52e19]:
+        - generic [ref=f52e20]: Fig. 03
+        - generic [ref=f52e21]: Explore
+      - heading "Connect 4" [level=1] [ref=f52e22]
+      - generic [ref=f52e23]:
+        - generic [ref=f52e25]:
+          - generic [ref=f52e26]: Step 1
+          - heading "Players" [level=2] [ref=f52e27]
+          - paragraph [ref=f52e28]: "2 players: this game is a duel."
+          - button "Next" [ref=f52e29]
+        - paragraph [ref=f52e30]
+      - button "How to play" [ref=f52e31] [cursor=pointer]

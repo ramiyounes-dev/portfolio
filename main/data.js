@@ -4,18 +4,18 @@ const SITE_DATA = {
     nav: { home: 'Home', about: 'About', experience: 'Experience', projects: 'Projects', menu: 'Menu', close: 'Close', theme: 'Toggle light / dark theme', skip: 'Skip to content' },
     hero: {
       greeting: "Hello, I'm", name: 'Rami',
-      role1: 'Software Developer', role2: 'Mainframe Analyst', role3: 'PhD',
+      role1: 'Software developer', role2: 'Mainframe analyst', role3: 'PhD',
       scroll: 'scroll',
       sentences: [
-        'a Software Developer Analyst..',
-        'a Mainframe Developer Analyst..',
-        'passionate about Teaching..',
+        'a software developer analyst..',
+        'a mainframe developer analyst..',
+        'passionate about teaching..',
         // 'always learning | always coding..'
       ]
     },
     about: {
-      heading: 'About Me',
-      intro: "I'm a French-Lebanese developer analyst fluent in English, French, and Arabic (with beginner German, A1), driven by curiosity and a passion for solving complex problems. For me, coding is more than a profession: it's a mindset I apply to both technology and life. Outside of work, I stay active through fitness and outdoor adventures, volunteer when I can, and enjoy puzzles, board games, and brain teasers to stay sharp and grounded.",
+      heading: 'About me',
+      intro: "I'm a French-Lebanese developer analyst. I speak English, French and Arabic, plus some German (A1). I'm curious and I like hard problems, in code and elsewhere. Outside work I keep fit, spend time outdoors, volunteer when I can, and play puzzles, board games and brain teasers.",
       educationHeading: 'Education & Certifications',
       education: [
         { icon: 'fas fa-graduation-cap', title: 'PhD in Human-Robot Interaction', org: 'Université Grenoble Alpes', desc: 'Explored multimodal communication in collaborative shared tasks using an industrial robot and planning systems.' },
@@ -37,12 +37,12 @@ const SITE_DATA = {
       cv: { items: [{ label: 'CV (English)', href: './assets/cv/rami_younes_en.pdf' }, { label: 'CV (Français)', href: './assets/cv/rami_younes_fr.pdf' }] }
     },
     experience: {
-      heading: 'Experience', techLabel: 'Technical Environment', softLabel: 'Soft Skills', coursesLabel: 'Courses Taught', publicationsLabel: 'Publications',
+      heading: 'Experience', techLabel: 'Technical environment', softLabel: 'Soft skills', coursesLabel: 'Courses taught', publicationsLabel: 'Publications',
       jobs: [
         { title: 'Analyst Developer', company: 'Euro-Information', date: 'Apr 2026 - Present', location: 'Strasbourg, France', roleLabel: 'Accounting domain (Sector 7), Crédit Mutuel Alliance Fédérale', description: "Analyst Developer at Euro-Information, the technology subsidiary of Crédit Mutuel Alliance Fédérale, which builds and runs the shared information system used by more than 80,000 employees and 31.7 million customers. In the accounting domain, I develop and maintain COBOL batch programs on IBM z/OS and C#/.NET web applications and internal tools, fix bugs, keep applications compliant with new banking and accounting regulations, and contribute to migrating applications to the group's private cloud.", tech: ['COBOL','JCL','z/OS','TSO/ISPF','IBM Developer for z/OS (RDz)','C#','.NET','Visual Studio','Git','Docker','Podman','JFrog'], techIcons: ['fas fa-code','fas fa-terminal','fas fa-server','fas fa-desktop','fas fa-code','fas fa-laptop-code','fas fa-cogs','fas fa-laptop-code','fab fa-git-alt','fab fa-docker','fas fa-cube','fas fa-cloud'], soft: ['Rigor','Problem Solving','Teamwork','Adaptability','Regulatory Awareness'] },
-        { title: 'Mainframe & Large Systems Trainee', company: 'Specialized Training Program', date: 'Jun 2025 - Oct 2025', location: 'Grenoble, France', roleLabel: 'Training: Mainframe & Large Systems', description: 'Completed an intensive, full-stack mainframe bootcamp focused on IBM z/OS environments. Gained hands-on experience with core system components, development tools, batch and transactional processing, and enterprise-grade workflows widely used in banking and industrial systems.', tech: ['COBOL','JCL','TSO/ISPF','VSAM','CICS','DB2','Batch Processing','Transactional Systems','Eclipse RDZ','Pacbase','z/OS','Algorithmics'], techIcons: ['fas fa-code','fas fa-terminal','fas fa-desktop','fas fa-folder-open','fas fa-network-wired','fas fa-database','fas fa-project-diagram','fas fa-exchange-alt','fas fa-code','fas fa-cogs','fas fa-server','fas fa-project-diagram'], soft: ['Adaptability','Problem Solving','Autonomy','Systematic Thinking','Technical Learning','Attention to Detail'] },
-        { title: 'Research Engineer', company: 'Gipsa-lab | LIG', date: 'Oct 2020 - Oct 2024', location: 'Grenoble, France', roleLabel: 'Multimodal Human-Robot Collaboration in Shared Tasks', description: 'Worked on a 4-year project examining human-robot interaction dynamics, focusing on how verbal and co-verbal communication influences collaborative task execution. Equipped an industrial ABB robot with hierarchical planning capabilities.', tech: ['Python','JavaScript','HTML','CSS','SQL','REST API','Docker','C++','ROS','MoveIt','RViz','R','Prolog'], techIcons: ['fab fa-python','fab fa-js','fab fa-html5','fab fa-css3','fas fa-database','fas fa-cloud','fab fa-docker','fas fa-laptop-code','fas fa-robot','fas fa-cogs','fas fa-cogs','fas fa-chart-line','fas fa-code'], soft: ['Autonomy','Teamwork','Adaptability','Time Management','Long-term Project','Experimentation','Stats and Evaluation','Public Speaking'], publications: [{ source: 'theses.fr', title: 'Human-robot collaboration and coadaptation in shared tasks', url: 'https://theses.fr/2024GRALT057' }, { source: 'ACL Anthology | SIGDIAL 2022', title: 'Automatic Verbal Depiction of a Brick Assembly for a Robot Instructing Humans', url: 'https://aclanthology.org/2022.sigdial-1.17/' }, { source: 'IEEE', title: 'Impact of verbal instructions and deictic gestures of a cobot on the performance of human coworkers', url: 'https://ieeexplore.ieee.org/abstract/document/10769925' }] },
-        { title: 'Intern', company: 'LIRMM', date: 'Feb 2020 - Jul 2020', location: 'Montpellier, France', roleLabel: 'Deep Learning for Constraint Satisfaction Problems', description: 'Used neural networks to assist non-expert users in modeling constraint problems and classifying solutions to complex combinatorial problems. Designed a taxonomy and trained deep learning models for automated classification.', tech: ['Python','Keras','TensorFlow'], techIcons: ['fab fa-python','fas fa-cogs','fas fa-brain'], soft: ['Autonomy','Adaptability','Time Management','Research','Technical Writing'] },
+        { title: 'Mainframe & Large Systems Trainee', company: 'Specialized Training Program', date: 'Jun 2025 - Oct 2025', location: 'Grenoble, France', roleLabel: 'Training: mainframe and large systems', description: 'Completed an intensive, full-stack mainframe bootcamp focused on IBM z/OS environments. Gained hands-on experience with core system components, development tools, batch and transactional processing, and the workflows used in banking and industrial systems.', tech: ['COBOL','JCL','TSO/ISPF','VSAM','CICS','DB2','Batch Processing','Transactional Systems','Eclipse RDZ','Pacbase','z/OS','Algorithmics'], techIcons: ['fas fa-code','fas fa-terminal','fas fa-desktop','fas fa-folder-open','fas fa-network-wired','fas fa-database','fas fa-project-diagram','fas fa-exchange-alt','fas fa-code','fas fa-cogs','fas fa-server','fas fa-project-diagram'], soft: ['Adaptability','Problem Solving','Autonomy','Systematic Thinking','Technical Learning','Attention to Detail'] },
+        { title: 'Research Engineer', company: 'Gipsa-lab | LIG', date: 'Oct 2020 - Oct 2024', location: 'Grenoble, France', roleLabel: 'Multimodal human-robot collaboration in shared tasks', description: 'Worked on a 4-year project examining human-robot interaction dynamics, focusing on how verbal and co-verbal communication influences collaborative task execution. Equipped an industrial ABB robot with hierarchical planning capabilities.', tech: ['Python','JavaScript','HTML','CSS','SQL','REST API','Docker','C++','ROS','MoveIt','RViz','R','Prolog'], techIcons: ['fab fa-python','fab fa-js','fab fa-html5','fab fa-css3','fas fa-database','fas fa-cloud','fab fa-docker','fas fa-laptop-code','fas fa-robot','fas fa-cogs','fas fa-cogs','fas fa-chart-line','fas fa-code'], soft: ['Autonomy','Teamwork','Adaptability','Time Management','Long-term Project','Experimentation','Stats and Evaluation','Public Speaking'], publications: [{ source: 'theses.fr', title: 'Human-robot collaboration and coadaptation in shared tasks', url: 'https://theses.fr/2024GRALT057' }, { source: 'ACL Anthology | SIGDIAL 2022', title: 'Automatic Verbal Depiction of a Brick Assembly for a Robot Instructing Humans', url: 'https://aclanthology.org/2022.sigdial-1.17/' }, { source: 'IEEE', title: 'Impact of verbal instructions and deictic gestures of a cobot on the performance of human coworkers', url: 'https://ieeexplore.ieee.org/abstract/document/10769925' }] },
+        { title: 'Intern', company: 'LIRMM', date: 'Feb 2020 - Jul 2020', location: 'Montpellier, France', roleLabel: 'Deep learning for constraint satisfaction problems', description: 'Used neural networks to assist non-expert users in modeling constraint problems and classifying solutions to complex combinatorial problems. Designed a taxonomy and trained deep learning models for automated classification.', tech: ['Python','Keras','TensorFlow'], techIcons: ['fab fa-python','fas fa-cogs','fas fa-brain'], soft: ['Autonomy','Adaptability','Time Management','Research','Technical Writing'] },
         { title: 'Teaching & Research Associate', company: 'ENSIMAG', date: 'Sep 2023 - Sep 2024', location: 'Grenoble, France', courses: ['Introduction to Networking','Fundamental Logic for Computer Science','Analysis and Design of Software Objects','Relational Database','Unix: Introduction and Shell Programming','C Software Project','Language Theory 1-2'], soft: ['Communication','Technical Explanation','Continuous Learning','Public Speaking'] }
       ]
     },
@@ -62,7 +62,7 @@ const SITE_DATA = {
           ],
           github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/french-payroll',
           link: './projects/french-payroll/showcase/',
-          linkLabel: 'View Demo'
+          linkLabel: 'View demo'
         },
         {
           title: 'Mainframe Banking System',
@@ -76,7 +76,7 @@ const SITE_DATA = {
           ],
           github: 'https://github.com/ramiyounes-dev/portfolio/tree/master/projects/mainframe-banking',
           link: './projects/mainframe-banking/showcase/',
-          linkLabel: 'View Demo'
+          linkLabel: 'View demo'
         },
         {
           title: 'OnePhone',
@@ -92,7 +92,7 @@ const SITE_DATA = {
         },
         {
           title: 'Explore',
-          description: 'Interactive games and projects, featuring Quoridor, Turkish Checkers (Dama), and Connect 4, strategy board games playable locally, against AI, or online.',
+          description: '20 browser games: Quoridor, Turkish Checkers (Dama) and Connect 4 in 3D, plus 17 party games. Play against the computer, on one phone or online.',
           tech: [
             { icon: 'fab fa-js', text: 'JavaScript' },
             { icon: 'fas fa-cube', text: 'Three.js' },
@@ -112,18 +112,18 @@ const SITE_DATA = {
     nav: { home: 'Accueil', about: 'À propos', experience: 'Expérience', projects: 'Projets', menu: 'Menu', close: 'Fermer', theme: 'Basculer thème clair / sombre', skip: 'Aller au contenu' },
     hero: {
       greeting: 'Bonjour, je suis', name: 'Rami',
-      role1: 'Développeur Logiciel', role2: 'Analyste Mainframe', role3: 'Docteur',
+      role1: 'Développeur logiciel', role2: 'Analyste mainframe', role3: 'Docteur',
       scroll: 'défiler',
       sentences: [
-        'un Analyste Développeur Logiciel..',
-        'un Analyste Développeur Mainframe..',
-        "passionné par l'Enseignement..",
+        'un analyste développeur logiciel..',
+        'un analyste développeur mainframe..',
+        "passionné par l'enseignement..",
         // 'toujours en apprentissage | toujours en train de coder..'
       ]
     },
     about: {
       heading: 'À propos',
-      intro: "Analyste Développeur franco-libanais, je m'exprime couramment en anglais, français et arabe (allemand débutant, A1). Animé par la curiosité et la résolution de problèmes complexes, pour moi le code est bien plus qu'un métier : c'est une façon de penser que j'applique dans tous les aspects de ma vie. En dehors du travail, je pratique le sport et les activités en plein air, et j'aime les puzzles et les casse-têtes pour rester vif et ancré.",
+      intro: "Analyste développeur franco-libanais, je parle anglais, français et arabe, et un peu allemand (A1). Je suis curieux et j'aime les problèmes difficiles, dans le code comme ailleurs. En dehors du travail, je fais du sport et des activités en plein air, du bénévolat quand je peux, et j'aime les puzzles, les jeux de société et les casse-têtes.",
       educationHeading: 'Formation & Certifications',
       education: [
         { icon: 'fas fa-graduation-cap', title: "Doctorat en Interaction Homme-Robot", org: 'Université Grenoble Alpes', desc: 'Exploration de la communication multimodale dans des tâches collaboratives partagées avec un robot industriel et des systèmes de planification.' },
@@ -148,9 +148,9 @@ const SITE_DATA = {
       heading: 'Expérience', techLabel: 'Environnement technique', softLabel: 'Compétences transversales', coursesLabel: 'Cours dispensés', publicationsLabel: 'Publications',
       jobs: [
         { title: 'Analyste Développeur', company: 'Euro-Information', date: "Avr. 2026 - aujourd'hui", location: 'Strasbourg, France', roleLabel: 'Domaine comptable (secteur 7), Crédit Mutuel Alliance Fédérale', description: "Analyste développeur chez Euro-Information, filiale technologique de Crédit Mutuel Alliance Fédérale, qui conçoit et exploite le système d'information commun utilisé par plus de 80 000 collaborateurs et 31,7 millions de clients. Dans le domaine comptable, je développe et maintiens des programmes batch COBOL sur IBM z/OS ainsi que des applications web et des outils internes en C#/.NET, je corrige les anomalies, j'adapte les applications aux nouvelles réglementations bancaires et comptables, et je participe à la migration d'applications vers le cloud privé du groupe.", tech: ['COBOL','JCL','z/OS','TSO/ISPF','IBM Developer for z/OS (RDz)','C#','.NET','Visual Studio','Git','Docker','Podman','JFrog'], techIcons: ['fas fa-code','fas fa-terminal','fas fa-server','fas fa-desktop','fas fa-code','fas fa-laptop-code','fas fa-cogs','fas fa-laptop-code','fab fa-git-alt','fab fa-docker','fas fa-cube','fas fa-cloud'], soft: ['Rigueur','Résolution de problèmes','Travail en équipe','Adaptabilité','Sens de la conformité réglementaire'] },
-        { title: 'Stagiaire Mainframe & Grands Systèmes', company: 'Programme de formation spécialisé', date: 'Juin 2025 - Oct. 2025', location: 'Grenoble, France', roleLabel: 'Formation : Mainframe & Grands Systèmes', description: "Bootcamp mainframe intensif centré sur les environnements IBM z/OS. Expérience pratique sur les composants systèmes, outils de développement, traitement batch et transactionnel, largement utilisés dans les secteurs bancaires et industriels.", tech: ['COBOL','JCL','TSO/ISPF','VSAM','CICS','DB2','Traitement Batch','Systèmes Transactionnels','Eclipse RDZ','Pacbase','z/OS','Algorithmique'], techIcons: ['fas fa-code','fas fa-terminal','fas fa-desktop','fas fa-folder-open','fas fa-network-wired','fas fa-database','fas fa-project-diagram','fas fa-exchange-alt','fas fa-code','fas fa-cogs','fas fa-server','fas fa-project-diagram'], soft: ['Adaptabilité','Résolution de problèmes','Autonomie','Pensée systématique','Apprentissage technique','Rigueur'] },
-        { title: 'Ingénieur de Recherche', company: 'Gipsa-lab | LIG', date: 'Oct. 2020 - Oct. 2024', location: 'Grenoble, France', roleLabel: 'Collaboration Homme-Robot Multimodale dans des Tâches Partagées', description: "Projet de 4 ans sur la dynamique d'interaction homme-robot, étudiant l'influence de la communication verbale et co-verbale sur l'exécution de tâches collaboratives. Équipement d'un robot industriel ABB avec des capacités de planification hiérarchique.", tech: ['Python','JavaScript','HTML','CSS','SQL','API REST','Docker','C++','ROS','MoveIt','RViz','R','Prolog'], techIcons: ['fab fa-python','fab fa-js','fab fa-html5','fab fa-css3','fas fa-database','fas fa-cloud','fab fa-docker','fas fa-laptop-code','fas fa-robot','fas fa-cogs','fas fa-cogs','fas fa-chart-line','fas fa-code'], soft: ['Autonomie',"Travail d'équipe",'Adaptabilité','Gestion du temps','Projet long terme','Expérimentation','Statistiques','Prise de parole'], publications: [{ source: 'theses.fr', title: 'Human-robot collaboration and coadaptation in shared tasks', url: 'https://theses.fr/2024GRALT057' }, { source: 'ACL Anthology | SIGDIAL 2022', title: 'Automatic Verbal Depiction of a Brick Assembly for a Robot Instructing Humans', url: 'https://aclanthology.org/2022.sigdial-1.17/' }, { source: 'IEEE', title: 'Impact of verbal instructions and deictic gestures of a cobot on the performance of human coworkers', url: 'https://ieeexplore.ieee.org/abstract/document/10769925' }] },
-        { title: 'Stagiaire', company: 'LIRMM', date: 'Fév. 2020 - Juil. 2020', location: 'Montpellier, France', roleLabel: 'Apprentissage Profond pour la Satisfaction de Contraintes', description: "Utilisation de réseaux de neurones pour aider des utilisateurs non-experts à modéliser des tâches et classifier les solutions de problèmes combinatoires complexes. Conception d'une taxonomie et entraînement de modèles de deep learning.", tech: ['Python','Keras','TensorFlow'], techIcons: ['fab fa-python','fas fa-cogs','fas fa-brain'], soft: ['Autonomie','Adaptabilité','Gestion du temps','Recherche','Rédaction technique'] },
+        { title: 'Stagiaire Mainframe & Grands Systèmes', company: 'Programme de formation spécialisé', date: 'Juin 2025 - Oct. 2025', location: 'Grenoble, France', roleLabel: 'Formation : mainframe et grands systèmes', description: "Bootcamp mainframe intensif centré sur les environnements IBM z/OS. Expérience pratique sur les composants systèmes, outils de développement, traitement batch et transactionnel, largement utilisés dans les secteurs bancaires et industriels.", tech: ['COBOL','JCL','TSO/ISPF','VSAM','CICS','DB2','Traitement Batch','Systèmes Transactionnels','Eclipse RDZ','Pacbase','z/OS','Algorithmique'], techIcons: ['fas fa-code','fas fa-terminal','fas fa-desktop','fas fa-folder-open','fas fa-network-wired','fas fa-database','fas fa-project-diagram','fas fa-exchange-alt','fas fa-code','fas fa-cogs','fas fa-server','fas fa-project-diagram'], soft: ['Adaptabilité','Résolution de problèmes','Autonomie','Pensée systématique','Apprentissage technique','Rigueur'] },
+        { title: 'Ingénieur de Recherche', company: 'Gipsa-lab | LIG', date: 'Oct. 2020 - Oct. 2024', location: 'Grenoble, France', roleLabel: 'Collaboration homme-robot multimodale dans des tâches partagées', description: "Projet de 4 ans sur la dynamique d'interaction homme-robot, étudiant l'influence de la communication verbale et co-verbale sur l'exécution de tâches collaboratives. Équipement d'un robot industriel ABB avec des capacités de planification hiérarchique.", tech: ['Python','JavaScript','HTML','CSS','SQL','API REST','Docker','C++','ROS','MoveIt','RViz','R','Prolog'], techIcons: ['fab fa-python','fab fa-js','fab fa-html5','fab fa-css3','fas fa-database','fas fa-cloud','fab fa-docker','fas fa-laptop-code','fas fa-robot','fas fa-cogs','fas fa-cogs','fas fa-chart-line','fas fa-code'], soft: ['Autonomie',"Travail d'équipe",'Adaptabilité','Gestion du temps','Projet long terme','Expérimentation','Statistiques','Prise de parole'], publications: [{ source: 'theses.fr', title: 'Human-robot collaboration and coadaptation in shared tasks', url: 'https://theses.fr/2024GRALT057' }, { source: 'ACL Anthology | SIGDIAL 2022', title: 'Automatic Verbal Depiction of a Brick Assembly for a Robot Instructing Humans', url: 'https://aclanthology.org/2022.sigdial-1.17/' }, { source: 'IEEE', title: 'Impact of verbal instructions and deictic gestures of a cobot on the performance of human coworkers', url: 'https://ieeexplore.ieee.org/abstract/document/10769925' }] },
+        { title: 'Stagiaire', company: 'LIRMM', date: 'Fév. 2020 - Juil. 2020', location: 'Montpellier, France', roleLabel: 'Apprentissage profond pour la satisfaction de contraintes', description: "Utilisation de réseaux de neurones pour aider des utilisateurs non-experts à modéliser des tâches et classifier les solutions de problèmes combinatoires complexes. Conception d'une taxonomie et entraînement de modèles de deep learning.", tech: ['Python','Keras','TensorFlow'], techIcons: ['fab fa-python','fas fa-cogs','fas fa-brain'], soft: ['Autonomie','Adaptabilité','Gestion du temps','Recherche','Rédaction technique'] },
         { title: "Attaché Temporaire d'Enseignement et de Recherche", company: 'ENSIMAG', date: 'Sep. 2023 - Sep. 2024', location: 'Grenoble, France', courses: ['Introduction aux Réseaux','Logique Fondamentale pour Informatique','Analyse et Conception Objets Logiciels','Base de Données Relationnelle','Unix : Introduction et Shell','Projet Logiciel en C','Théorie des Langages 1-2'], soft: ['Communication','Explication technique','Apprentissage continu','Prise de parole'] }
       ]
     },
@@ -200,7 +200,7 @@ const SITE_DATA = {
         },
         {
           title: 'Explore',
-          description: 'Projets et jeux interactifs, avec Quoridor, les Dames Turques (Dama) et Puissance 4, des jeux de stratégie jouables en local, contre l\'IA, ou en ligne.',
+          description: '20 jeux dans le navigateur : Quoridor, les dames turques (Dama) et Puissance 4 en 3D, plus 17 jeux de groupe. Contre l\'ordinateur, sur un seul téléphone ou en ligne.',
           tech: [
             { icon: 'fab fa-js', text: 'JavaScript' },
             { icon: 'fas fa-cube', text: 'Three.js' },

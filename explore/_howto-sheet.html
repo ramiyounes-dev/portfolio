@@ -1,0 +1,12 @@
+<!DOCTYPE html><html data-theme="dark"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/game.css"><link rel="stylesheet" href="styles/howto.css">
+<style>body{background:var(--bg);color:var(--text);font-family:var(--font-body);padding:10px;overflow:auto;position:static}
+.g{display:grid;grid-template-columns:repeat(4,240px);gap:8px}.c{font-size:10px}.c .a{width:240px;aspect-ratio:4/3;border:1px solid var(--line);border-radius:10px;background:var(--bg-2);overflow:hidden}
+.c p{color:var(--text-2);margin-top:2px}</style></head><body><div id="o"></div>
+<script type="module">
+const p=new URLSearchParams(location.search); const games=(p.get('g')||'quoridor').split(','); const lang=p.get('l')||'en';
+let html='';
+for(const g of games){ const st=(await import('./party/howto/'+g+'.js')).default; html+=`<h3>${g}</h3><div class="g">`+st.map(s=>`<div class="c"><div class="a">${typeof s.art==='function'?s.art(lang):''}</div><b>${s.title[lang]}</b><p>${typeof s.text==='function'?s.text(lang):s.text[lang]}</p></div>`).join('')+'</div>'; }
+document.getElementById('o').innerHTML=html;
+</script></body></html>

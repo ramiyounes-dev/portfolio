@@ -5,3 +5,6 @@ workers/
 server.js
 wrangler.toml
 README.md
+tests/
+package.json
+tools/

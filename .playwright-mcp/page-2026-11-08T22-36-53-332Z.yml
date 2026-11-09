@@ -1,0 +1,27 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "Explore" [ref=e3] [cursor=pointer]:
+      - /url: ../
+      - generic [aria-hidden] [ref=e4]: ←
+    - generic [ref=e6]: Battleship.
+    - generic [ref=e7]:
+      - group "Language" [ref=e8]:
+        - button "EN" [pressed] [ref=e9] [cursor=pointer]
+        - button "FR" [ref=e10] [cursor=pointer]
+      - button "Toggle theme" [ref=e11] [cursor=pointer]
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: 2 players
+        - heading "Battleship" [level=1] [ref=e29]
+        - paragraph [ref=e30]: Play against the computer, pass one phone around, or play online with friends.
+      - generic [ref=e32]:
+        - generic [ref=e33]: Step 1
+        - heading "How many players?" [level=2] [ref=e34]
+        - generic [ref=e35]:
+          - generic [ref=e36]: 2 players
+          - generic [ref=e42]: A duel. Online, anyone else who joins watches.
+        - button "Next" [ref=e43] [cursor=pointer]
+      - paragraph [ref=e44]
+      - button "How to play" [ref=e45] [cursor=pointer]
+  - status

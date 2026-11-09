@@ -7,13 +7,14 @@ import { board, state, setGameMode, tryDrop, applyRemoteDrop, resetGame, replayM
 import { Connect4Board } from './Board.js';
 import { computeAIMove } from './ai.js';
 import { createShell, NAME } from '../shared/shell.js';
+import howto from '../../party/howto/connect4.js';
 import { bindPointer, coarse } from '../shared/pointer.js';
 import { createAI } from '../shared/aiRunner.js';
 import { wait } from '../shared/anim.js';
 import { net } from '../network.js';
 
 const ai = createAI(new URL('./ai.worker.js', import.meta.url), p => {
-    const b = new Connect4Board(); b.grid = p.grid; return computeAIMove(b, p.player);
+    const b = new Connect4Board(); b.grid = p.grid; return computeAIMove(b, p.player, p.difficulty);
 });
 
 let falling = false;      // a disc is in the air
@@ -21,20 +22,10 @@ let aiThinking = false;
 let cursorCol = 3;        // keyboard / touch-preview column
 
 const shell = createShell({
-    roomPrefix: 'C4-',
-    controls: {
-        touch: [
-            ['&#8595;', '<strong>Tap a column</strong> to drop a disc, or <strong>slide</strong> along the board and release'],
-            ['&#9679;', 'Discs <strong>fall to the lowest</strong> free space'],
-            ['&#10003;', 'First to make <strong>four in a row</strong> wins'],
-        ],
-        mouse: [
-            ['&#8595;', '<strong>Click a column</strong> to drop a disc'],
-            ['&#8596;', '<strong>&larr; &rarr;</strong> choose a column, <strong>Enter</strong> drops, or press <strong>1 to 7</strong>'],
-            ['&#10003;', 'First to make <strong>four in a row</strong> wins'],
-        ],
-    },
-    onStart(mode) { setGameMode(mode); startNewGame(); },
+    gameId: 'connect4',
+    title: { en: 'Connect 4', fr: 'Puissance 4' },
+    howto,
+    onStart(mode, extra = {}) { state.difficulty = extra.difficulty || 'hard'; setGameMode(mode); startNewGame(); },
     onJoin(init) {
         setGameMode('online');
         state.myRole = init.role;
@@ -144,7 +135,7 @@ async function maybeAI() {
     const gen = state.gen;
     aiThinking = true;
     refresh();
-    const col = await ai.think({ grid: board.grid, player: state.aiPlayer });
+    const col = await ai.think({ grid: board.grid, player: state.aiPlayer, difficulty: state.difficulty });
     aiThinking = false;
     if (gen !== state.gen || state.gameMode !== 'ai' || state.currentPlayer !== state.aiPlayer || over()) { refresh(); return; }
     if (col === null || col === undefined) return;
@@ -222,7 +213,13 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- Network ---------- */
-shell.onNet('drop', msg => { play(msg.col, 'remote'); });
+// The opponent may answer while our disc is still falling: wait for it to land, then play theirs
+function remoteDrop(col, gen = state.gen) {
+    if (gen !== state.gen) return;
+    if (falling) { setTimeout(() => remoteDrop(col, gen), 80); return; }
+    play(col, 'remote');
+}
+shell.onNet('drop', msg => remoteDrop(msg.col));
 shell.onNet('reset', () => { startNewGame(); });
 shell.onNet('score', ({ scores, nextStarter }) => { state.scores = scores; if (nextStarter) state.startingPlayer = nextStarter; refresh(); });
 shell.onNet('state_sync', ({ moves }) => {

@@ -24,15 +24,18 @@
   });
 
   /* ---------- Data: read from the list, so the HTML stays the single source ---------- */
-  const games = [...document.querySelectorAll('#catalog .entry')].map((li, i) => ({
+  const allGames = [...document.querySelectorAll('#catalog .entry')].map((li, i) => ({
     n: i + 1,
+    min: Number(li.dataset.min), max: Number(li.dataset.max),
+    badge: li.querySelector('.pbadge').outerHTML,          // our own markup, like the icon
     href: li.querySelector('.entry-link').getAttribute('href'),
-    icon: li.querySelector('.entry-icon').textContent.trim(),
+    icon: li.querySelector('.entry-icon').innerHTML.trim(),   // inline SVG from our own markup
     title: li.querySelector('.entry-title').textContent.trim(),
     desc: li.querySelector('.entry-desc').textContent.trim(),
-    tags: [...li.querySelectorAll('.entry-tags span')].map(s => s.textContent.trim()),
+    tags: [...li.querySelectorAll('.entry-tags > span:not(.pbadge)')].map(s => s.textContent.trim()),
   }));
-  if (!games.length) { root.classList.remove('js'); return; }
+  if (!allGames.length) { root.classList.remove('js'); return; }
+  let games = allGames;
 
   const book = document.getElementById('book');
   const prevBtn = document.getElementById('book-prev');
@@ -43,11 +46,12 @@
 
   const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pad = n => String(n).padStart(2, '0');
-  const total = games.length;
-  const views = ['Contents', ...games.map(g => g.title)]; // one view per spread (desktop) or page (phone)
+  let total = games.length;
+  let views = [];          // label of each view: a spread on desktop, a page on phones
+  let tocViews = 1;        // how many views the contents take before the first game
 
   /* ---------- Page templates ---------- */
-  const tagList = g => `<ul class="tags">${g.tags.map(t => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  const tagList = g => `<div class="pg-tags">${g.badge}<ul class="tags">${g.tags.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
   const playLink = g => `<a class="play" href="${esc(g.href)}">Play <span class="play-arrow" aria-hidden="true">→</span></a>`;
 
   const tpl = {
@@ -57,26 +61,31 @@
         <span class="endpaper-mark" aria-hidden="true">RY<span class="logo-dot">.</span></span>
         <span class="mono">(E)</span>
       </div>`,
-    contents: folio => `
+    contents: (folio, items, part, parts) => `
       <div class="pg pg-contents">
-        <div class="pg-top"><span>(E)</span><span>Explore</span></div>
+        <div class="pg-top"><span>(E)</span><span>${parts > 1 ? `${part} / ${parts}` : 'Explore'}</span></div>
         <h2 class="toc-title">Contents</h2>
         <ol class="toc">
-          ${games.map(g => `
-            <li><button type="button" data-go="${g.n}">
+          ${items.map(g => `
+            <li><button type="button" data-go="${tocViews + g.n - 1}">
               <span class="toc-n">${pad(g.n)}</span>
               <span class="toc-name"><span>${esc(g.title)}</span></span>
-              <span class="toc-p">${pad(g.n)}</span>
+              <span class="toc-p">${pad(tocViews + g.n)}</span>
             </button></li>`).join('')}
         </ol>
         <div class="pg-bottom"><span>${pad(total)} entries</span><span class="folio">${folio}</span></div>
+      </div>`,
+    notes: () => `
+      <div class="pg pg-endpaper pg-notes">
+        <span class="mono">Fig. ${pad(total)}</span>
+        <span class="mono">Turn the page &rarr;</span>
       </div>`,
     plate: (g, folio) => `
       <div class="pg pg-plate">
         <div class="pg-top"><span>Fig. ${pad(g.n)}</span><span>${esc(g.title)}</span></div>
         <div class="plate-art" aria-hidden="true">
           <span class="plate-num">${pad(g.n)}</span>
-          <span class="plate-icon">${esc(g.icon)}</span>
+          <span class="plate-icon">${g.icon}</span>
         </div>
         <div class="pg-bottom">${tagList(g)}<span class="folio">${folio}</span></div>
       </div>`,
@@ -94,7 +103,7 @@
         <div class="pg-top"><span>${pad(g.n)} / ${pad(total)}</span><span>Explore</span></div>
         <div class="plate-art" aria-hidden="true">
           <span class="plate-num">${pad(g.n)}</span>
-          <span class="plate-icon">${esc(g.icon)}</span>
+          <span class="plate-icon">${g.icon}</span>
         </div>
         <h2 class="pg-title">${esc(g.title)}</h2>
         <p class="pg-desc">${esc(g.desc)}</p>
@@ -128,22 +137,38 @@
     return { el, front: el.children[0], back: el.children[1] };
   }
 
+  /** Split the contents so each page holds as many rows as its height allows. */
+  function tocChunks() {
+    const pageH = book.getBoundingClientRect().height || 500;
+    const per = Math.max(3, Math.min(12, Math.floor((pageH - 220) / 46)));
+    const chunks = [];
+    for (let i = 0; i < games.length; i += per) chunks.push(games.slice(i, i + per));
+    return chunks;
+  }
+
   function build(view) {
+    // Keep the reader on the same entry when the layout changes (desktop spread <-> phone page)
+    const onGame = view >= tocViews ? view - tocViews : -1;
     mode = spreadQuery.matches ? 'spread' : 'single';
     book.textContent = '';
     leaves = [];
     baseL = baseR = null;
+    const chunks = tocChunks();
 
     if (mode === 'spread') {
-      // Pages in reading order: [endpaper, contents, plate 1, text 1, plate 2, text 2, ...]
-      const P = [tpl.endpaper(), tpl.contents('i')];
+      // Pages in reading order: [endpaper, contents..., (notes), plate 1, text 1, plate 2, text 2, ...]
+      const leadCount = 1 + chunks.length + ((1 + chunks.length) % 2);
+      tocViews = leadCount / 2;
+      const P = [tpl.endpaper(), ...chunks.map((c, i) => tpl.contents(['i', 'ii', 'iii', 'iv'][i] || 'i', c, i + 1, chunks.length))];
+      if (P.length % 2) P.push(tpl.notes());
       games.forEach((g, i) => P.push(tpl.plate(g, pad(2 * i + 1)), tpl.text(g, pad(2 * i + 2))));
       baseL = makePage(P[0], 'l');
       baseR = makePage(P[P.length - 1], 'r');
       for (let i = 0; i < P.length / 2 - 1; i++) leaves.push(makeLeaf(P[2 * i + 1], P[2 * i + 2]));
       book.append(baseL, baseR);
     } else {
-      const P = [tpl.contents('i'), ...games.map((g, i) => tpl.single(g, pad(i + 1)))];
+      tocViews = chunks.length;
+      const P = [...chunks.map((c, i) => tpl.contents(['i', 'ii', 'iii', 'iv', 'v'][i] || 'i', c, i + 1, chunks.length)), ...games.map((g, i) => tpl.single(g, pad(i + 1)))];
       baseR = makePage(P[P.length - 1], 'r');
       for (let i = 0; i < P.length - 1; i++) leaves.push(makeLeaf(P[i], tpl.blank()));
       book.append(baseR);
@@ -151,7 +176,9 @@
     leaves.forEach(l => book.appendChild(l.el));
 
     maxF = leaves.length;
-    f = Math.max(0, Math.min(view, maxF));
+    views = [...Array(tocViews)].map((_, i) => (tocViews > 1 ? `Contents ${i + 1}` : 'Contents')).concat(games.map(g => g.title));
+    buildDots();
+    f = Math.max(0, Math.min(onGame >= 0 ? tocViews + onGame : Math.min(view, tocViews - 1), maxF));
     // Place the sheets without animating
     leaves.forEach((l, i) => {
       l.el.style.transition = 'none';
@@ -238,13 +265,20 @@
   }
 
   /* ---------- Dots ---------- */
-  views.forEach((label, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.setAttribute('aria-label', `Go to page ${i + 1}: ${label}`);
-    b.addEventListener('click', () => turnTo(i));
-    dotsEl.appendChild(b);
-  });
+  /** One dot per view; with many entries the dots are hidden and the counter jumps to the contents. */
+  function buildDots() {
+    dotsEl.textContent = '';
+    dotsEl.hidden = views.length > 10;
+    if (dotsEl.hidden) return;
+    views.forEach((label, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', `Go to page ${i + 1}: ${label}`);
+      b.addEventListener('click', () => turnTo(i));
+      dotsEl.appendChild(b);
+    });
+  }
+  countEl.addEventListener('click', () => turnTo(0));
 
   prevBtn.addEventListener('click', () => turnTo(f - 1));
   nextBtn.addEventListener('click', () => turnTo(f + 1));
@@ -340,6 +374,18 @@
 
   /* ---------- Layout mode follows the viewport ---------- */
   spreadQuery.addEventListener('change', () => build(f));
+
+  /* ---------- Filter: duels (exactly 2 players) or games for 3 and more ---------- */
+  const filterEl = document.getElementById('players-filter');
+  filterEl.addEventListener('click', e => {
+    const b = e.target.closest('button[data-f]');
+    if (!b) return;
+    filterEl.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    const k = b.dataset.f;
+    games = allGames.filter(g => k === 'all' || (k === 'duel' ? g.max === 2 : g.max > 2)).map((g, i) => ({ ...g, n: i + 1 }));
+    total = games.length;
+    build(0);
+  });
 
   build(0);
 

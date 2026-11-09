@@ -8,12 +8,13 @@ import { board, state, setMode, setGameMode, tryMovePawn, tryPlaceWall, applyRem
 import { computeAIMove } from './ai.js';
 import { boardFrom } from './serialize.js';
 import { createShell, NAME } from '../shared/shell.js';
+import howto from '../../party/howto/quoridor.js';
 import { bindPointer, verb, coarse } from '../shared/pointer.js';
 import { createAI } from '../shared/aiRunner.js';
 import { wait } from '../shared/anim.js';
 import { net } from '../network.js';
 
-const ai = createAI(new URL('./ai.worker.js', import.meta.url), p => computeAIMove(boardFrom(p), p.player));
+const ai = createAI(new URL('./ai.worker.js', import.meta.url), p => computeAIMove(boardFrom(p), p.player, p.difficulty));
 
 const $ = id => document.getElementById(id);
 const btnMove = $('btn-move'), btnWall = $('btn-wall'), btnRotate = $('btn-rotate'), btnConfirm = $('btn-wall-confirm');
@@ -25,20 +26,10 @@ let pending = null;       // touch: aimed wall waiting for confirmation { wx, wy
 let flash = null;         // temporary hint (invalid wall)
 
 const shell = createShell({
-    roomPrefix: 'QR-',
-    controls: {
-        touch: [
-            ['&#9758;', '<strong>Tap a dot</strong> to move your pawn one square (or jump)'],
-            ['&#9646;', 'Press <strong>Wall</strong>, <strong>drag</strong> to aim, then <strong>Place wall</strong>. <strong>Rotate</strong> turns it'],
-            ['&#10003;', 'Amber walls glow when allowed and turn <strong>red</strong> when they overlap or would close a path'],
-        ],
-        mouse: [
-            ['&#9758;', '<strong>Click a dot</strong> to move your pawn one square (or jump)'],
-            ['&#9646;', '<strong>Wall</strong> (or <strong>W</strong>): the wall follows your mouse, <strong>click</strong> to place it'],
-            ['&#8635;', '<strong>R</strong> or the <strong>scroll wheel</strong> rotates the wall, <strong>Esc</strong> goes back to moving'],
-        ],
-    },
-    onStart(mode) { setGameMode(mode); view.setSide('A'); startNewGame(); },
+    gameId: 'quoridor',
+    title: { en: 'Quoridor', fr: 'Quoridor' },
+    howto,
+    onStart(mode, extra = {}) { state.difficulty = extra.difficulty || 'hard'; setGameMode(mode); view.setSide('A'); startNewGame(); },
     onJoin(init) {
         setGameMode('online');
         state.myRole = init.role;
@@ -226,7 +217,7 @@ async function maybeAI() {
     const gen = state.gen;
     aiThinking = true;
     refresh();
-    const action = await ai.think({ ...snapshot(), player: state.aiPlayer }, 650);
+    const action = await ai.think({ ...snapshot(), player: state.aiPlayer, difficulty: state.difficulty }, 650);
     aiThinking = false;
     if (gen !== state.gen || state.gameMode !== 'ai' || state.currentPlayer !== state.aiPlayer || over() || !action) { refresh(); return; }
     await applyAction(state.aiPlayer, action, () => action.type === 'move' ? tryMovePawn(action.x, action.y) : tryPlaceWall(action.wx, action.wy, action.orientation));

@@ -5,5 +5,5 @@ self.onmessage = e => {
     const { id, payload } = e.data;
     const b = new Connect4Board();
     b.grid = payload.grid;
-    self.postMessage({ id, move: computeAIMove(b, payload.player) });
+    self.postMessage({ id, move: computeAIMove(b, payload.player, payload.difficulty) });
 };

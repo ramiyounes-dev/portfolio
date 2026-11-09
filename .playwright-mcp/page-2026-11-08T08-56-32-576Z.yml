@@ -1,0 +1,32 @@
+- generic [active] [ref=f16e1]:
+  - banner [ref=f16e2]:
+    - link [ref=f16e3] [cursor=pointer]:
+      - /url: ../
+      - generic [aria-hidden] [ref=f16e4]: ←
+    - generic [ref=f16e5]: Codenames.
+    - generic [ref=f16e6]:
+      - group "Language" [ref=f16e7]:
+        - button "EN" [pressed] [ref=f16e8] [cursor=pointer]
+        - button "FR" [ref=f16e9] [cursor=pointer]
+      - button "Toggle theme" [ref=f16e10] [cursor=pointer]
+  - main [ref=f16e12]:
+    - generic [ref=f16e13]:
+      - generic [ref=f16e14]:
+        - generic [ref=f16e15]:
+          - generic [ref=f16e16]: ▦
+          - generic [ref=f16e17]: 4 to 12 players
+        - heading "Codenames" [level=1] [ref=f16e18]
+        - paragraph [ref=f16e19]: "Play together on your phones: create a room and share the code."
+      - generic [ref=f16e20]:
+        - generic [ref=f16e21]: Your nickname
+        - textbox "Your nickname" [ref=f16e22]:
+          - /placeholder: e.g. Sam
+          - text: Rami
+      - button "Create a room" [ref=f16e23] [cursor=pointer]
+      - generic [ref=f16e24]: or join a friend
+      - generic [ref=f16e25]:
+        - textbox "Room code" [ref=f16e26]
+        - button "Join" [ref=f16e27] [cursor=pointer]
+      - paragraph [ref=f16e28]
+      - button "How to play" [ref=f16e29] [cursor=pointer]
+  - status

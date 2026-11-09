@@ -17,6 +17,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Fraunces:ital,opsz,wght@1,9..144,300&family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/game.css" />
+  <link rel="stylesheet" href="../styles/setup.css" />
+  <link rel="stylesheet" href="../styles/howto.css" />
 </head>
 <body class="game-body" data-game="connect4">
 
@@ -70,59 +72,6 @@
       </div>
 
       <button id="btn-how-to-play" class="how-to-play-link" type="button">How to play</button>
-
-      <div id="tutorial-panel" class="hidden">
-        <div id="tutorial-slides">
-
-          <div class="tut-slide" data-slide="0">
-            <div class="tut-heading">Goal</div>
-            <div class="tut-board tut-board-goal">
-              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span class="tut-disc tut-disc-a">&#9679;</span><span></span><span></span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span class="tut-disc tut-disc-b">&#9679;</span><span class="tut-disc tut-disc-a">&#9679;</span><span class="tut-disc tut-disc-b">&#9679;</span><span></span><span></span><span></span></div>
-              <div class="tut-row"><span class="tut-disc tut-disc-b">&#9679;</span><span class="tut-disc tut-disc-a">&#9679;</span><span class="tut-disc tut-disc-a">&#9679;</span><span class="tut-disc tut-disc-a">&#9679;</span><span class="tut-disc tut-disc-b">&#9679;</span><span></span><span></span></div>
-            </div>
-            <div class="tut-text">Drop discs into a 7-column, 6-row grid. First to connect <strong>four in a row</strong> (horizontally, vertically, or diagonally) wins!</div>
-          </div>
-
-          <div class="tut-slide hidden" data-slide="1">
-            <div class="tut-heading">Dropping discs</div>
-            <div class="tut-board tut-board-drop">
-              <div class="tut-row"><span></span><span></span><span class="tut-cell-valid">&#8595;</span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span></span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span class="tut-disc tut-disc-a" style="opacity:0.45">&#9679;</span><span></span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span class="tut-disc tut-disc-b">&#9679;</span><span></span><span></span></div>
-            </div>
-            <div class="tut-text">Choose a column and your disc <strong>falls to the lowest</strong> available space. Players alternate turns. Amber goes first.</div>
-          </div>
-
-          <div class="tut-slide hidden" data-slide="2">
-            <div class="tut-heading">Winning</div>
-            <div class="tut-board tut-board-win">
-              <div class="tut-row"><span></span><span></span><span></span><span class="tut-disc tut-disc-a tut-highlight">&#9679;</span><span></span></div>
-              <div class="tut-row"><span></span><span></span><span class="tut-disc tut-disc-a tut-highlight">&#9679;</span><span class="tut-disc tut-disc-b">&#9679;</span><span></span></div>
-              <div class="tut-row"><span></span><span class="tut-disc tut-disc-a tut-highlight">&#9679;</span><span class="tut-disc tut-disc-b">&#9679;</span><span class="tut-disc tut-disc-b">&#9679;</span><span></span></div>
-              <div class="tut-row"><span class="tut-disc tut-disc-a tut-highlight">&#9679;</span><span class="tut-disc tut-disc-b">&#9679;</span><span class="tut-disc tut-disc-a">&#9679;</span><span class="tut-disc tut-disc-a">&#9679;</span><span class="tut-disc tut-disc-b">&#9679;</span></div>
-            </div>
-            <div class="tut-text">Connect four discs in a line to win. Check <strong>horizontal</strong>, <strong>vertical</strong>, and <strong>diagonal</strong> directions. If the board fills up with no winner, it's a <strong>draw</strong>.</div>
-          </div>
-
-          <div class="tut-slide hidden" data-slide="3">
-            <div class="tut-heading">Controls</div>
-            <div class="tut-controls" id="tut-controls-content"></div>
-          </div>
-
-        </div>
-        <div id="tut-dots"></div>
-        <div id="tut-nav">
-          <button id="tut-prev" class="tut-nav-btn" type="button" aria-label="Previous" disabled>&larr;</button>
-          <button id="tut-next" class="tut-nav-btn" type="button" aria-label="Next">&rarr;</button>
-        </div>
-        <button id="tut-back" class="how-to-play-link" type="button">Back</button>
-      </div>
     </div>
   </div>
 

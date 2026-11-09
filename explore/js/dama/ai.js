@@ -1,9 +1,11 @@
-export function computeAIMove(board, player) {
+/** difficulty: 'easy' (1 ply, often random), 'medium' (2 plies), 'hard' (4 plies, the original AI). */
+export function computeAIMove(board, player, difficulty = 'hard', rnd = Math.random) {
     const legal = board.getLegalMoves(player);
     if (legal.moves.length === 0) return null;
     if (legal.moves.length === 1) return legal.moves[0];
+    if (difficulty === 'easy' && rnd() < 0.4) return legal.moves[Math.floor(rnd() * legal.moves.length)];
 
-    const depth = 4;
+    const depth = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 4;
     const limit = Math.min(legal.moves.length, 20);
     let bestScore = -Infinity;
     let bestMove = legal.moves[0];

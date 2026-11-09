@@ -1,0 +1,83 @@
+/* Shared setup flow (player count, vs AI / same device / online), used by every Explore game. */
+/* ---------- Shared setup flow ---------- */
+#su { display: flex; flex-direction: column; gap: 14px; }
+.su-step { display: flex; flex-direction: column; gap: 14px; animation: su-in .25s ease; }
+@keyframes su-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.su-h { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.4rem, 6vw, 1.9rem); line-height: 1.1; margin: 0; }
+.su-fixed { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: .8rem; color: var(--text-2); padding: 14px; border: 1px dashed var(--line-2); border-radius: 14px; text-align: center; margin: 0; }
+.su-range { display: flex; justify-content: center; }
+.su-count { display: flex; align-items: center; justify-content: center; gap: 26px; padding: 8px 0; }
+.su-count b { font-family: var(--font-display); font-size: 3.6rem; font-weight: 800; min-width: 2ch; text-align: center; color: var(--accent); line-height: 1; }
+.su-pm { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--paper); color: var(--text); font-size: 1.6rem; cursor: pointer; }
+.su-pm:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.su-pm:disabled { opacity: .35; cursor: not-allowed; }
+.su-choice { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 16px; border: 1px solid var(--line-2); border-radius: 16px; background: var(--paper); color: var(--text); cursor: pointer; font: inherit; transition: border-color .15s, transform .15s; }
+.su-choice:hover { border-color: var(--accent); }
+.su-choice:active { transform: scale(.985); }
+.su-choice > span:nth-child(2) { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.su-choice b { font-size: 1.02rem; }
+.su-choice b + span { font-size: .82rem; color: var(--text-2); }
+.su-ic { font-size: 1.6rem; width: 40px; text-align: center; }
+.su-choice .mb-arrow { color: var(--accent); }
+.su-seg { display: flex; border: 1px solid var(--line-2); border-radius: 999px; overflow: hidden; }
+.su-seg button { flex: 1; min-height: 44px; border: 0; background: transparent; color: var(--text-2); font-family: var(--font-mono); font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
+.su-seg button + button { border-left: 1px solid var(--line-2); }
+.su-seg button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.su-box { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); }
+.su-rooms-head { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+.su-rooms { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+.su-room { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--bg); color: var(--text); cursor: pointer; font: inherit; text-align: left; }
+.su-room:hover { border-color: var(--accent); }
+.su-room > span:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.su-room b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.su-back { align-self: flex-start; }
+.su-name { margin: 0; }
+
+/* Primitives for the 3D game pages, which do not load party.css */
+.game-body .p-label { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-2); }
+.game-body .p-mono { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.game-body .p-msg { font-family: var(--font-mono); font-size: 0.76rem; line-height: 1.45; color: var(--text-2); min-height: 1.2em; }
+.game-body .p-msg.ok { color: var(--accent); }
+.game-body .p-msg.center, .game-body .center { text-align: center; justify-content: center; }
+.game-body .p-msg a { color: var(--accent); }
+.game-body .p-field { display: flex; flex-direction: column; gap: 6px; }
+.game-body .p-input {
+  width: 100%; min-height: 50px; padding: 0 14px;
+  border: 1px solid var(--line-2); border-radius: 12px;
+  background: var(--paper); color: var(--text);
+  font: 500 1.05rem var(--font-body);
+}
+.game-body .p-input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15); }
+.game-body .p-input.code { font-family: var(--font-display); font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; text-align: center; font-size: 1.3rem; }
+.game-body .p-input.code::placeholder { font-family: var(--font-mono); font-weight: 400; letter-spacing: 0; font-size: 0.85rem; text-transform: none; }
+.game-body .p-join { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.game-body .p-btn {
+  min-height: 48px; padding: 0 18px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid var(--line-2); border-radius: 999px;
+  background: var(--paper); color: var(--text);
+  font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.05em; text-transform: uppercase;
+  cursor: pointer; touch-action: manipulation;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.12s ease, opacity 0.2s ease;
+}
+.game-body .p-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.game-body .p-btn:active:not(:disabled) { transform: scale(0.97); }
+.game-body .p-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.game-body .p-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+.game-body .p-btn.primary:hover:not(:disabled) { color: var(--bg); filter: brightness(1.07); }
+.game-body .p-btn.danger { border-color: var(--danger); color: var(--danger); }
+.game-body .p-btn.big { min-height: 56px; font-size: 0.82rem; width: 100%; }
+.game-body .p-btn.small { min-height: 36px; padding: 0 12px; font-size: 0.66rem; }
+
+.game-body #su { margin-top: 6px; text-align: left; }
+.game-body .su-choice { font-family: var(--font-body); }
+.game-body .top-right { display: flex; align-items: center; gap: 14px; }
+.game-body .lang-switch { display: flex; gap: 8px; }
+.game-body .lang-switch button { background: none; border: 0; padding: 4px 2px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-2); cursor: pointer; }
+.game-body .lang-switch button[aria-pressed="true"] { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 5px; text-decoration-thickness: 1.5px; }
+.game-body .su-code { font-family: var(--font-display); font-weight: 800; font-size: clamp(2.6rem, 14vw, 3.6rem); letter-spacing: 0.12em; text-align: center; color: var(--accent); user-select: all; -webkit-user-select: all; }
+.game-body .text-link { background: none; border: 0; color: var(--text-2); font-family: var(--font-mono); font-size: 0.72rem; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; padding: 6px 0; }
+.game-body #room-status { min-height: 1.2em; }
+.game-body #mode-box { max-height: calc(100dvh - 32px); overflow-y: auto; }
+
+.game-body .top-right { justify-self: end; }

@@ -7,13 +7,14 @@ import { board, state, setGameMode, tryMove, applyRemoteMove, resetGame, replayM
 import { DamaBoard } from './Board.js';
 import { computeAIMove } from './ai.js';
 import { createShell, NAME } from '../shared/shell.js';
+import howto from '../../party/howto/dama.js';
 import { bindPointer, verb } from '../shared/pointer.js';
 import { createAI } from '../shared/aiRunner.js';
 import { wait } from '../shared/anim.js';
 import { net } from '../network.js';
 
 const ai = createAI(new URL('./ai.worker.js', import.meta.url), p => {
-    const b = new DamaBoard(); b.grid = p.grid; return computeAIMove(b, p.player);
+    const b = new DamaBoard(); b.grid = p.grid; return computeAIMove(b, p.player, p.difficulty);
 });
 
 let animating = false;
@@ -21,20 +22,10 @@ let aiThinking = false;
 let sel = null;   // { from, pos, kind: 'move'|'capture', options: [...], step }
 
 const shell = createShell({
-    roomPrefix: 'DM-',
-    controls: {
-        touch: [
-            ['&#9758;', '<strong>Tap a piece</strong>, then tap a <strong>dot</strong> to move it'],
-            ['&#9711;', 'Captures are <strong>mandatory</strong>: glowing pieces must capture, rings show where to land'],
-            ['&#9813;', 'Reach the far row to become a <strong>King</strong> (two stacked pieces)'],
-        ],
-        mouse: [
-            ['&#9758;', '<strong>Click a piece</strong>, then click a <strong>dot</strong> to move it'],
-            ['&#9711;', 'Captures are <strong>mandatory</strong>: glowing pieces must capture, rings show where to land'],
-            ['&#9813;', 'Reach the far row to become a <strong>King</strong>. <strong>Esc</strong> cancels a selection'],
-        ],
-    },
-    onStart(mode) { setGameMode(mode); view.setSide('A'); startNewGame(); },
+    gameId: 'dama',
+    title: { en: 'Dama', fr: 'Dama' },
+    howto,
+    onStart(mode, extra = {}) { state.difficulty = extra.difficulty || 'hard'; setGameMode(mode); view.setSide('A'); startNewGame(); },
     onJoin(init) {
         setGameMode('online');
         state.myRole = init.role;
@@ -271,7 +262,7 @@ async function maybeAI() {
     const gen = state.gen;
     aiThinking = true;
     refresh();
-    const move = await ai.think({ grid: board.grid, player: state.aiPlayer }, 600);
+    const move = await ai.think({ grid: board.grid, player: state.aiPlayer, difficulty: state.difficulty }, 600);
     aiThinking = false;
     if (gen !== state.gen || state.gameMode !== 'ai' || state.currentPlayer !== state.aiPlayer || over() || !move) { refresh(); return; }
     const wasKing = board.grid[move.from.row][move.from.col].king;

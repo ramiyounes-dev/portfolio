@@ -188,7 +188,8 @@ function minimax(board, depth, alpha, beta, isMaximizing, aiPlayer, maxMoves) {
     }
 }
 
-export function computeAIMove(board, player) {
+/** difficulty: 'easy' (1 ply, plays walls rarely and loosely), 'medium' (2 plies), 'hard' (3-4 plies, the original AI). */
+export function computeAIMove(board, player, difficulty = 'hard', rnd = Math.random) {
     const opp = player === 'A' ? 'B' : 'A';
 
     const pawnMoves = board.getValidMoves(board.pawns[player]);
@@ -197,10 +198,11 @@ export function computeAIMove(board, player) {
     }
 
     const totalWalls = (10 - board.wallCounts['A']) + (10 - board.wallCounts['B']);
-    const depth = totalWalls > 12 ? 4 : 3;
-    const maxMoves = totalWalls > 12 ? 20 : 15;
+    const depth = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : totalWalls > 12 ? 4 : 3;
+    const maxMoves = difficulty === 'easy' ? 8 : totalWalls > 12 ? 20 : 15;
 
-    const moves = generateMoves(board, player, player);
+    let moves = generateMoves(board, player, player);
+    if (difficulty === 'easy' && rnd() < 0.35) moves = moves.slice().sort(() => rnd() - 0.5);
     let bestScore = -Infinity;
     let bestAction = null;
 

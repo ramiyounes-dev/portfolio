@@ -1,7 +1,9 @@
-export function computeAIMove(board, player) {
+/** difficulty: 'easy' (shallow, often careless), 'medium' (depth 4), 'hard' (depth 6, the original AI). */
+export function computeAIMove(board, player, difficulty = 'hard', rnd = Math.random) {
     const valid = board.getValidColumns();
     if (valid.length === 0) return null;
     if (valid.length === 1) return valid[0];
+    if (difficulty === 'easy' && rnd() < 0.45) return valid[Math.floor(rnd() * valid.length)];
 
     const opp = player === 'A' ? 'B' : 'A';
 
@@ -10,13 +12,13 @@ export function computeAIMove(board, player) {
         const c = board.clone(); c.dropDisc(col, player);
         if (c.checkWin() === player) return col;
     }
-    // Block immediate loss
-    for (const col of valid) {
+    // Block immediate loss (Easy sometimes misses it)
+    if (difficulty !== 'easy' || rnd() < 0.5) for (const col of valid) {
         const c = board.clone(); c.dropDisc(col, opp);
         if (c.checkWin() === opp) return col;
     }
 
-    const depth = 6;
+    const depth = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 4 : 6;
     let bestScore = -Infinity;
     let bestCol = valid[Math.floor(valid.length / 2)];
 

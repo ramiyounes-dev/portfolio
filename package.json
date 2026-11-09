@@ -1,0 +1,9 @@
+{
+  "name": "portfolio",
+  "private": true,
+  "scripts": {
+    "test": "node --no-warnings --test 'tests/**/*.test.js'",
+    "dev": "wrangler dev",
+    "party": "node --no-warnings tools/party-dev.js"
+  }
+}

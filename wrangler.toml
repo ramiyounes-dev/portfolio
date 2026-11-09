@@ -7,9 +7,26 @@ directory = "."
 not_found_handling = "404-page"
 
 [[durable_objects.bindings]]
-name = "GAME_ROOM"
-class_name = "GameRoom"
+name = "PARTY_ROOM"
+class_name = "PartyRoom"
+
+[[durable_objects.bindings]]
+name = "PARTY_LOBBY"
+class_name = "PartyLobby"
 
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["GameRoom"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["PartyRoom"]
+
+[[migrations]]
+tag = "v3"
+new_sqlite_classes = ["PartyLobby"]
+
+# The old two-player relay (GameRoom) was replaced by PartyRoom for Connect 4, Dama and Quoridor
+[[migrations]]
+tag = "v4"
+deleted_classes = ["GameRoom"]

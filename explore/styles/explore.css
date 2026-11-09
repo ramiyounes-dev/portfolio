@@ -258,6 +258,7 @@ main {
   text-decoration: none;
 }
 .entry-icon { font-size: 2rem; line-height: 1; color: var(--accent); }
+.entry-icon .ic, .plate-icon .ic { width: 1em; height: 1em; display: block; }
 .entry-title { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; line-height: 1.1; letter-spacing: -0.02em; }
 .entry-desc { margin-top: 6px; color: var(--text-2); max-width: 62ch; }
 .entry-tags { margin-top: 10px; font-family: var(--font-mono); font-size: 0.72rem; }
@@ -641,6 +642,10 @@ main {
 
 .book-count {
   min-width: 4.5em;
+  min-height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
   text-align: center;
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -695,3 +700,17 @@ main {
     scroll-behavior: auto !important;
   }
 }
+
+.book-dots[hidden] { display: none; }
+.book-count:hover { color: var(--accent); }
+.pg-notes { justify-content: space-between; }
+
+/* Player filter and badges */
+.players-filter { display: flex; border: 1px solid var(--line-2); border-radius: 999px; overflow: hidden; }
+.players-filter button { min-height: 40px; padding: 0 16px; border: 0; background: transparent; color: var(--text-2); font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; }
+.players-filter button + button { border-left: 1px solid var(--line-2); }
+.players-filter button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+.pg-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.pg-single .pg-tags { margin-top: 12px; }
+.pg-single .pg-tags .tags { margin-top: 0; }
+.entry-tags .pbadge { margin-right: 4px; }
