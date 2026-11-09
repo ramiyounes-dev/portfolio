@@ -1,3 +1,4 @@
+@import url('cards.css');
 /* How to play panel, shared by every Explore game (see party/client/howto.js).
    Fixed size: title, 4:3 picture, scrolling text, pinned footer. Nothing moves between slides. */
 
@@ -79,7 +80,7 @@
 
 /* ---------- Picture parts (howto-art.js) ---------- */
 .ht-svg .f-mono { font-family: var(--font-mono); }
-.ht-svg .f-display { font-family: var(--font-display); font-weight: 800; }
+.ht-svg .f-display { font-family: var(--font-body); font-weight: 700; }
 .ht-svg .f-body { font-family: var(--font-body); font-weight: 500; }
 .ht-svg .k-t { fill: var(--text); }
 .ht-svg .k-tm { fill: var(--text-2); }

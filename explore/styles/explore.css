@@ -293,6 +293,14 @@ main {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Phone on its side: a short, wide page that fits the screen height */
+@media (orientation: landscape) and (max-height: 560px) and (max-width: 899px) {
+  .book {
+    --page-h: max(250px, calc(100svh - 96px));
+    --page-w: min(100cqw, 600px, calc(var(--page-h) * 1.6));
+  }
+}
+
 @media (min-width: 900px) {
   .book {
     /* Desktop: an open two-page spread */
@@ -409,7 +417,7 @@ main {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: clamp(20px, 7.5cqw, 44px);
+  padding: clamp(20px, 7.5cqmin, 44px);
 }
 
 .pg-top,
@@ -419,7 +427,7 @@ main {
   align-items: baseline;
   gap: 12px;
   font-family: var(--font-mono);
-  font-size: clamp(0.66rem, 2.3cqw, 0.75rem);
+  font-size: clamp(0.66rem, 2.3cqmin, 0.75rem);
   color: var(--text-2);
 }
 .pg-top { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
@@ -437,7 +445,7 @@ main {
 .endpaper-mark {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 34cqw;
+  font-size: 34cqmin;
   line-height: 0.8;
   letter-spacing: -0.06em;
   color: var(--paper);
@@ -449,10 +457,10 @@ main {
 
 /* Contents */
 .toc-title {
-  margin-top: clamp(18px, 7cqw, 40px);
+  margin-top: clamp(18px, 7cqmin, 40px);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.9rem, 11cqw, 3.4rem);
+  font-size: clamp(1.9rem, 11cqmin, 3.4rem);
   line-height: 0.9;
   letter-spacing: -0.045em;
 }
@@ -461,10 +469,10 @@ main {
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 300;
-  font-size: clamp(1rem, 4.6cqw, 1.3rem);
+  font-size: clamp(1rem, 4.6cqmin, 1.3rem);
   color: var(--text-2);
 }
-.toc { margin-top: clamp(20px, 8cqw, 44px); border-top: 1px solid var(--line); }
+.toc { margin-top: clamp(20px, 8cqmin, 44px); border-top: 1px solid var(--line); }
 .toc button {
   width: 100%;
   min-height: 44px;
@@ -483,7 +491,7 @@ main {
 .toc-name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1rem, 5cqw, 1.35rem);
+  font-size: clamp(1rem, 5cqmin, 1.35rem);
   letter-spacing: -0.02em;
   line-height: 1.15;
   /* dotted leader to the page number */
@@ -507,7 +515,7 @@ main {
   bottom: 0.02em;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 46cqw;
+  font-size: 46cqmin;
   line-height: 0.75;
   letter-spacing: -0.06em;
   color: var(--paper);
@@ -518,7 +526,7 @@ main {
 .plate-icon {
   position: relative;
   font-family: var(--font-serif);
-  font-size: 34cqw;
+  font-size: 34cqmin;
   line-height: 1;
   color: var(--accent);
   text-shadow: 0 0 0.35em rgba(var(--accent-rgb), 0.35);
@@ -527,30 +535,30 @@ main {
 .plate-art::before {
   content: '';
   position: absolute;
-  width: 62cqw;
+  width: 62cqmin;
   aspect-ratio: 1;
   border-radius: 50%;
   border: 1px solid var(--line);
-  box-shadow: 0 0 0 8cqw var(--paper), 0 0 0 calc(8cqw + 1px) var(--line);
+  box-shadow: 0 0 0 8cqmin var(--paper), 0 0 0 calc(8cqmin + 1px) var(--line);
 }
 .tags { display: flex; flex-wrap: wrap; gap: 0 4px; color: var(--text); }
 .tags li:not(:last-child)::after { content: ' /'; color: var(--accent); }
 
 /* Text (right page of a chapter) */
-.text-main { margin: auto 0; padding: clamp(16px, 6cqw, 32px) 0; }
+.text-main { margin: auto 0; padding: clamp(16px, 6cqmin, 32px) 0; }
 .pg-kicker { font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent); }
 .pg-title {
   margin-top: 0.4em;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.8rem, 10cqw, 3.2rem);
+  font-size: clamp(1.8rem, 10cqmin, 3.2rem);
   line-height: 0.95;
   letter-spacing: -0.04em;
   overflow-wrap: break-word;
 }
 .pg-desc {
-  margin-top: clamp(14px, 5cqw, 24px);
-  font-size: clamp(0.95rem, 3.6cqw, 1.08rem);
+  margin-top: clamp(14px, 5cqmin, 24px);
+  font-size: clamp(0.95rem, 3.6cqmin, 1.08rem);
   line-height: 1.6;
   color: var(--text-2);
 }
@@ -568,7 +576,7 @@ main {
   min-height: 44px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1rem, 4.4cqw, 1.25rem);
+  font-size: clamp(1rem, 4.4cqmin, 1.25rem);
   letter-spacing: -0.02em;
   color: var(--text);
   text-decoration: none;
@@ -580,11 +588,11 @@ main {
 .play:hover .play-arrow { transform: translateX(4px); }
 
 /* Phone page: plate and text on one page */
-.pg-single .plate-art { flex: 0 0 auto; height: 21cqh; margin: 8px 0 6px; justify-items: end; padding-right: 2cqw; }
+.pg-single .plate-art { flex: 0 0 auto; height: 21cqh; margin: 8px 0 6px; justify-items: end; padding-right: 2cqmin; }
 .pg-single .plate-num { font-size: 20cqh; -webkit-text-stroke-width: 2px; }
 .pg-single .plate-icon { font-size: 14cqh; }
 .pg-single .plate-art::before { width: 19cqh; box-shadow: 0 0 0 2.5cqh var(--paper), 0 0 0 calc(2.5cqh + 1px) var(--line); }
-.pg-single .pg-title { margin-top: 0.15em; font-size: clamp(1.7rem, 9cqw, 2.4rem); }
+.pg-single .pg-title { margin-top: 0.15em; font-size: clamp(1.7rem, 9cqmin, 2.4rem); }
 .pg-single .pg-desc { margin-top: 10px; }
 .pg-single .tags { margin-top: 12px; font-family: var(--font-mono); font-size: 0.72rem; }
 
@@ -715,3 +723,29 @@ main {
 .pg-single .pg-tags { margin-top: 12px; }
 .pg-single .pg-tags .tags { margin-top: 0; }
 .entry-tags .pbadge { margin-right: 4px; }
+
+/* Short wide screens (big phone on its side, small laptop window): the spread follows the height */
+@media (min-width: 900px) and (max-height: 560px) {
+  .book {
+    --page-h: max(250px, calc(100svh - 96px));
+    --page-w: min(50cqw, 500px, calc(var(--page-h) / 1.2));
+  }
+}
+
+/* Phone on its side: the page is wide and short. The big decorative number steps aside
+   and the text is sized by the page height, so title, description, tags and Play always fit */
+@media (orientation: landscape) and (max-height: 560px) and (max-width: 899px) {
+  .pg-single .plate-art { display: none; }
+  .pg-single .pg-title { margin-top: 4cqh; font-size: clamp(1.2rem, 10cqh, 2rem); }
+  .pg-single .pg-desc { margin-top: 3cqh; font-size: clamp(0.82rem, 5.6cqh, 1rem); line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; flex-shrink: 0; }
+  .pg-single .tags { margin-top: 3cqh; }
+  .pg-contents .toc-title { font-size: clamp(1.3rem, 12cqh, 2.4rem); }
+}
+/* Any short screen: text pages size their words by the page height and keep the description to a few lines */
+@media (max-height: 560px) {
+  .pg-text .pg-title, .pg-single .pg-title { font-size: clamp(1.1rem, 8.5cqh, 1.9rem); }
+  .pg-text .pg-desc { font-size: clamp(0.8rem, 4.8cqh, 1rem); line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; flex-shrink: 0; }
+  .pg-text .text-main { padding: 3cqh 0; }
+  .pg-contents .toc-title { margin-top: 3cqh; font-size: clamp(1.2rem, 10cqh, 2.2rem); }
+  .pg-contents .toc { margin-top: 3cqh; }
+}

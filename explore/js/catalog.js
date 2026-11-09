@@ -138,9 +138,22 @@
   }
 
   /** Split the contents so each page holds as many rows as its height allows. */
+  let tocPer = 0, tocShape = null;
+  function rowsPerTocPage() {
+    // Measured from the page on screen when there is one (rows and heading scale with the page), else estimated
+    // Layout sizes (offset*), not on-screen boxes: pages turned in 3D would measure wrong
+    const toc = book.querySelector('.toc'), li = toc && toc.querySelector('li'), pg = toc && toc.closest('.pg');
+    const pageH = (pg && pg.clientHeight) || book.offsetHeight || 500;
+    const rowH = li ? li.offsetHeight : 50;
+    let head = 220;
+    if (toc && pg) { head = 0; for (let e = toc; e && e !== pg; e = e.offsetParent) head += e.offsetTop; if (head <= 0 || head > pageH) head = 220; }
+    // Heading and rows scale with the page: keep them as a share of its height for when no contents page is built yet
+    if (toc && pg && li) tocShape = { head: head / pageH, row: rowH / pageH };
+    else if (tocShape) return Math.max(2, Math.min(12, Math.floor((1 - tocShape.head - 64 / pageH) / tocShape.row)));
+    return Math.max(2, Math.min(12, Math.floor((pageH - head - 64) / Math.max(30, rowH))));
+  }
   function tocChunks() {
-    const pageH = book.getBoundingClientRect().height || 500;
-    const per = Math.max(3, Math.min(12, Math.floor((pageH - 220) / 46)));
+    const per = tocPer = rowsPerTocPage();
     const chunks = [];
     for (let i = 0; i < games.length; i += per) chunks.push(games.slice(i, i + per));
     return chunks;
@@ -150,10 +163,10 @@
     // Keep the reader on the same entry when the layout changes (desktop spread <-> phone page)
     const onGame = view >= tocViews ? view - tocViews : -1;
     mode = spreadQuery.matches ? 'spread' : 'single';
+    const chunks = tocChunks();     // measured on the pages still on screen, before they are cleared
     book.textContent = '';
     leaves = [];
     baseL = baseR = null;
-    const chunks = tocChunks();
 
     if (mode === 'spread') {
       // Pages in reading order: [endpaper, contents..., (notes), plate 1, text 1, plate 2, text 2, ...]
@@ -384,6 +397,11 @@
 
   /* ---------- Layout mode follows the viewport ---------- */
   spreadQuery.addEventListener('change', () => build(f));
+  // Rotation or a resized window changes the page height: re-split the contents when a different number of rows fits
+  let fitTimer = null;
+  const refit = () => { clearTimeout(fitTimer); fitTimer = setTimeout(() => { if (rowsPerTocPage() !== tocPer) build(f); }, 160); };
+  window.addEventListener('resize', refit);
+  window.addEventListener('orientationchange', refit);
 
   /* ---------- Filter: duels (exactly 2 players) or games for 3 and more ---------- */
   const filterEl = document.getElementById('players-filter');
@@ -398,6 +416,7 @@
   });
 
   build(0);
+  if (rowsPerTocPage() !== tocPer) build(0);   // first split was an estimate: redo it with the real row height
 
   // Hint that the corner lifts
   if (!reduceMotion && leaves[0]) {

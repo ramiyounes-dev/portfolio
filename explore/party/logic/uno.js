@@ -57,7 +57,7 @@ function drawCards(s, pid, n, ctx) {
     return got;
 }
 
-function log(s, entry) { s.log.push(entry); if (s.log.length > 8) s.log.shift(); }
+function log(s, entry) { s.logSeq = (s.logSeq || 0) + 1; s.log.push({ ...entry, seq: s.logSeq }); if (s.log.length > 8) s.log.shift(); }
 
 function startHand(s, ctx) {
     for (const id of s.pending) {

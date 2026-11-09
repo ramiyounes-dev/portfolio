@@ -3,9 +3,11 @@ import howto from '../howto/uno.js';
 import ai from '../ai/uno.js';
 import { icon } from '../client/icons.js';
 import { dealt } from '../client/cards.js';
+import { tableHtml, seatPositions, backsFan, flyCards, remember, actionBubble } from '../client/table.js';
 
 const LABEL = { S: icon('skip'), R: icon('reverse'), D: '+2', W: icon('wild'), W4: '+4' };
 const COLORNAME = { R: 'red', Y: 'yellow', G: 'green', B: 'blue' };
+const BACK = '<span class="uno-back"><span class="uc-frame"></span><span class="uc-oval"></span></span>';
 
 function unoCard(c, { playable = false, small = false, id = null, anim = '', style = '' } = {}) {
     const wild = c.v === 'W' || c.v === 'W4';
@@ -29,7 +31,7 @@ export default {
             challengeQ: '{name} played Wild Draw Four. Challenge?', challenge: 'Challenge', accept: 'Take 4', stackQ: '+{n} coming: stack a matching card or draw',
             cards: '{n} cards', oneCard: '1 card', 'uno.pickColor': 'Choose a colour first',
             'log.play': '{p} played', 'log.drew': '{p} drew {n}', 'log.uno': '{p}: UNO!', 'log.caught': '{by} caught {p}: +2', 'log.guilty': '{by} challenged: {p} was guilty, +4',
-            'log.innocent': '{by} challenged: {p} was innocent, +6 to {by}', handWon: '{name} wins the hand: +{n}', pile: 'Pile',
+            'log.innocent': '{by} challenged: {p} was innocent, +6 to {by}', handWon: '{name} wins the hand: +{n}', pile: 'Pile', 'act.play': 'Plays', 'act.drew': 'Draws {n}',
         },
         fr: {
             'set.target': 'Jouer jusqu\'à', 'set.stacking': 'Cumul (règle maison)', 'set.challenge': 'Contestation du +4', 'set.timer': 'Temps par tour',
@@ -39,7 +41,7 @@ export default {
             challengeQ: '{name} a joué un +4. Contester ?', challenge: 'Contester', accept: 'Piocher 4', stackQ: '+{n} arrive : pose une carte identique ou pioche',
             cards: '{n} cartes', oneCard: '1 carte', 'uno.pickColor': 'Choisis d\'abord une couleur',
             'log.play': '{p} a joué', 'log.drew': '{p} pioche {n}', 'log.uno': '{p} : UNO !', 'log.caught': '{by} a pris {p} : +2', 'log.guilty': '{by} conteste : {p} bluffait, +4',
-            'log.innocent': '{by} conteste : {p} était en règle, +6 pour {by}', handWon: '{name} gagne la manche : +{n}', pile: 'Pioche',
+            'log.innocent': '{by} conteste : {p} était en règle, +6 pour {by}', handWon: '{name} gagne la manche : +{n}', pile: 'Pioche', 'act.play': 'Joue', 'act.drew': 'Pioche {n}',
         },
     },
     howto,
@@ -59,13 +61,26 @@ export default {
             if (e.k === 'play') return `${esc(t('log.play', { p }))} ${unoCard(e.card, { small: true })}`;
             return esc(t('log.' + e.k, { p, by, n: e.n }));
         };
+        // The table: players around the felt, with their card count; UNO calls show as speech bubbles
+        const pos = seatPositions(v.order, me);
+        const catchBtns = [];
         const seats = v.order.map(id => {
             const n = v.counts[id];
-            const catchBtn = v.vulnerable === id && id !== me && isSeated ? `<button type="button" class="p-btn small danger" data-catch="${id}">${esc(t('catch', { name: nameOf(id) }))}</button>` : '';
-            return `<div class="uno-seat ${v.turn === id ? 'turn' : ''} ${id === me ? 'me' : ''}"><span class="p-name">${esc(nameOf(id))}</span>
-                <span class="p-mono">${n === 1 ? esc(t('oneCard')) : esc(t('cards', { n }))}${v.unoSafe[id] && n === 1 ? ' · UNO' : ''}</span>${catchBtn}</div>`;
-        }).join('');
-
+            if (v.vulnerable === id && id !== me && isSeated) catchBtns.push(`<button type="button" class="p-btn small danger" data-catch="${id}">${esc(t('catch', { name: nameOf(id) }))}</button>`);
+            const uno = v.unoSafe[id] && n === 1;
+            // The player's latest move as a pill on their avatar: what they played, how many they drew
+            const e = [...v.log].reverse().find(x => x.k !== 'uno' && (x.k === 'innocent' ? x.by : x.p) === id);
+            const face = e && e.k === 'play' ? (LABEL[e.card.v] || e.card.v) : '';
+            const act = !e ? null : e.k === 'play' ? actionBubble(root, `${v.hand}:${e.seq}`, `${esc(t('act.play'))} ${face}`)
+                : actionBubble(root, `${v.hand}:${e.seq}`, esc(t('act.drew', { n: e.n || (e.k === 'caught' ? 2 : e.k === 'guilty' ? 4 : 6) })), e.k === 'drew' ? 'calm' : 'bad');
+            return {
+                action: act,
+                id, name: nameOf(id), ...pos[id], me: id === me, turn: v.turn === id && !v.result,
+                sub: n === 1 ? esc(t('oneCard')) : esc(t('cards', { n })), extra: backsFan(n, BACK),
+                bubble: uno ? 'UNO!' : '', bubbleNew: uno && remember(root, 'uno' + id, true) !== true,
+            };
+        });
+        for (const id of v.order) if (!(v.unoSafe[id] && v.counts[id] === 1)) remember(root, 'uno' + id, false);
         let action = '';
         if (v.result) {
             action = `<p class="g-big-msg">${esc(t('handWon', { name: nameOf(v.result.winner), n: v.result.pts }))}</p>`;
@@ -91,15 +106,28 @@ export default {
         const revealed = v.result ? Object.entries(v.result.hands).filter(([id]) => id !== v.result.winner && v.result.hands[id].length)
             .map(([id, cards]) => `<div class="uno-reveal"><span class="p-mono">${esc(nameOf(id))}</span><div class="uno-row">${cards.map(c => unoCard(c, { small: true })).join('')}</div></div>`).join('') : '';
 
-        root.innerHTML = `<div class="uno-seats">${seats}</div>
-            <div class="uno-table">
-              <div class="uno-pile"><span class="uno-back"><span class="uc-frame"></span><span class="uc-oval"></span></span><span class="p-mono">${esc(t('pile'))} · ${v.pileCount}</span></div>
-              <div class="uno-top">${unoCard(v.top, { anim: played ? 'played' : '' })}<span class="uno-color uc-${v.color}" title="${esc(t(COLORNAME[v.color] || 'red'))}"></span></div>
-              <span class="uno-dir">${v.dir === 1 ? icon('cw') : icon('ccw')}</span>
-            </div>
+        const center = `<div class="uno-center">
+              <div class="uno-pile">${BACK}<span class="p-mono">${v.pileCount}</span></div>
+              <div class="uno-top">${unoCard(v.top)}<span class="uno-color uc-${v.color}" title="${esc(t(COLORNAME[v.color] || 'red'))}"></span></div>
+            </div><span class="uno-dir ${v.dir === 1 ? 'cw' : 'ccw'}">${v.dir === 1 ? icon('cw') : icon('ccw')}</span>`;
+        root.innerHTML = `${tableHtml({ seats, center, cls: 'uno-tb' })}
+            ${catchBtns.length ? `<div class="p-row center">${catchBtns.join('')}</div>` : ''}
             ${action}${hand}${revealed}
             <ul class="uno-log">${v.log.slice().reverse().map(e => `<li>${logLine(e)}</li>`).join('')}</ul>
             <div class="uno-sheet hidden"><p class="g-big-msg">${esc(t('pickColor'))}</p>${picker('wild')}<button type="button" class="text-link" data-cancel="1">✕</button></div>`;
+
+        // Cards in motion: a played card flies from its player to the pile, drawn cards fly to the drawer
+        const prevCounts = remember(root, 'counts', { ...v.counts });
+        const prevPile = remember(root, 'pile', v.pileCount);
+        if (prevCounts && !v.result) {
+            const table = root.querySelector('.tb');
+            const seatOf = id => table.querySelector(`[data-seat="${id}"] .tb-avatar`);
+            for (const id of v.order) {
+                const diff = v.counts[id] - (prevCounts[id] ?? v.counts[id]);
+                if (diff < 0 && played) flyCards(table, seatOf(id), root.querySelector('.uno-top .uno-card'), { html: unoCard(v.top), duration: 480 });
+                else if (diff > 0 && prevPile !== undefined && v.pileCount < prevPile) flyCards(table, root.querySelector('.uno-pile .uno-back'), seatOf(id), { html: BACK, count: diff, stagger: 110 });
+            }
+        }
 
         function picker(kind) {
             return `<div class="uno-picker" data-kind="${kind}">${COLORS.map(c => `<button type="button" class="uno-pick uc-${c}" data-color="${c}">${esc(t(COLORNAME[c]))}</button>`).join('')}</div>`;

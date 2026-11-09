@@ -136,6 +136,9 @@ function finishBetting(s, ctx) {
     deal(s, ctx);
 }
 
+/** The last thing a player did, for the action pill at their seat. seq makes each action unique. */
+function note(s, pid, move, amount) { s.actSeq = (s.actSeq || 0) + 1; s.last = { pid, move, amount, seq: s.actSeq }; }
+
 export default {
     id: 'blackjack',
     min: 2,
@@ -172,6 +175,7 @@ export default {
             if (!Number.isFinite(bet) || bet < MIN_BET || bet > s.chips[pid]) return { error: 'bj.badBet' };
             s.bets[pid] = bet;
             s.chips[pid] -= bet;
+            note(s, pid, s.chips[pid] === 0 ? 'allIn' : 'bet', bet);
             const ready = s.players.filter(id => s.chips[id] + (s.bets[id] || 0) >= MIN_BET && !ctx.isAway(id));
             if (ready.every(id => s.bets[id])) deal(s, ctx);
             return {};
@@ -180,6 +184,7 @@ export default {
         const hands = s.hands[pid];
         const hand = hands[s.turn.h];
         const first = hand.cards.length === 2;
+        const before = hand.bet;
         switch (a.move) {
             case 'hit': hand.cards.push(draw(s, ctx)); if (handValue(hand.cards).total >= 21) hand.done = true; break;
             case 'stand': hand.done = true; break;
@@ -199,6 +204,8 @@ export default {
             }
             default: return { error: 'illegal' };
         }
+        note(s, pid, a.move, a.move === 'double' || a.move === 'split' ? before : 0);
+        if (handValue(hand.cards).total > 21) note(s, pid, 'bust', 0);
         advance(s, ctx);
         return {};
     },
@@ -206,7 +213,7 @@ export default {
     tick(s, ctx) {
         if (s.over) return;
         if (s.phase === 'bet') finishBetting(s, ctx);
-        else if (s.phase === 'play') { if (s.turn) s.hands[s.turn.id][s.turn.h].done = true; advance(s, ctx); }
+        else if (s.phase === 'play') { if (s.turn) { s.hands[s.turn.id][s.turn.h].done = true; note(s, s.turn.id, 'stand', 0); } advance(s, ctx); }
         else if (s.phase === 'settle') startRound(s, ctx);
     },
 
@@ -227,7 +234,7 @@ export default {
             hands: Object.fromEntries(Object.entries(s.hands).map(([id, hs]) => [id, hs.map(h => ({ ...h, value: handValue(h.cards) }))])),
             dealer: hideHole && s.dealer.length ? [s.dealer[0], null] : s.dealer,
             dealerValue: hideHole ? (s.dealer.length ? handValue([s.dealer[0]]) : null) : handValue(s.dealer),
-            turn: s.turn, results: s.results, reshuffled: s.reshuffled, shoeLeft: s.shoe.length,
+            turn: s.turn, results: s.results, last: s.last || null, reshuffled: s.reshuffled, shoeLeft: s.shoe.length,
             deadline: s.deadline, timerTotal: s.timerTotal,
         };
     },

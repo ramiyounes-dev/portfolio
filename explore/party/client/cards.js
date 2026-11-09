@@ -1,4 +1,5 @@
-/* Playing cards drawn as SVG (Blackjack, Bullshit): real pip layouts, framed court cards, a patterned back.
+/* Playing cards drawn as SVG (Blackjack, Bullshit): rank and suit in the corners, one big suit in the middle,
+   portraits for the court cards, a patterned back. One design at every size, on the table and in the hand.
    Suits are drawn as shapes, not text, so they never turn into emoji on a phone.
    Also: dealt() tells which cards are new since the last render, so only those animate. */
 
@@ -15,57 +16,76 @@ const SHAPE = {
 const pip = (s, x, y, size, flip = false) =>
     `<g transform="translate(${x - size / 2} ${y - size / 2}) scale(${size / 100})${flip ? ' rotate(180 50 50)' : ''}">${SHAPE[s]}</g>`;
 
-// Pip positions for 2 to 10 in a 200 × 280 card: columns 64 / 100 / 136, rows from 52 to 228
-const L = 64, M = 100, R = 136;
-const LAYOUT = {
-    2: [[M, 56], [M, 224]],
-    3: [[M, 56], [M, 140], [M, 224]],
-    4: [[L, 56], [R, 56], [L, 224], [R, 224]],
-    5: [[L, 56], [R, 56], [M, 140], [L, 224], [R, 224]],
-    6: [[L, 56], [R, 56], [L, 140], [R, 140], [L, 224], [R, 224]],
-    7: [[L, 56], [R, 56], [M, 98], [L, 140], [R, 140], [L, 224], [R, 224]],
-    8: [[L, 56], [R, 56], [M, 98], [L, 140], [R, 140], [M, 182], [L, 224], [R, 224]],
-    9: [[L, 56], [R, 56], [L, 112], [R, 112], [M, 140], [L, 168], [R, 168], [L, 224], [R, 224]],
-    10: [[L, 56], [R, 56], [M, 84], [L, 112], [R, 112], [L, 168], [R, 168], [M, 196], [L, 224], [R, 224]],
+/* Court cards: a double-ended portrait like a real deck (the top half, then the same turned upside down).
+   Robes take the suit colour; gold, blue and skin tones are shared. Drawn for x 46..154, y 46..140 and scaled into the panel. */
+const FACE = '<circle cx="100" cy="90" r="15" class="pc-skin"/><circle cx="94.5" cy="89" r="1.7" class="pc-dark"/><circle cx="105.5" cy="89" r="1.7" class="pc-dark"/><path d="M96 97q4 3 8 0" class="pc-line"/>';
+const ROBE = '<path d="M60 140C62 117 78 106 100 106S138 117 140 140Z" class="pc-robe"/><path d="M60 140C62 117 78 106 100 106L100 140Z" class="pc-robe-shade"/>';
+const FIGURE = {
+    K: ROBE
+        + '<path d="M84 108L100 130L116 108L110 106L100 118L90 106Z" class="pc-gold"/>'
+        + '<path d="M124 100L136 76" class="pc-steel"/><path d="M119 104L129 108M133 69L139 72" class="pc-steel"/>'
+        + FACE
+        + '<path d="M86 94Q86 116 100 118Q114 116 114 94Q110 104 100 104Q90 104 86 94Z" class="pc-hair"/>'
+        + '<path d="M83 78L85 58L92 68L100 54L108 68L115 58L117 78Z" class="pc-gold"/><circle cx="100" cy="68" r="2.6" class="pc-gem"/>',
+    Q: ROBE
+        + '<path d="M86 108Q100 122 114 108" class="pc-gold-line"/><circle cx="100" cy="117" r="3" class="pc-gem"/>'
+        + '<path d="M83 92C80 70 120 70 117 92L121 120L112 112L111 92C110 82 90 82 89 92L88 112L79 120Z" class="pc-hair"/>'
+        + FACE
+        + '<path d="M85 77Q100 62 115 77L112 71L106 74L100 64L94 74L88 71Z" class="pc-gold"/>'
+        + '<path d="M70 132L74 114" class="pc-stem"/><circle cx="74" cy="111" r="6" class="pc-flower"/><circle cx="74" cy="111" r="2.2" class="pc-gold"/>',
+    J: ROBE
+        + '<path d="M88 108L100 122L112 108" class="pc-gold-line"/><path d="M128 140L132 98" class="pc-steel"/><path d="M126 98H138" class="pc-steel"/>'
+        + '<path d="M86 88C85 82 88 78 92 77L92 96L86 100Z" class="pc-hair"/><path d="M114 88C115 82 112 78 108 77L108 96L114 100Z" class="pc-hair"/>'
+        + FACE
+        + '<path d="M83 82Q100 62 119 80L123 84H82Z" class="pc-cap"/><path d="M115 77Q132 60 134 50Q122 62 110 72Z" class="pc-gold"/>',
 };
-
-// Court cards: a framed panel with the letter, a small emblem and two suit marks
-const EMBLEM = {
-    K: '<path d="M78 82L84 60L94 74L100 56L106 74L116 60L122 82Z" class="pc-gold"/>',
-    Q: '<path d="M80 82Q100 52 120 82Z" class="pc-gold"/><circle cx="100" cy="62" r="5" class="pc-gold"/>',
-    J: '<path d="M86 82L100 58L114 82Z" class="pc-gold"/>',
-};
-function court(r, s) {
-    return `<rect x="40" y="44" width="120" height="192" rx="10" class="pc-panel"/>`
-        + `<rect x="47" y="51" width="106" height="178" rx="6" class="pc-panel-line"/>`
-        + EMBLEM[r]
-        + `<text x="100" y="168" text-anchor="middle" class="pc-court">${r}</text>`
-        + pip(s, 66, 206, 26) + pip(s, 134, 74, 26, true);
+function court(r) {
+    return `<rect x="62" y="56" width="76" height="168" rx="8" class="pc-panel"/>`
+        + `<svg x="62" y="56" width="76" height="168" viewBox="54 46 92 188" preserveAspectRatio="xMidYMid slice" overflow="hidden">${FIGURE[r]}<g transform="rotate(180 100 140)">${FIGURE[r]}</g></svg>`
+        + `<path d="M62 140H138" class="pc-panel-mid"/>`
+        + `<rect x="66" y="60" width="68" height="160" rx="5" class="pc-panel-line"/>`;
 }
 
-/** One card: code like '10♥' (or null for a face-down card). opts.cls adds classes (deal, flip...). */
-export function playingCard(code, { small = false, cls = '', style = '' } = {}) {
-    const st = style ? ` style="${style}"` : '';
-    if (!code) {
-        return `<span class="pcard back ${small ? 'sm' : ''} ${cls}"${st}><svg viewBox="0 0 200 280" aria-hidden="true">
-            <rect x="3" y="3" width="194" height="274" rx="16" class="pc-back"/>
-            <rect x="14" y="14" width="172" height="252" rx="10" class="pc-back-line"/>
-            <path d="M100 30L170 140L100 250L30 140Z" class="pc-back-line"/><path d="M100 60L150 140L100 220L50 140Z" class="pc-back-mark"/>
-            </svg></span>`;
+// Casino back: a diagonal lattice inside a gold border, cut to the inner panel (no ids, so many cards can share a page)
+const LATTICE = (() => {
+    const x0 = 24, y0 = 24, x1 = 176, y1 = 256, out = [];
+    for (let c = x0 - (y1 - y0); c <= x1; c += 19) {
+        // y = x - c + y0 (down-right) and y = -(x - c') + ... (down-left), clipped to the panel
+        const a = [Math.max(x0, c), y0 + Math.max(x0, c) - c], b = [Math.min(x1, c + (y1 - y0)), y0 + Math.min(x1, c + (y1 - y0)) - c];
+        if (a[0] < b[0]) out.push(`M${a[0]} ${a[1]}L${b[0]} ${b[1]}`, `M${x0 + x1 - a[0]} ${a[1]}L${x0 + x1 - b[0]} ${b[1]}`);
     }
+    return out.join('');
+})();
+const BACK_SVG = `<rect x="3" y="3" width="194" height="274" rx="16" class="pc-back"/><path d="${LATTICE}" class="pc-lattice"/>
+    <rect x="16" y="16" width="168" height="248" rx="10" class="pc-back-line"/><rect x="24" y="24" width="152" height="232" rx="6" class="pc-back-line"/>
+    <path d="M100 92L132 140L100 188L68 140Z" class="pc-back-mark"/>`;
+
+/** The inside of a card (200 × 280 units): face or back. */
+function cardBody(code) {
+    if (!code) return { cls: 'back', body: BACK_SVG, label: '' };
     const sym = code.slice(-1), r = code.slice(0, -1), s = SUIT[sym] || 's';
-    const red = RED[s] ? 'red' : 'black';
-    let middle;
-    if (small) middle = pip(s, 128, 196, 92);
-    else if (r === 'A') middle = pip(s, 100, 140, s === 's' ? 96 : 80);
-    else if (EMBLEM[r]) middle = court(r, s);
-    else middle = (LAYOUT[r] || []).map(([x, y]) => pip(s, x, y, 38, y > 150)).join('');
-    const corner = small
-        ? `<text x="20" y="74" class="pc-rank big">${r}</text>`
-        : `<text x="22" y="46" class="pc-rank">${r}</text>${pip(s, 22 + (r === '10' ? 8 : 0), 66, 22)}`
-          + `<g transform="rotate(180 100 140)"><text x="22" y="46" class="pc-rank">${r}</text>${pip(s, 22 + (r === '10' ? 8 : 0), 66, 22)}</g>`;
-    return `<span class="pcard ${red} ${small ? 'sm' : ''} ${cls}"${st} aria-label="${r}${sym}"><svg viewBox="0 0 200 280" aria-hidden="true">
-        <rect x="3" y="3" width="194" height="274" rx="16" class="pc-face"/>${middle}${corner}</svg></span>`;
+    const middle = FIGURE[r] ? court(r) : pip(s, 100, 140, r === 'A' ? 104 : 92);
+    // "10" is squeezed to the width of one wide letter so it never runs off the edge
+    const fit = r === '10' ? ' textLength="50" lengthAdjust="spacingAndGlyphs"' : '';
+    const idx = `<text x="33" y="62" class="pc-rank"${fit}>${r}</text>${pip(s, 33, 92, 34)}`;
+    return { cls: RED[s] ? 'red' : 'black', label: r + sym,
+        // Everything on the face is drawn 12% smaller around the centre: a clean white margin all round
+        body: `<rect x="3" y="3" width="194" height="274" rx="16" class="pc-face"/><g transform="translate(100 140) scale(0.88) translate(-100 -140)">${middle}${idx}<g transform="rotate(180 100 140)">${idx}</g></g>` };
+}
+
+/** One card: code like '10♥' (or null for a face-down card). The same face at every size:
+    the rank and one suit in two corners, a big suit in the middle (a portrait for J, Q, K).
+    small only makes it smaller (CSS); opts.cls adds classes (deal, flip...). */
+export function playingCard(code, { small = false, cls = '', style = '' } = {}) {
+    const c = cardBody(code);
+    return `<span class="pcard ${c.cls} ${small ? 'sm' : ''} ${cls}"${style ? ` style="${style}"` : ''}${c.label ? ` aria-label="${c.label}"` : ''}><svg viewBox="0 0 200 280" aria-hidden="true">${c.body}</svg></span>`;
+}
+
+/** The same card inside an SVG picture (How to play): placed at x, y with width w; rot in degrees; hl outlines it. */
+export function cardSvg(code, x, y, w, { rot = 0, hl = false } = {}) {
+    const c = cardBody(code), h = w * 1.4;
+    const t = rot ? ` transform="rotate(${rot} ${x + w / 2} ${y + h / 2})"` : '';
+    return `<g class="pcard ${c.cls}${hl ? ' hl' : ''}"${t}><svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 200 280">${c.body}</svg></g>`;
 }
 
 /** Which keys are new since the last call on this element. First call: nothing is new (no replay on load). */

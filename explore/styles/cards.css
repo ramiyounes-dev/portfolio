@@ -1,0 +1,39 @@
+/* Playing cards (see party/client/cards.js): one look everywhere, at every size, in the games and in How to play.
+   Classic casino card: white face, rounded corners, a soft shadow, rank and suit in two corners, red and black inks. */
+.pcard { position: relative; display: inline-block; flex-shrink: 0; width: 62px; aspect-ratio: 200 / 280; border-radius: 8px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.18)); }
+.pcard.sm { width: 46px; border-radius: 6px; }
+.pcard svg { display: block; width: 100%; height: 100%; }
+.pcard .pc-face { fill: #fffdf7; stroke: #d8cdb9; stroke-width: 2; }
+.pcard.red { --ink: #c42f2c; --panel: #f8e6df; } .pcard.black { --ink: #1c1814; --panel: #ebe6dc; }
+.pcard svg g, .pcard svg circle, .pcard svg path:not([class]) { fill: var(--ink); }
+.pcard .pc-rank { font-family: var(--font-body, 'DM Sans', system-ui, sans-serif); font-weight: 700; font-size: 58px; fill: var(--ink); text-anchor: middle; letter-spacing: -2px; }
+.pcard .pc-panel { fill: var(--panel); stroke: var(--ink); stroke-width: 2; }
+.pcard .pc-panel-line { fill: none; stroke: #b98a33; stroke-width: 2; }
+.pcard .pc-gold { fill: #d4a646; stroke: #8a6420; stroke-width: 1; }
+.pcard .pc-gold-line { fill: none; stroke: #d4a646; stroke-width: 3; }
+.pcard .pc-skin { fill: #f4d9b6; stroke: #8f6a4a; stroke-width: 1.2; }
+.pcard .pc-dark { fill: #2a1d14; }
+.pcard .pc-line { fill: none; stroke: #8f4a3a; stroke-width: 1.6; stroke-linecap: round; }
+.pcard .pc-hair { fill: #6b4423; stroke: #3d2614; stroke-width: 1; }
+.pcard.red .pc-hair { fill: #c98a2e; stroke: #7a5218; }
+.pcard .pc-robe { fill: var(--ink); stroke: #1c1814; stroke-width: 1; }
+.pcard .pc-robe-shade { fill: #2f5aa8; opacity: 0.9; }
+.pcard .pc-cap { fill: #2f5aa8; stroke: #1c2f55; stroke-width: 1; }
+.pcard .pc-gem { fill: #2f5aa8; stroke: #fffdf7; stroke-width: 0.8; }
+.pcard .pc-steel { fill: none; stroke: #8f9aa6; stroke-width: 3.5; stroke-linecap: round; }
+.pcard .pc-stem { fill: none; stroke: #3a7d4a; stroke-width: 2.5; stroke-linecap: round; }
+.pcard .pc-flower { fill: #e05a5a; stroke: #8e2416; stroke-width: 1; }
+.pcard .pc-panel-mid { fill: none; stroke: #b98a33; stroke-width: 1.5; }
+.pcard.back .pc-back { fill: #8a2a21; stroke: #fffdf7; stroke-width: 6; }
+.pcard.back .pc-back-line { fill: none; stroke: #d9a84e; stroke-width: 3; opacity: 0.8; }
+.pcard.back .pc-back-mark { fill: #a8392d; stroke: #d9a84e; stroke-width: 2; }
+/* Dealt cards fly in from the shoe; a hole card turns over */
+.pcard.deal { animation: pc-deal 0.45s var(--d, 0ms) cubic-bezier(0.2, 0.8, 0.3, 1) both; }
+@keyframes pc-deal { from { transform: translate(40px, -70px) rotate(-18deg) scale(0.7); opacity: 0; } }
+.pcard.flip { animation: pc-flip 0.5s ease-out both; }
+@keyframes pc-flip { 0% { transform: perspective(600px) rotateY(90deg) scale(1.08); } 100% { transform: perspective(600px) rotateY(0); } }
+
+.pcard.back .pc-lattice { fill: none; stroke: #d9a84e; stroke-width: 1.6; opacity: 0.45; }
+.pcard.hl .pc-face { stroke: var(--accent, #d4a646); stroke-width: 8; }
+/* Inside an SVG picture (How to play) the card is a <g>, not a box */
+g.pcard { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25)); }

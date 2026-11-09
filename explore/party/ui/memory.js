@@ -42,7 +42,7 @@ export default {
         const cols = COLS[v.n] || 6;
         const left = v.matched.filter(m => !m).length / 2;
         root.innerHTML = `<p class="g-note">${esc(t('pairsLeft', { n: left }))}</p>
-            <div class="mm-grid" style="grid-template-columns:repeat(${cols},1fr)">
+            <div class="mm-grid" style="grid-template-columns:repeat(${cols},1fr);--cols:${cols};--rows:${Math.ceil(v.cards.length / cols)}">
             ${v.cards.map((face, i) => {
                 const up = !!face;
                 const owner = v.matched[i];

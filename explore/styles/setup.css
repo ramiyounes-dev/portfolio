@@ -7,7 +7,7 @@
 .su-fixed { display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: .8rem; color: var(--text-2); padding: 14px; border: 1px dashed var(--line-2); border-radius: 14px; text-align: center; margin: 0; }
 .su-range { display: flex; justify-content: center; }
 .su-count { display: flex; align-items: center; justify-content: center; gap: 26px; padding: 8px 0; }
-.su-count b { font-family: var(--font-display); font-size: 3.6rem; font-weight: 800; min-width: 2ch; text-align: center; color: var(--accent); line-height: 1; }
+.su-count b { font-family: var(--font-body); font-size: 3.4rem; font-weight: 700; min-width: 2ch; text-align: center; color: var(--accent); line-height: 1; }
 .su-pm { width: 56px; height: 56px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--paper); color: var(--text); font-size: 1.6rem; cursor: pointer; }
 .su-pm:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .su-pm:disabled { opacity: .35; cursor: not-allowed; }

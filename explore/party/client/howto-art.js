@@ -3,6 +3,7 @@
    Colours come from CSS classes (see howto.css), so pictures follow the light and dark themes. */
 
 import { ICONS } from './icons.js';
+import { cardSvg } from './cards.js';
 
 export const W = 320, H = 240;
 const n = v => Math.round(v * 10) / 10;
@@ -53,17 +54,6 @@ export function arrow(x1, y1, x2, y2, { bend = 0, cls = 'k-arr', head = 8 } = {}
     return path(d, cls) + path(h, cls);
 }
 
-/** Playing card. label is the big corner text; suit a symbol; cls picks the face colour. */
-export function card(x, y, { w = 46, h = 66, label: lb = '', sub = '', cls = 'k-card', ink = 'k-t', rot = 0, back = false, big = '' } = {}) {
-    const t = rot ? ` transform="rotate(${rot} ${n(x + w / 2)} ${n(y + h / 2)})"` : '';
-    if (back) return `<g${t}>${rect(x, y, w, h, 'k-cardback', 6)}${rect(x + 5, y + 5, w - 10, h - 10, 'k-cardback-in', 3)}</g>`;
-    return `<g${t}>${rect(x, y, w, h, cls, 6)}`
-        + (lb ? label(x + 8, y + 12, lb, { size: 12, cls: ink, anchor: 'start', font: 'display' }) : '')
-        + (sub ? label(x + 8, y + 26, sub, { size: 12, cls: ink, anchor: 'start' }) : '')
-        + (big ? label(x + w / 2, y + h / 2 + 4, big, { size: Math.min(w, h) * 0.42, cls: ink, font: 'display' }) : '')
-        + '</g>';
-}
-
 /** Rounded pill with text, for buttons and tags drawn inside a picture. */
 export function pill(x, y, s, { w = null, h = 26, cls = 'k-pill', ink = 'k-t', size = 11 } = {}) {
     const width = w || Math.max(40, String(s).length * size * 0.66 + 22);
@@ -87,11 +77,12 @@ export function modesArt(lang = 'en') {
 export const markX = (cx, cy, k = 12, cls = 'k-x') => path(`M${n(cx - k)} ${n(cy - k)}L${n(cx + k)} ${n(cy + k)}M${n(cx + k)} ${n(cy - k)}L${n(cx - k)} ${n(cy + k)}`, cls);
 export const markO = (cx, cy, k = 12, cls = 'k-o') => circle(cx, cy, k, cls);
 
-/** Playing card with rank and suit (red suits use the danger colour). */
-export function playing(x, y, rank, suit, { w = 46, h = 66, rot = 0, hl = false } = {}) {
-    const red = suit === '♥' || suit === '♦';
-    return card(x, y, { w, h, rot, cls: hl ? 'k-card-hl' : 'k-card', ink: red ? 'k-tdng' : 'k-t', label: rank, big: suit });
+/** Playing card with rank and suit: the very same card as in the games (client/cards.js). h is kept for old calls. */
+export function playing(x, y, rank, suit, { w = 46, rot = 0, hl = false } = {}) {
+    return cardSvg(rank + suit, x, y, w, { rot, hl });
 }
+/** A face-down playing card, same back as in the games. */
+export const playingBack = (x, y, { w = 46, rot = 0 } = {}) => cardSvg(null, x, y, w, { rot });
 
 /** Arrow between two centres, stopping r units short of each. */
 export function link(a, b, r = 26, opts = {}) {

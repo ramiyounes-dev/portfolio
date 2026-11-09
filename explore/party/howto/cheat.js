@@ -1,7 +1,7 @@
-import { art, playing, card, label, pill, rect } from '../client/howto-art.js';
+import { art, playing, playingBack, label, pill, rect } from '../client/howto-art.js';
 import { modesStep, SECRET_NOTE } from './common.js';
 
-const pile = (x, y, n) => Array.from({ length: n }, (_, k) => card(x + k * 3, y - k * 3, { back: true, rot: (k % 3) * 4 - 4 })).join('');
+const pile = (x, y, n) => Array.from({ length: n }, (_, k) => playingBack(x + k * 3, y - k * 3, { rot: (k % 3) * 4 - 4 })).join('');
 const fan = (cards, y = 150) => cards.map(([r, s], k) => playing(70 + k * 36, y, r, s, { rot: (k - (cards.length - 1) / 2) * 5 })).join('');
 
 export default [
@@ -23,7 +23,7 @@ export default [
     },
     {
         title: { en: 'The rank goes up', fr: 'Le rang monte' },
-        art: () => art(['A', '2', '3', '4', '5'].map((r, k) => rect(40 + k * 50, 92, 40, 56, k === 2 ? 'k-card-hl' : 'k-card', 6) + label(60 + k * 50, 120, r, { size: 18, cls: k === 2 ? 'k-ta' : 'k-t', font: 'display' })).join('')),
+        art: () => art(['A', '2', '3', '4', '5'].map((r, k) => playing(40 + k * 50, 92, r, k % 2 ? '♥' : '♠', { w: 40, hl: k === 2 })).join('')),
         text: {
             en: 'The rank to play goes up by one each turn: <b>A, 2, 3 … 10, J, Q, K</b>, then back to A. The holder of the ace of spades starts, with Aces.',
             fr: 'Le rang à jouer monte d\'un cran à chaque tour : <b>A, 2, 3 … 10, V, D, R</b>, puis retour à l\'As. Celui qui a l\'as de pique commence, avec les As.',
@@ -31,10 +31,10 @@ export default [
     },
     {
         title: { en: 'Play face down', fr: 'Face cachée' },
-        art: lang => art(pile(120, 70, 3), pill(160, 186, lang === 'fr' ? '2 de 3' : '2 threes', { w: 110, cls: 'k-pill-acc', ink: 'k-tbg' })),
+        art: lang => art(pile(120, 70, 3), pill(160, 186, '2 × 3', { w: 90, cls: 'k-pill-acc', ink: 'k-tbg' })),
         text: {
-            en: 'Place <b>1 to 4 cards face down</b> (up to 8 with two decks). They are announced as "N of the current rank". The cards may be honest or a bluff, and since you must play at least one, sometimes you have to bluff.',
-            fr: 'Pose <b>1 à 4 cartes face cachée</b> (jusqu\'à 8 avec deux jeux). Elles sont annoncées comme « N du rang en cours ». Elles peuvent être vraies ou fausses, et comme il faut en poser au moins une, il faut parfois bluffer.',
+            en: 'Place <b>1 to 4 cards face down</b> (up to 8 with two decks). They are announced like "2 × 3": how many, and the current rank. The cards may be honest or a bluff, and since you must play at least one, sometimes you have to bluff.',
+            fr: 'Pose <b>1 à 4 cartes face cachée</b> (jusqu\'à 8 avec deux jeux). Elles sont annoncées comme « 2 × 3 » : combien, et le rang en cours. Elles peuvent être vraies ou fausses, et comme il faut en poser au moins une, il faut parfois bluffer.',
         },
     },
     {

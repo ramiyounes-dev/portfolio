@@ -1,4 +1,4 @@
-import { art, playing, card, rect, label, pill, circle } from '../client/howto-art.js';
+import { art, playing, playingBack, rect, label, pill, circle } from '../client/howto-art.js';
 import { modesStep } from './common.js';
 
 const chips = (cx, cy, n = 3) => Array.from({ length: n }, (_, k) => circle(cx, cy - k * 5, 12, 'k-acc') + circle(cx, cy - k * 5, 8, 'k-chipin')).join('');
@@ -14,7 +14,7 @@ export default [
     },
     {
         title: { en: 'The table', fr: 'La table' },
-        art: () => art(rect(40, 40, 240, 160, 'k-paper', 80), card(124, 64, { back: true }), card(150, 64, { back: true }), chips(90, 160), chips(160, 170), chips(230, 160)),
+        art: () => art(rect(40, 40, 240, 160, 'k-paper', 80), playingBack(124, 64), playingBack(150, 64), chips(90, 160), chips(160, 170), chips(230, 160)),
         text: {
             en: 'A 6-deck shoe, reshuffled when 75% has been used. Each player starts with <b>1,000 chips</b> by default. Card values: 2 to 10 as shown, J, Q and K count 10, an Ace counts 1 or 11.',
             fr: 'Un sabot de 6 jeux, remélangé quand 75 % a servi. Chaque joueur commence avec <b>1 000 jetons</b> par défaut. Valeurs : de 2 à 10 comme indiqué, V, D et R valent 10, l\'As vaut 1 ou 11.',
@@ -22,7 +22,7 @@ export default [
     },
     {
         title: { en: 'Bet and deal', fr: 'Mise et donne' },
-        art: () => art(card(110, 30, { back: true, w: 40, h: 56 }), playing(156, 30, '7', '♣', { w: 40, h: 56 }), playing(110, 130, 'A', '♦', { w: 40, h: 56 }), playing(156, 130, '5', '♠', { w: 40, h: 56 }), chips(250, 170)),
+        art: () => art(playingBack(110, 30, { w: 40, h: 56 }), playing(156, 30, '7', '♣', { w: 40, h: 56 }), playing(110, 130, 'A', '♦', { w: 40, h: 56 }), playing(156, 130, '5', '♠', { w: 40, h: 56 }), chips(250, 170)),
         text: {
             en: '<b>Bet</b> at least 10 before the timer ends, or the minimum is bet for you. Everyone gets 2 cards face up; the dealer gets 1 up and 1 down.',
             fr: '<b>Mise</b> au moins 10 avant la fin du chrono, sinon la mise minimale est faite pour toi. Chacun reçoit 2 cartes visibles ; le croupier en reçoit 1 visible et 1 cachée.',

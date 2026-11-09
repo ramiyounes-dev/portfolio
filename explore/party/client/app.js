@@ -88,8 +88,9 @@ export function mountGame(ui) {
         h('div', { class: 'p-gamebar' },
             h('button', { class: 'p-codechip', type: 'button', id: 'g-code' }),
             h('div', { class: 'p-status', id: 'g-status', 'aria-live': 'polite' }),
-            h('button', { class: 'p-icon-btn', type: 'button', id: 'g-howto', 'data-ta': 'howto', onclick: () => openRules() }, '?')),
-        h('div', { class: 'p-timer hidden', id: 'g-timer' }, h('span', { class: 'p-timer-fill' }), h('span', { class: 'p-timer-num' })),
+            h('button', { class: 'p-icon-btn', type: 'button', id: 'g-howto', 'data-ta': 'howto', onclick: () => openRules() }, '?'),
+            // An overlay in the gap under the bar: showing or hiding it never moves the game
+            h('div', { class: 'p-timer off', id: 'g-timer', 'aria-hidden': 'true' }, h('span', { class: 'p-timer-fill' }), h('span', { class: 'p-timer-num' }))),
         h('div', { class: 'p-scores', id: 'g-scores' }),
         h('div', { class: 'p-banner hidden', id: 'g-banner' }),
         h('div', { class: 'p-game', id: 'g-root' }),
@@ -496,7 +497,7 @@ export function mountGame(ui) {
                 : `<p class="p-msg center">${esc(t('waitingRematch', { name: nameOf(room.host) }))}</p>`}
         </div>`;
         const wasHidden = el.classList.contains('hidden');
-        el.classList.remove('hidden');
+        el.classList.remove('off');
         if (ui.results) ui.results($('g-results-extra'), r, api());
         if (wasHidden) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
     }
@@ -510,10 +511,10 @@ export function mountGame(ui) {
     (function tick() {
         requestAnimationFrame(tick);
         const el = $('g-timer');
-        if (!room || room.phase !== 'playing' || !view || !view.deadline) { el.classList.add('hidden'); return; }
+        if (!room || room.phase !== 'playing' || !view || !view.deadline) { el.classList.add('off'); return; }
         const left = Math.max(0, view.deadline - (Date.now() + offset));
         const total = view.timerTotal || 30000;
-        el.classList.remove('hidden');
+        el.classList.remove('off');
         el.classList.toggle('urgent', left < 5000);
         el.querySelector('.p-timer-fill').style.transform = `scaleX(${Math.min(1, left / total)})`;
         el.querySelector('.p-timer-num').textContent = Math.ceil(left / 1000);
