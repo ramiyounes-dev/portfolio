@@ -38,36 +38,118 @@ function drawStroke(s, from) {
     ctx2d.restore();
 }
 
-/** Paint bucket: fill the area around (x, y) (0..1000) that has the same colour as that point.
-    Edges of lines are soft, so near-matching pixels count too, and the fill grows 1 px under the line edge. */
-function floodFill(x, y, colour) {
-    const W = canvas.width, H = canvas.height, k = W / 1000;
-    const px = Math.min(W - 1, Math.max(0, Math.round(x * k))), py = Math.min(H - 1, Math.max(0, Math.round(y * k)));
-    const img = ctx2d.getImageData(0, 0, W, H), d = img.data;
-    const at = (px + py * W) * 4;
-    const tr = d[at], tg = d[at + 1], tb = d[at + 2], ta = d[at + 3];
-    const hex = colour.replace('#', '');
-    const fr = parseInt(hex.slice(0, 2), 16), fg = parseInt(hex.slice(2, 4), 16), fb = parseInt(hex.slice(4, 6), 16);
-    if (Math.abs(fr - tr) + Math.abs(fg - tg) + Math.abs(fb - tb) < 12 && ta > 240) return;   // already that colour
-    const same = i => (ta < 40 ? d[i + 3] < 120 : d[i + 3] > 120 && Math.abs(d[i] - tr) + Math.abs(d[i + 1] - tg) + Math.abs(d[i + 2] - tb) < 90);
-    const seen = new Uint8Array(W * H);
-    const stack = [px, py];
-    while (stack.length) {
-        const sy = stack.pop(), sx0 = stack.pop();
-        let sx = sx0;
-        while (sx > 0 && !seen[sx - 1 + sy * W] && same((sx - 1 + sy * W) * 4)) sx--;
-        let up = false, down = false;
-        for (; sx < W && !seen[sx + sy * W] && same((sx + sy * W) * 4); sx++) {
-            seen[sx + sy * W] = 1;
-            if (sy > 0) { const u = !seen[sx + (sy - 1) * W] && same((sx + (sy - 1) * W) * 4); if (u && !up) stack.push(sx, sy - 1); up = u; }
-            if (sy < H - 1) { const v = !seen[sx + (sy + 1) * W] && same((sx + (sy + 1) * W) * 4); if (v && !down) stack.push(sx, sy + 1); down = v; }
+/** Square dilation of a 0/1 mask by r pixels (two passes with a sliding window, so it stays fast). */
+function dilate(mask, W, H, r) {
+    const tmp = new Uint8Array(W * H), out = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) {
+        let run = 0;
+        const row = y * W;
+        for (let x = 0; x < Math.min(r, W); x++) run += mask[row + x];
+        for (let x = 0; x < W; x++) {
+            if (x + r < W) run += mask[row + x + r];
+            if (x - r - 1 >= 0) run -= mask[row + x - r - 1];
+            tmp[row + x] = run > 0 ? 1 : 0;
         }
     }
-    // Paint the area plus a 1 px rim, under the existing lines
-    for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
-        const j = xx + yy * W;
-        if (!(seen[j] || (xx > 0 && seen[j - 1]) || (xx < W - 1 && seen[j + 1]) || (yy > 0 && seen[j - W]) || (yy < H - 1 && seen[j + W]))) continue;
-        const i = j * 4, a = d[i + 3] / 255;
+    for (let x = 0; x < W; x++) {
+        let run = 0;
+        for (let y = 0; y < Math.min(r, H); y++) run += tmp[y * W + x];
+        for (let y = 0; y < H; y++) {
+            if (y + r < H) run += tmp[(y + r) * W + x];
+            if (y - r - 1 >= 0) run -= tmp[(y - r - 1) * W + x];
+            out[y * W + x] = run > 0 ? 1 : 0;
+        }
+    }
+    return out;
+}
+
+/** Paint bucket: fill the area around (x, y) (0..1000) that has the colour found there.
+    Hand-drawn outlines rarely close perfectly, so small gaps (up to about a thick line) count as closed:
+    the outline is thickened before filling, then the fill grows back under the lines. A tap that lands
+    on or right next to a line starts from the closest open spot inside instead. */
+function floodFill(x, y, colour) {
+    const W = canvas.width, H = canvas.height, k = W / 1000;
+    let px = Math.min(W - 1, Math.max(0, Math.round(x * k))), py = Math.min(H - 1, Math.max(0, Math.round(y * k)));
+    const img = ctx2d.getImageData(0, 0, W, H), d = img.data;
+    const hex = colour.replace('#', '');
+    const fr = parseInt(hex.slice(0, 2), 16), fg = parseInt(hex.slice(2, 4), 16), fb = parseInt(hex.slice(4, 6), 16);
+
+    // What counts as "the same area": transparent paper, or one colour, with a soft tolerance for line edges
+    const ink = i => d[i + 3] > 120;
+    let at = (px + py * W) * 4;
+    const r = Math.max(3, Math.round(15 * k));        // closes gaps up to about 30 of 1000 units
+    if (ink(at)) {
+        // Tapped on a line: look around for paper first, so a near miss still fills the inside
+        let best = null;
+        for (let rad = 1; rad <= r * 3 && !best; rad++) {
+            for (let a = 0; a < 16 && !best; a++) {
+                const qx = Math.round(px + rad * Math.cos(a * Math.PI / 8)), qy = Math.round(py + rad * Math.sin(a * Math.PI / 8));
+                if (qx >= 0 && qy >= 0 && qx < W && qy < H && !ink((qx + qy * W) * 4)) best = [qx, qy];
+            }
+        }
+        if (best && !(d[at] === fr && d[at + 1] === fg && d[at + 2] === fb)) {
+            // Only a thin line is under the finger (paper is close by): fill the paper side instead
+            const thick = [[r * 3, 0], [-r * 3, 0], [0, r * 3], [0, -r * 3]].every(([dx, dy]) => {
+                const qx = px + dx, qy = py + dy;
+                return qx < 0 || qy < 0 || qx >= W || qy >= H || ink((qx + qy * W) * 4);
+            });
+            if (!thick) { [px, py] = best; at = (px + py * W) * 4; }
+        }
+    }
+    const tr = d[at], tg = d[at + 1], tb = d[at + 2], ta = d[at + 3];
+    if (Math.abs(fr - tr) + Math.abs(fg - tg) + Math.abs(fb - tb) < 12 && ta > 240) return;   // already that colour
+    const same = i => (ta < 40 ? d[i + 3] < 120 : d[i + 3] > 120 && Math.abs(d[i] - tr) + Math.abs(d[i + 1] - tg) + Math.abs(d[i + 2] - tb) < 90);
+
+    const wall = new Uint8Array(W * H);
+    for (let j = 0, i = 0; j < W * H; j++, i += 4) wall[j] = same(i) ? 0 : 1;
+    // Thicken the walls to close small gaps, unless the area is too small for it (then fill it as it is)
+    let closed = dilate(wall, W, H, r);
+    if (closed[px + py * W]) {
+        let moved = false;
+        for (let rad = 1; rad <= r * 2 && !moved; rad++) {
+            for (let a = 0; a < 16 && !moved; a++) {
+                const qx = Math.round(px + rad * Math.cos(a * Math.PI / 8)), qy = Math.round(py + rad * Math.sin(a * Math.PI / 8));
+                if (qx >= 0 && qy >= 0 && qx < W && qy < H && !closed[qx + qy * W] && !wall[qx + qy * W]) { px = qx; py = qy; moved = true; }
+            }
+        }
+        if (!moved) closed = wall;
+    }
+
+    // Scanline fill inside the (thickened) walls
+    const seen = new Uint8Array(W * H);
+    const stack = [px, py];
+    const open = j => !seen[j] && !closed[j];
+    while (stack.length) {
+        const sy = stack.pop();
+        let sx = stack.pop();
+        while (sx > 0 && open(sx - 1 + sy * W)) sx--;
+        let up = false, down = false;
+        for (; sx < W && open(sx + sy * W); sx++) {
+            seen[sx + sy * W] = 1;
+            if (sy > 0) { const u = open(sx + (sy - 1) * W); if (u && !up) stack.push(sx, sy - 1); up = u; }
+            if (sy < H - 1) { const v = open(sx + (sy + 1) * W); if (v && !down) stack.push(sx, sy + 1); down = v; }
+        }
+    }
+    // Grow the fill back to the lines through connected paper only (never across a line), within the band
+    if (closed !== wall) {
+        const band = dilate(seen, W, H, r + 1);
+        const queue = new Int32Array(W * H);
+        let head = 0, tail = 0;
+        for (let j = 0; j < W * H; j++) if (seen[j]) queue[tail++] = j;
+        while (head < tail) {
+            const j = queue[head++], x0 = j % W;
+            for (const n of [x0 > 0 ? j - 1 : -1, x0 < W - 1 ? j + 1 : -1, j - W, j + W]) {
+                if (n < 0 || n >= W * H || seen[n] || wall[n] || !band[n]) continue;
+                seen[n] = 1;
+                queue[tail++] = n;
+            }
+        }
+    }
+    // Paint the area plus a 1 px rim under the soft edge of the lines, beneath the lines themselves
+    const rim = dilate(seen, W, H, 1);
+    for (let j = 0, i = 0; j < W * H; j++, i += 4) {
+        if (!rim[j]) continue;
+        const a = seen[j] ? 0 : d[i + 3] / 255;
         d[i] = Math.round(d[i] * a + fr * (1 - a)); d[i + 1] = Math.round(d[i + 1] * a + fg * (1 - a)); d[i + 2] = Math.round(d[i + 2] * a + fb * (1 - a)); d[i + 3] = 255;
     }
     ctx2d.putImageData(img, 0, 0);

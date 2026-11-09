@@ -220,6 +220,8 @@
     leaves.forEach((l, i) => {
       l.el.classList.toggle('is-next', i === f);
       l.el.classList.toggle('is-prev', i === f - 1);
+      // Sheets buried in a stack are hidden: phones struggle with dozens of 3D layers at once
+      l.el.classList.toggle('is-far', i < f - 2 || i > f + 1);
     });
 
     prevBtn.disabled = f === 0;
@@ -244,23 +246,31 @@
     applyZ();
   }
 
-  // Turns one or several sheets; several riffle with a short stagger
+  // Turns to a view. A jump of several pages (contents, dots, counter) does not riffle through every sheet:
+  // the sheets in between are moved at once, out of sight, and only the last one turns.
   function turnTo(target) {
     target = Math.max(0, Math.min(target, maxF));
     if (target === f) return;
     const step = target > f ? 1 : -1;
-    let k = 0;
-    while (f !== target) {
-      const leaf = step > 0 ? leaves[f] : leaves[f - 1];
-      const z = 100 + (step > 0 ? k : -k);
-      const delay = reduceMotion ? 0 : k * 120;
-      f += step;
-      setTimeout(() => {
-        startTurn(leaf, z);
-        leaf.el.classList.toggle('is-flipped', step > 0);
-      }, delay);
-      k++;
+    if (Math.abs(target - f) > 1) {
+      const near = target - step;
+      leaves.forEach((l, i) => {
+        const between = step > 0 ? i >= f && i < near : i >= near && i < f;
+        if (!between) return;
+        clearTimeout(l.timer);
+        l.el.classList.remove('is-turning', 'is-peek');
+        l.el.style.transition = 'none';
+        l.el.classList.toggle('is-flipped', step > 0);
+      });
+      f = near;
+      applyZ();
+      void book.offsetWidth;                       // commit the instant moves before turning the last sheet
+      leaves.forEach(l => { l.el.style.transition = ''; });
     }
+    const leaf = step > 0 ? leaves[f] : leaves[f - 1];
+    f += step;
+    startTurn(leaf, 100);
+    leaf.el.classList.toggle('is-flipped', step > 0);
     update();
   }
 

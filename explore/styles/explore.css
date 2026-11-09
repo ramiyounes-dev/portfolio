@@ -353,8 +353,9 @@ main {
   transform-style: preserve-3d;
   transform: rotateY(0deg);
   transition: transform var(--t-flip) var(--ease-flip), --p var(--t-flip) var(--ease-flip);
-  will-change: transform;
 }
+.leaf:not(.is-far) { will-change: transform; }
+.leaf.is-far:not(.is-turning):not(.is-dragging) { visibility: hidden; }
 .leaf.is-flipped { --p: 1; transform: rotateY(-180deg); }
 
 .face {
