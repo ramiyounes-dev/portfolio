@@ -354,11 +354,11 @@ export class PartyRoom {
         return this.startGame();
     }
 
-    pickSeats(rematch) {
-        const r = this.room, mod = this.mod;
+    /** Duel seating order for the next match (first two play, the rest wait), without changing anything:
+        the queue setting decides who steps out. Also used to show "Next: A vs B" during the countdown. */
+    seatOrder(rematch) {
+        const r = this.room;
         const eligible = this.eligible();
-        if (!mod.duel) return eligible.slice(0, mod.max);
-
         const prev = rematch && r.state ? this.seated() : [];
         const winners = r.results && r.results.winners ? r.results.winners : [];
         const queue = r.queue.filter(id => eligible.includes(id));
@@ -371,7 +371,13 @@ export class PartyRoom {
         } else {
             order = [...prev, ...queue, ...eligible];
         }
-        order = [...new Set(order)].filter(id => eligible.includes(id));
+        return [...new Set(order)].filter(id => eligible.includes(id));
+    }
+
+    pickSeats(rematch) {
+        const r = this.room, mod = this.mod;
+        if (!mod.duel) return this.eligible().slice(0, mod.max);
+        const order = this.seatOrder(rematch);
         const seats = order.slice(0, 2);
         r.queue = order.slice(2);
         for (const id of Object.keys(r.streak)) if (!seats.includes(id)) r.streak[id] = 0;
@@ -487,6 +493,7 @@ export class PartyRoom {
             })),
             seated: this.seated(), queue: r.queue, wins: r.wins, results: r.results, now: Date.now(),
             rematch: r.rematch || [], nextAt: r.nextAt || null,
+            nextUp: r.phase === 'results' && r.nextAt ? this.seatOrder(true).slice(0, 2) : null,
         };
     }
 

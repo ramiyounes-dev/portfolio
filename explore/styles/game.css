@@ -24,9 +24,12 @@
   --scrim:    rgba(245, 240, 232, 0.72);
   --shadow:   0 30px 80px -30px rgba(60, 42, 18, 0.45);
 
-  --font-display: 'Syne', 'Arial Black', system-ui, sans-serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
-  --font-serif:   'Fraunces', Georgia, serif;
+  /* Every text in Explore uses one face: Space Mono, the face of the "How to play" link. Sizes and weights
+     stay as they were. Game objects (cards, chips, tiles, marks) keep their own face: --font-piece. */
+  --font-display: 'Space Mono', ui-monospace, 'Courier New', monospace;
+  --font-body:    'Space Mono', ui-monospace, 'Courier New', monospace;
+  --font-serif:   'Space Mono', ui-monospace, 'Courier New', monospace;
+  --font-piece:   'DM Sans', system-ui, sans-serif;
   --font-mono:    'Space Mono', ui-monospace, 'Courier New', monospace;
 
   --top-h: 52px;
@@ -524,3 +527,9 @@ button { font: inherit; color: inherit; }
 .cue-toggle:hover { color: var(--accent); }
 .cue-toggle[aria-pressed="false"] { color: var(--text-2); opacity: 0.7; }
 .cue-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Monospace names are wide: on narrow phones the top bar title shrinks with the screen so long names
+   ("Ultimate Tic-Tac-Toe") fit next to the language, alert and theme buttons; ellipsis only as a last resort */
+@media (max-width: 480px) {
+  .top-title { font-size: clamp(0.7rem, 3.3vw, 1.05rem); letter-spacing: -0.04em; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}

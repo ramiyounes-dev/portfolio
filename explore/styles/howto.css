@@ -80,8 +80,8 @@
 
 /* ---------- Picture parts (howto-art.js) ---------- */
 .ht-svg .f-mono { font-family: var(--font-mono); }
-.ht-svg .f-display { font-family: var(--font-body); font-weight: 700; }
-.ht-svg .f-body { font-family: var(--font-body); font-weight: 500; }
+.ht-svg .f-display { font-family: var(--font-piece); font-weight: 700; }
+.ht-svg .f-body { font-family: var(--font-piece); font-weight: 500; }
 .ht-svg .k-t { fill: var(--text); }
 .ht-svg .k-tm { fill: var(--text-2); }
 .ht-svg .k-ta { fill: var(--accent); }

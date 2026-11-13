@@ -397,7 +397,8 @@ export function mountGame(ui) {
 
     function renderSettings(el, editable) {
         const s = room.settings;
-        const fields = [...(logic.settings || []).filter(f => !f.hidden)];
+        // Queue only matters online (vs computer / same device: always the same two players)
+        const fields = [...(logic.settings || []).filter(f => !f.hidden && !(room.local && f.key === 'queueMode'))];
         const rows = [];
         const row = (label, control) => rows.push(`<div class="p-set"><span class="p-set-label">${esc(label)}</span><span class="p-set-ctl">${control}</span></div>`);
         const ctl = (f, v) => {
@@ -470,13 +471,17 @@ export function mountGame(ui) {
         }
         // Duels: everyone sees who plays next and who only watches
         let crowd = '';
-        if (room.duel && !room.local && room.phase === 'playing') {
-            const nameList = ids => ids.map(id => nameOf(id)).join(', ');
-            const queue = room.queue.filter(id => room.players.some(p => p.id === id));
+        if (room.duel && !room.local && (room.phase === 'playing' || room.phase === 'results')) {
+            const queue = room.queue.filter(id => room.players.some(p => p.id === id && !p.spectator));
             const watching = room.players.filter(p => !room.seated.includes(p.id) && !queue.includes(p.id)).map(p => p.id);
-            crowd = [queue.length ? t('duelNext', { names: nameList(queue) }) : '', watching.length ? t('duelWatch', { names: nameList(watching) }) : ''].filter(Boolean).join(' · ');
+            // The waiting line: who plays after this match, in order, and what the queue setting does with it
+            if (queue.length) {
+                crowd += `<div class="p-queue"><span class="p-label">${esc(t('upNext'))}</span><ol>${queue.map((id, i) => `<li class="${id === me ? 'me' : ''}"><b>${i + 1}</b><span class="p-dot" style="--hue:${hue(id)}"></span>${esc(nameOf(id))}${id === me ? ` <em>${esc(t('you'))}</em>` : ''}</li>`).join('')}</ol>
+                    <span class="p-mono p-queue-rule">${esc(room.settings.queueMode === 'rotate' ? t('queueRuleRotate') : t('queueRuleWinner'))}</span></div>`;
+            }
+            if (watching.length) crowd += `<span class="p-mono p-crowd">${esc(t('duelWatch', { names: watching.map(nameOf).join(', ') }))}</span>`;
         }
-        el.innerHTML = (text ? `<span>${esc(text)}</span>${btn}` : '') + (crowd ? `<span class="p-mono p-crowd">${esc(crowd)}</span>` : '');
+        el.innerHTML = (text ? `<span>${esc(text)}</span>${btn}` : '') + crowd;
         el.classList.toggle('hidden', !text && !crowd);
     }
     $('g-banner').addEventListener('click', e => {
@@ -493,7 +498,7 @@ export function mountGame(ui) {
         $('g-status').textContent = room.phase === 'results' && room.results ? resultHead(room.results) : !view ? '' : thinking && thinking.length === 1 ? `${nameOf(thinking[0])} · ${t('su.thinking')}`
             : (ui.status ? ui.status(view, a) : defaultStatus(view));
         $('g-scores').innerHTML = view ? scoreboard() : '';
-        banner();
+        banner();   // also on the match-over screen: the line shows who comes in next
         if (view) ui.render($('g-root'), view, a);
         renderResults();
     }
@@ -525,7 +530,8 @@ export function mountGame(ui) {
         let top = '', main = '';
         if (room.duel && room.nextAt) {
             // People are waiting: the next match starts by itself (the queue setting picks who plays)
-            top = `<p class="p-msg center p-next" data-countdown>${esc(t('nextIn', { n: Math.max(0, Math.ceil((room.nextAt - (Date.now() + offset)) / 1000)) }))}</p>`;
+            top = `<p class="p-msg center p-next" data-countdown>${esc(t('nextIn', { n: Math.max(0, Math.ceil((room.nextAt - (Date.now() + offset)) / 1000)) }))}</p>`
+                + (room.nextUp && room.nextUp.length === 2 ? `<p class="p-next-up">${esc(t('nextUp', { a: nameOf(room.nextUp[0]), b: nameOf(room.nextUp[1]) }))}</p>` : '');
             if (isHost) main = btn('rematch', t('startNow'), 'primary');
         } else if (room.duel) {
             // Same two players: both have to say yes

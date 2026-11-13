@@ -40,9 +40,12 @@
   --shade-op:   0.16;
   --cast:       0 30px 60px -28px rgba(60, 42, 18, 0.45);
 
-  --font-display: 'Syne', 'Arial Black', system-ui, sans-serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
-  --font-serif:   'Fraunces', Georgia, 'Times New Roman', serif;
+  /* Every text in Explore uses one face: Space Mono, the face of the "How to play" link. Sizes and weights
+     stay as they were. Game objects (cards, chips, tiles, marks) keep their own face: --font-piece. */
+  --font-display: 'Space Mono', ui-monospace, 'Courier New', monospace;
+  --font-body:    'Space Mono', ui-monospace, 'Courier New', monospace;
+  --font-serif:   'Space Mono', ui-monospace, 'Courier New', monospace;
+  --font-piece:   'DM Sans', system-ui, sans-serif;
   --font-mono:    'Space Mono', ui-monospace, 'Courier New', monospace;
 
   --nav-h: 64px;

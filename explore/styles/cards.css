@@ -6,7 +6,7 @@
 .pcard .pc-face { fill: #fffdf7; stroke: #d8cdb9; stroke-width: 2; }
 .pcard.red { --ink: #c42f2c; --panel: #f8e6df; } .pcard.black { --ink: #1c1814; --panel: #ebe6dc; }
 .pcard svg g, .pcard svg circle, .pcard svg path:not([class]) { fill: var(--ink); }
-.pcard .pc-rank { font-family: var(--font-body, 'DM Sans', system-ui, sans-serif); font-weight: 700; font-size: 58px; fill: var(--ink); text-anchor: middle; letter-spacing: -2px; }
+.pcard .pc-rank { font-family: var(--font-piece, 'DM Sans', system-ui, sans-serif); font-weight: 700; font-size: 58px; fill: var(--ink); text-anchor: middle; letter-spacing: -2px; }
 .pcard .pc-panel { fill: var(--panel); stroke: var(--ink); stroke-width: 2; }
 .pcard .pc-panel-line { fill: none; stroke: #b98a33; stroke-width: 2; }
 .pcard .pc-gold { fill: #d4a646; stroke: #8a6420; stroke-width: 1; }
